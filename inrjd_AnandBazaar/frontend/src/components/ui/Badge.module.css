@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.placed { background: #E3F2FD; color: #1565C0; }
+.under_review { background: #FFF3E0; color: #E65100; }
+.approved { background: #E8F5E9; color: #2E7D32; }
+.rejected { background: #FFEBEE; color: #C62828; }
+.invoiced { background: #F3E5F5; color: #7B1FA2; }
+.paid { background: #E8F5E9; color: #1B5E20; }
+.partially_paid { background: #FFF8E1; color: #F57F17; }
+.completed { background: #E0F2F1; color: #00695C; }
+.cancelled { background: #EFEBE9; color: #4E342E; }
+.pending { background: #FFF3E0; color: #E65100; }
+.required { background: #FFEBEE; color: #C62828; }
+.in_progress { background: #E3F2FD; color: #1565C0; }
+.purchased { background: #F3E5F5; color: #7B1FA2; }
+.delivered { background: #E8F5E9; color: #2E7D32; }
+.closed { background: #ECEFF1; color: #546E7A; }
+.draft { background: #F5F5F5; color: #757575; }
+.customer_contacted { background: #E8EAF6; color: #283593; }
+.updated { background: #FFF8E1; color: #F57F17; }
+.scheduled { background: #E0F7FA; color: #00838F; }
+.unpaid { background: #FFEBEE; color: #C62828; }
+.active { background: #E8F5E9; color: #2E7D32; }
+.inactive { background: #EFEBE9; color: #4E342E; }

@@ -1,0 +1,1149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INRJD NEW PROGRAM FORM</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      /* ── Palette: Sandalwood & Sacred Lotus ── */
+      --cream:        #fdf6ec;
+      --cream-warm:   #f9eedc;
+      --lotus-blush:  #f2c4a0;
+      --lotus-rose:   #e8956d;
+      --saffron:      #e07a3b;
+      --saffron-deep: #c05e20;
+      --turmeric:     #d4a027;
+      --turmeric-lt:  #f0c84a;
+      --sage:         #7a9e87;
+      --sage-lt:      #a8c5b0;
+      --indigo-deep:  #2c3566;
+      --indigo-mid:   #3d4a8a;
+      --indigo-lt:    #6b7cc4;
+      --ink:          #1e1c2e;
+      --ink-mid:      #312e4a;
+      --ink-soft:     #4a4668;
+      --text-body:    #3b3560;
+      --text-muted:   #7b729a;
+      --text-light:   #b0a9c8;
+      --card-bg:      rgba(253, 246, 236, 0.92);
+      --card-border:  rgba(212, 160, 39, 0.25);
+      --input-bg:     rgba(255, 250, 244, 0.9);
+      --input-border: rgba(212, 160, 39, 0.3);
+      --input-focus:  rgba(212, 160, 39, 0.7);
+
+      --radius:    14px;
+      --radius-lg: 28px;
+      --shadow-sm: 0 2px 12px rgba(44, 53, 102, 0.08);
+      --shadow-md: 0 8px 32px rgba(44, 53, 102, 0.13);
+      --shadow-lg: 0 24px 64px rgba(44, 53, 102, 0.18);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--text-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ══════════════════════════════════════
+       SACRED BACKGROUND — Mandala light rays + soft gradients
+    ══════════════════════════════════════ */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Main gradient sky */
+    .bg-canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 70% at 15% -10%, rgba(240,200,74,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 80% at 90% 110%, rgba(224,122,59,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(168,197,176,0.12) 0%, transparent 70%),
+        linear-gradient(160deg, #fdf0dc 0%, #f5e8f0 40%, #dce4f5 80%, #e8f0fd 100%);
+      animation: breatheGlow 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes breatheGlow {
+      0%   { filter: brightness(1) hue-rotate(0deg); }
+      50%  { filter: brightness(1.04) hue-rotate(8deg); }
+      100% { filter: brightness(0.98) hue-rotate(-5deg); }
+    }
+
+    /* Mandala-inspired ring pattern */
+    .bg-canvas::after {
+      content: '';
+      position: absolute;
+      width: 900px;
+      height: 900px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background:
+        repeating-conic-gradient(
+          from 0deg,
+          rgba(212,160,39,0.04) 0deg 10deg,
+          transparent 10deg 20deg
+        );
+      border-radius: 50%;
+      animation: rotateMandala 80s linear infinite;
+    }
+
+    @keyframes rotateMandala {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Stars — kept minimal, soft */
+    .stars {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 8%  12%, rgba(212,160,39,0.5) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 25% 35%, rgba(107,124,196,0.4) 0%, transparent 100%),
+        radial-gradient(2px   2px   at 55% 8%,  rgba(212,160,39,0.45) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 72% 55%, rgba(107,124,196,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 88% 25%, rgba(212,160,39,0.5) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 18% 78%, rgba(107,124,196,0.35) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 42% 65%, rgba(212,160,39,0.35) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 62% 88%, rgba(224,149,109,0.4) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 85% 72%, rgba(107,124,196,0.3) 0%, transparent 100%),
+        radial-gradient(1px   1px   at 35% 92%, rgba(212,160,39,0.4) 0%, transparent 100%);
+      animation: twinkle 7s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0%   { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    /* Orbs — soft sacred light */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: floatOrb var(--dur, 20s) ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(240,200,74,0.18), transparent 70%);
+      top: -120px; left: -100px;
+      --dur: 22s;
+    }
+
+    .orb-2 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(232,149,109,0.16), transparent 70%);
+      bottom: 5%; right: -80px;
+      --dur: 17s;
+      animation-delay: -6s;
+    }
+
+    .orb-3 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(107,124,196,0.13), transparent 70%);
+      top: 38%; left: 28%;
+      --dur: 28s;
+      animation-delay: -12s;
+    }
+
+    @keyframes floatOrb {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33%      { transform: translate(28px,-36px) scale(1.04); }
+      66%      { transform: translate(-18px,22px) scale(0.96); }
+    }
+
+
+    /* ══════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════ */
+    .header-container {
+      position: relative;
+      z-index: 10;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 44px 20px;
+      gap: 20px;
+      background: linear-gradient(
+        180deg,
+        rgba(253,246,236,0.97) 0%,
+        rgba(253,246,236,0.82) 100%
+      );
+      border-bottom: 1px solid rgba(212,160,39,0.2);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 30px rgba(44,53,102,0.07);
+    }
+
+    .header-logo {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
+      border-radius: 50%;
+      border: 2px solid var(--turmeric);
+      padding: 4px;
+      background: linear-gradient(135deg, rgba(240,200,74,0.15), rgba(224,122,59,0.1));
+      box-shadow: 0 0 0 4px rgba(212,160,39,0.08), var(--shadow-sm);
+      transition: transform 0.45s ease, box-shadow 0.45s ease;
+      flex-shrink: 0;
+    }
+
+    .header-logo:hover {
+      transform: scale(1.1) rotate(6deg);
+      box-shadow: 0 0 0 6px rgba(212,160,39,0.18), 0 8px 28px rgba(212,160,39,0.25);
+    }
+
+    .header-title-wrap {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .header-eyebrow {
+      font-family: 'Jost', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: var(--saffron);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      opacity: 0.85;
+    }
+
+    .header-title-wrap h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(22px, 4vw, 48px);
+      font-weight: 600;
+      letter-spacing: 3px;
+      line-height: 1.1;
+      background: linear-gradient(
+        130deg,
+        var(--indigo-deep) 0%,
+        var(--saffron-deep) 30%,
+        var(--turmeric) 55%,
+        var(--saffron) 75%,
+        var(--indigo-mid) 100%
+      );
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmerTitle 6s linear infinite;
+    }
+
+    @keyframes shimmerTitle {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    .header-title-wrap h1::after {
+      content: '';
+      display: block;
+      height: 2px;
+      width: 55%;
+      margin: 8px auto 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--turmeric),
+        var(--saffron),
+        var(--turmeric-lt),
+        transparent
+      );
+      border-radius: 99px;
+      animation: pulseLine 3.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseLine {
+      0%,100% { opacity: 0.6; transform: scaleX(0.88); }
+      50%      { opacity: 1;   transform: scaleX(1.06); }
+    }
+
+
+    /* ══════════════════════════════════════
+       MARQUEE
+    ══════════════════════════════════════ */
+    .marquee {
+      position: relative;
+      z-index: 9;
+      height: 50px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(
+        90deg,
+        rgba(44,53,102,0.96),
+        rgba(61,74,138,0.96),
+        rgba(44,53,102,0.96)
+      );
+      border-top: 1px solid rgba(212,160,39,0.35);
+      border-bottom: 1px solid rgba(212,160,39,0.35);
+    }
+
+    .marquee-inner {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: scrollMarquee 16s linear infinite;
+    }
+
+    .marquee-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 500;
+      font-style: italic;
+      letter-spacing: 2.5px;
+      color: var(--turmeric-lt);
+      padding: 0 44px;
+      text-shadow: 0 0 18px rgba(240,200,74,0.45);
+    }
+
+    @keyframes scrollMarquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .marquee::before, .marquee::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 90px;
+      z-index: 2;
+    }
+    .marquee::before {
+      left: 0;
+      background: linear-gradient(to right, rgba(44,53,102,0.96), transparent);
+    }
+    .marquee::after {
+      right: 0;
+      background: linear-gradient(to left, rgba(44,53,102,0.96), transparent);
+    }
+
+
+    /* ══════════════════════════════════════
+       PAGE BODY
+    ══════════════════════════════════════ */
+    .page-body {
+      position: relative;
+      z-index: 5;
+      padding: 56px 20px 90px;
+      display: flex;
+      justify-content: center;
+    }
+
+
+    /* ══════════════════════════════════════
+       FORM CARD
+    ══════════════════════════════════════ */
+    .form-card {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      padding: 52px 50px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.7) inset,
+        var(--shadow-lg),
+        0 0 80px rgba(212,160,39,0.06);
+      animation: cardRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes cardRise {
+      from { opacity: 0; transform: translateY(44px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);    }
+    }
+
+    /* Top accent */
+    .form-card::before {
+      content: '';
+      display: block;
+      height: 3px;
+      width: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--turmeric) 25%,
+        var(--saffron) 50%,
+        var(--lotus-rose) 70%,
+        transparent 100%
+      );
+      border-radius: 99px;
+      margin-bottom: 38px;
+    }
+
+
+    /* ══════════════════════════════════════
+       FIELD GROUPS & ROWS
+    ══════════════════════════════════════ */
+    .field-group {
+      margin-bottom: 6px;
+      animation: fadeUp 0.55s ease both;
+    }
+
+    .field-group:nth-child(2)  { animation-delay: 0.05s; }
+    .field-group:nth-child(3)  { animation-delay: 0.10s; }
+    .field-group:nth-child(4)  { animation-delay: 0.15s; }
+    .field-group:nth-child(5)  { animation-delay: 0.20s; }
+    .field-group:nth-child(6)  { animation-delay: 0.25s; }
+    .field-group:nth-child(7)  { animation-delay: 0.30s; }
+    .field-group:nth-child(8)  { animation-delay: 0.35s; }
+    .field-group:nth-child(9)  { animation-delay: 0.40s; }
+    .field-group:nth-child(10) { animation-delay: 0.45s; }
+    .field-group:nth-child(11) { animation-delay: 0.50s; }
+    .field-group:nth-child(12) { animation-delay: 0.55s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+
+    /* ══════════════════════════════════════
+       LABELS
+    ══════════════════════════════════════ */
+    label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 9px;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 0.25s ease;
+    }
+
+    label .icon { font-size: 15px; flex-shrink: 0; }
+
+    .field-group:focus-within label { color: var(--saffron-deep); }
+
+
+    /* ══════════════════════════════════════
+       INPUTS, SELECTS, TEXTAREA
+    ══════════════════════════════════════ */
+    select,
+    input[type="date"],
+    input[type="time"],
+    textarea {
+      width: 100%;
+      padding: 13px 18px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius);
+      color: var(--text-body);
+      font-family: 'Jost', sans-serif;
+      font-size: 14.5px;
+      font-weight: 500;
+      transition: all 0.28s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        var(--shadow-sm);
+    }
+
+    /* Custom select arrow */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--turmeric);
+      pointer-events: none;
+      font-size: 13px;
+      transition: transform 0.22s ease;
+    }
+    .select-wrap:focus-within::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    select option {
+      background: #fdf6ec;
+      color: var(--text-body);
+    }
+
+    select:focus,
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    textarea:focus {
+      border-color: var(--turmeric);
+      background: rgba(255,252,246,0.98);
+      box-shadow:
+        0 0 0 3.5px rgba(212,160,39,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        var(--shadow-md);
+    }
+
+    select:hover,
+    input[type="date"]:hover,
+    input[type="time"]:hover,
+    textarea:hover {
+      border-color: rgba(212,160,39,0.55);
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: sepia(1) saturate(2) hue-rotate(10deg) opacity(0.65);
+      cursor: pointer;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+
+    /* ══════════════════════════════════════
+       RADIO GROUP
+    ══════════════════════════════════════ */
+    .radio-group {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 22px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      user-select: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), var(--shadow-sm);
+    }
+
+    .radio-label:hover {
+      border-color: var(--turmeric);
+      color: var(--saffron-deep);
+      background: rgba(212,160,39,0.07);
+    }
+
+    .radio-label input[type="radio"] { display: none; }
+
+    .radio-dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--text-light);
+      position: relative;
+      transition: all 0.22s ease;
+      flex-shrink: 0;
+    }
+
+    .radio-label input[type="radio"]:checked ~ .radio-dot {
+      border-color: var(--turmeric);
+      background: var(--turmeric);
+      box-shadow: 0 0 10px rgba(212,160,39,0.5);
+    }
+
+    .radio-label:has(input:checked) {
+      border-color: var(--turmeric);
+      color: var(--saffron-deep);
+      background: linear-gradient(135deg, rgba(240,200,74,0.1), rgba(224,122,59,0.06));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        0 4px 18px rgba(212,160,39,0.16);
+    }
+
+
+    /* ══════════════════════════════════════
+       DIVIDER
+    ══════════════════════════════════════ */
+    .field-divider {
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(212,160,39,0.2),
+        rgba(224,122,59,0.15),
+        transparent
+      );
+      margin: 12px 0 26px;
+    }
+
+
+    /* ══════════════════════════════════════
+       SECTION LABEL
+    ══════════════════════════════════════ */
+    .section-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 600;
+      font-style: italic;
+      letter-spacing: 2.5px;
+      color: var(--indigo-mid);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        rgba(44,53,102,0.18),
+        transparent
+      );
+    }
+
+
+    /* ══════════════════════════════════════
+       SUBMIT BUTTON
+    ══════════════════════════════════════ */
+    .submit-btn {
+      position: relative;
+      width: 100%;
+      padding: 16px 24px;
+      margin-top: 34px;
+      background: linear-gradient(
+        130deg,
+        var(--indigo-deep) 0%,
+        var(--indigo-mid) 35%,
+        var(--saffron-deep) 70%,
+        var(--turmeric) 100%
+      );
+      background-size: 200% 100%;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.38s ease;
+      box-shadow:
+        0 6px 24px rgba(44,53,102,0.28),
+        0 2px 8px rgba(212,160,39,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        130deg,
+        var(--turmeric) 0%,
+        var(--saffron) 40%,
+        var(--indigo-mid) 80%,
+        var(--indigo-deep) 100%
+      );
+      opacity: 0;
+      transition: opacity 0.38s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 14px 40px rgba(44,53,102,0.32),
+        0 4px 16px rgba(212,160,39,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+      background-position: 100% 0;
+    }
+
+    .submit-btn:hover::before { opacity: 1; }
+    .submit-btn:active { transform: translateY(0); }
+
+    .submit-btn span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%) translateX(0);
+      z-index: 1;
+      font-size: 18px;
+      transition: transform 0.3s ease;
+    }
+
+    .submit-btn:hover:not(:disabled)::after {
+      transform: translateY(-50%) translateX(5px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 17px;
+      height: 17px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      vertical-align: middle;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+
+    /* ══════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════ */
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 26px 20px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 500;
+      font-style: italic;
+      letter-spacing: 1.8px;
+      color: var(--text-muted);
+      background: linear-gradient(
+        180deg,
+        rgba(253,246,236,0.85) 0%,
+        rgba(253,246,236,0.97) 100%
+      );
+      border-top: 1px solid rgba(212,160,39,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    footer span { color: var(--indigo-mid); }
+
+
+    /* ══════════════════════════════════════
+       SCROLLBAR
+    ══════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212,160,39,0.35);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(212,160,39,0.55);
+    }
+
+
+    /* ══════════════════════════════════════
+       MEDIA QUERIES
+    ══════════════════════════════════════ */
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      .header-inner {
+        padding: 18px 24px;
+        gap: 14px;
+      }
+      .header-logo {
+        width: 50px;
+        height: 50px;
+      }
+      .header-title-wrap h1 {
+        font-size: clamp(18px, 5vw, 32px);
+      }
+      .form-card {
+        padding: 36px 28px;
+        border-radius: 24px;
+      }
+      .field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .page-body {
+        padding: 32px 16px 64px;
+      }
+    }
+
+    /* Mobile large */
+    @media (max-width: 480px) {
+      .header-inner {
+        padding: 14px 16px;
+        gap: 10px;
+      }
+      .header-logo {
+        width: 42px;
+        height: 42px;
+      }
+      .header-eyebrow {
+        font-size: 9px;
+        letter-spacing: 2px;
+      }
+      .header-title-wrap h1 {
+        font-size: clamp(14px, 6vw, 24px);
+        letter-spacing: 1px;
+      }
+      .marquee-text {
+        font-size: 13px;
+        letter-spacing: 1.5px;
+      }
+      .form-card {
+        padding: 26px 16px;
+        border-radius: 18px;
+      }
+      .radio-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .radio-label {
+        justify-content: center;
+      }
+      label {
+        font-size: 11px;
+      }
+      select,
+      input[type="date"],
+      input[type="time"],
+      textarea {
+        font-size: 13.5px;
+        padding: 11px 14px;
+      }
+      .submit-btn {
+        font-size: 14px;
+        letter-spacing: 2px;
+      }
+      .submit-btn::after {
+        display: none;
+      }
+      footer {
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+    }
+
+    /* Mobile small */
+    @media (max-width: 360px) {
+      .header-logo { display: none; }
+      .header-inner { justify-content: center; }
+      .header-title-wrap h1 { font-size: 16px; }
+    }
+
+    /* Large screens */
+    @media (min-width: 1200px) {
+      .form-card {
+        max-width: 700px;
+        padding: 62px 58px;
+      }
+    }
+
+    /* Ultra-wide */
+    @media (min-width: 1600px) {
+      .form-card { max-width: 760px; }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Cosmic Background -->
+  <div class="bg-canvas">
+    <div class="stars"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Header -->
+  <div class="header-container">
+    <div class="header-inner">
+      <img src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png" alt="Left Logo" class="header-logo left-logo" />
+      <div class="header-title-wrap">
+        <div class="header-eyebrow">✦ISKCON Magadi Main Road✦</div>
+        <h1>NRJD NEW PROGRAM FORM</h1>
+      </div>
+      <img src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png" alt="Right Logo" class="header-logo right-logo" />
+    </div>
+  </div>
+
+  <!-- Marquee -->
+  <div class="marquee" aria-label="Mantra">
+    <div class="marquee-inner">
+      <span class="marquee-text">✦ Hare Krishna Hare Krishna &nbsp;·&nbsp; Krishna Krishna Hare Hare &nbsp;·&nbsp; Hare Rama Hare Rama &nbsp;·&nbsp; Rama Rama Hare Hare ✦</span>
+      <span class="marquee-text">✦ Hare Krishna Hare Krishna &nbsp;·&nbsp; Krishna Krishna Hare Hare &nbsp;·&nbsp; Hare Rama Hare Rama &nbsp;·&nbsp; Rama Rama Hare Hare ✦</span>
+    </div>
+  </div>
+
+  <!-- Main Body -->
+  <div class="page-body">
+    <div class="form-card">
+      <form id="programForm" onsubmit="submitForm(event)">
+
+        <!-- Section: Location -->
+        <div class="section-label">📍 Location Details</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="area"><span class="icon">🌍</span> Area</label>
+            <div class="select-wrap">
+              <select name="area" id="area" required>
+                <option value="">— Select Area —</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="subArea"><span class="icon">🗺️</span> Sub Area</label>
+            <div class="select-wrap">
+              <select name="subArea" id="subArea">
+                <option value="">— Select Sub Area —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-divider"></div>
+
+        <!-- Section: Program Info -->
+        <div class="section-label">🎙️ Program Details</div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="frequency"><span class="icon">📅</span> Frequency</label>
+            <div class="select-wrap">
+              <select name="frequency" id="frequency" required>
+                <option value="">— Select Frequency —</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="typeOfProgram"><span class="icon">🎙️</span> Type of Program</label>
+            <div class="select-wrap">
+              <select name="typeOfProgram" id="typeOfProgram" required>
+                <option value="">— Select Type —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="language"><span class="icon">🈯</span> Language</label>
+            <div class="select-wrap">
+              <select name="language" id="language" required>
+                <option value="">— Select Language —</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="programOwner"><span class="icon">👤</span> Program Owner</label>
+            <div class="select-wrap">
+              <select name="programOwner" id="programOwner" required>
+                <option value="">— Select Owner —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-divider"></div>
+
+        <!-- Section: Schedule -->
+        <div class="section-label">🗓️ Schedule</div>
+
+        <div class="field-group">
+          <label><span class="icon">💻</span> Virtual</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="virtual" value="Yes" required />
+              <span class="radio-dot"></span>
+              Yes — Virtual
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="virtual" value="No" required />
+              <span class="radio-dot"></span>
+              No — In Person
+            </label>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="programStartDate"><span class="icon">🛫</span> Start Date</label>
+            <input type="date" name="programStartDate" id="programStartDate" required />
+          </div>
+
+          <div class="field-group">
+            <label for="day"><span class="icon">🗓️</span> Day</label>
+            <div class="select-wrap">
+              <select name="day" id="day">
+                <option value="">— Select Day —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="time"><span class="icon">⏰</span> Time</label>
+          <input type="time" name="time" id="time" required />
+        </div>
+
+        <div class="field-divider"></div>
+
+        <!-- Section: Devotees -->
+        <div class="section-label">🧘 Participants</div>
+
+        <div class="field-group">
+          <label for="devotees"><span class="icon">🧘</span> Devotees (comma-separated)</label>
+          <textarea name="devotees" id="devotees" rows="4" placeholder="e.g. Radha Devi Dasi, Govinda Das, Gauranga Prabhu…"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn"><span>Submit Program</span></button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    &copy; <span>2026 ISKCON Magadi Main Road Website</span> &nbsp;·&nbsp; All rights reserved.
+  </footer>
+
+  <!-- ── Scripts (untouched logic) ── -->
+  <script>
+    function formatTimeToAMPM(time24) {
+      const [hour, minute] = time24.split(":");
+      let h = parseInt(hour);
+      const ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h.toString().padStart(2, "0")}:${minute} ${ampm}`;
+    }
+
+    function submitForm(event) {
+      event.preventDefault();
+
+      const form = document.getElementById("programForm");
+      const btn  = form.querySelector(".submit-btn");
+      const formData = new FormData(form);
+      const data = {};
+
+      formData.forEach((value, key) => {
+        if (key === "time") {
+          data[key] = formatTimeToAMPM(value);
+        } else {
+          data[key] = value;
+        }
+      });
+
+      // Disable button & show spinner
+      btn.disabled = true;
+      btn.innerHTML = `<span><span class="spinner"></span>Submitting…</span>`;
+
+      google.script.run
+        .withSuccessHandler((message) => {
+          alert(message);
+          form.reset();
+          // Re-enable after success
+          btn.disabled = false;
+          btn.innerHTML = `<span>Submit Program</span>`;
+        })
+        .withFailureHandler((err) => {
+          alert("Submission failed. Please try again.");
+          // Re-enable on error too
+          btn.disabled = false;
+          btn.innerHTML = `<span>Submit Program</span>`;
+        })
+        .submitForm(data);
+    }
+  </script>
+
+  <script>
+    google.script.run.withSuccessHandler((config) => {
+      populateDropdown("area", config.AREA);
+      populateDropdown("subArea", config.SUB_AREA);
+      populateDropdown("frequency", config.FREQUENCY);
+      populateDropdown("typeOfProgram", config.TYPE_OF_PROGRAM);
+      populateDropdown("language", config.LANGUAGE);
+      populateOwnerDropdown(config.OWNER_VALUE, config.OWNER_LABEL);
+      populateDropdown("day", config.DAY);
+    }).getConfigValues();
+
+    function populateDropdown(fieldName, values) {
+      const select = document.querySelector(`select[name="${fieldName}"]`);
+      values.forEach(value => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateOwnerDropdown(values, labels) {
+      const select = document.querySelector(`select[name="programOwner"]`);
+      values.forEach((v, i) => {
+        const option = document.createElement("option");
+        option.value = v;
+        option.textContent = labels[i];
+        select.appendChild(option);
+      });
+    }
+  </script>
+
+</body>
+
+</html>

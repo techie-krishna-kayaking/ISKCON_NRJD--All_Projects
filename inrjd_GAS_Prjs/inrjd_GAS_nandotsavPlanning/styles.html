@@ -1,0 +1,477 @@
+<style>
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #fefcf7;
+  color: #2e2e2e;
+  font-family: 'Jost', 'Noto Serif', sans-serif;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
+
+.header {
+  padding: 18px 14px;
+  text-align: center;
+  background: linear-gradient(180deg, #f7fbff 0%, #edf6ff 100%);
+  border-bottom: 1px solid #d9e7f4;
+  box-shadow: 0 2px 10px rgba(28, 68, 102, 0.08);
+  position: relative;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f7c948 0%, #ff6b6b 33%, #65acd8 66%, #51cf66 100%);
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.header-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #2f6f9f;
+  margin-bottom: 6px;
+}
+
+.header-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #c9dded;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(33, 94, 141, 0.16);
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1d456a;
+}
+
+.subtitle {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9375rem;
+  margin-top: 6px;
+  color: #557e9d;
+}
+
+/* ─── TABS ───────────────────────────────────────────────────────────────── */
+
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-bottom: 2px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px 10px;
+  border: none;
+  background: transparent;
+  font-family: 'Jost', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+  color: #1d456a;
+  border-bottom-color: #f7c948;
+  background: #fffdf5;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ─── SEARCH ─────────────────────────────────────────────────────────────── */
+
+.search-container {
+  padding: 14px 14px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+#searchInput {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 0.95rem;
+  font-family: 'Jost', sans-serif;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+#searchInput:focus {
+  outline: none;
+  border-color: #65acd8;
+  box-shadow: 0 0 0 3px rgba(101, 172, 216, 0.15);
+}
+
+/* ─── TABLE LAYOUT ───────────────────────────────────────────────────────── */
+
+.school-list {
+  padding: 14px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.school-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 0.88rem;
+}
+
+.school-table thead {
+  background: linear-gradient(135deg, #1d456a, #2f6f9f);
+  color: #fff;
+}
+
+.school-table thead th {
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.school-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+
+.school-table tbody tr:hover {
+  background: #faf7ef;
+}
+
+.school-table tbody td {
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+.td-sno {
+  text-align: center;
+  width: 36px;
+}
+
+.sno-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: #65acd8;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.td-school {
+  font-weight: 600;
+  color: #1d456a;
+  min-width: 130px;
+}
+
+.td-contact {
+  color: #555;
+  min-width: 90px;
+}
+
+.td-action {
+  text-align: center;
+  width: 44px;
+}
+
+.btn-call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #27ae60;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: transform 0.15s;
+}
+
+.btn-call:hover {
+  transform: scale(1.15);
+}
+
+.btn-location {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #e74c3c;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 1.1rem;
+  transition: transform 0.15s;
+}
+
+.btn-location:hover {
+  transform: scale(1.15);
+}
+
+/* Table inputs */
+.tbl-input {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: 'Jost', sans-serif;
+  width: 100%;
+  min-width: 100px;
+  box-sizing: border-box;
+  background: #fafafa;
+}
+
+.tbl-input:focus {
+  outline: none;
+  border-color: #65acd8;
+  background: #fff;
+}
+
+.tbl-input-wide {
+  min-width: 140px;
+}
+
+.btn-save-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #1d456a;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-save-sm:hover {
+  background: #2f6f9f;
+  transform: scale(1.1);
+}
+
+.btn-save-sm:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.td-meta {
+  font-size: 0.72rem;
+  color: #888;
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── LOADING / TOAST ────────────────────────────────────────────────────── */
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-family: 'Jost', sans-serif;
+  font-size: 1rem;
+  color: #888;
+}
+
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #1d456a;
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ─── RULES & REGULATIONS ────────────────────────────────────────────────── */
+
+.rules-container {
+  padding: 14px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.rules-group {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.rules-group-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d456a;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f7c948;
+}
+
+.rules-event-title {
+  font-family: 'Jost', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #8b3a00;
+  margin: 16px 0 6px;
+}
+
+.rules-event-subtitle {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.rules-list {
+  padding-left: 20px;
+  line-height: 1.85;
+  font-size: 0.92rem;
+}
+
+.rules-list li {
+  margin-bottom: 5px;
+}
+
+.rules-general {
+  background: #fffdf2;
+  border-left: 4px solid #f7c948;
+}
+
+.rules-privacy {
+  background: #f9f9f9;
+  border-left: 4px solid #95a5a6;
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.rules-contact {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  color: #555;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+
+@media screen and (max-width: 600px) {
+
+  .header {
+    padding: 14px 10px;
+  }
+
+  .header-inner {
+    gap: 8px;
+  }
+
+  .header-logo {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
+  }
+
+  .header-eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+    letter-spacing: 0.04em;
+  }
+
+  .subtitle {
+    font-size: 0.78rem;
+  }
+
+  .school-table {
+    font-size: 0.78rem;
+  }
+
+  .school-table thead th {
+    padding: 10px 6px;
+    font-size: 0.72rem;
+  }
+
+  .school-table tbody td {
+    padding: 8px 5px;
+  }
+
+  .tbl-input {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    min-width: 80px;
+  }
+}
+
+</style>

@@ -1,0 +1,612 @@
+Login credentials for all roles:
+
+Role	Email	Password
+Admin	admin@anandbazaar.com	Admin@123
+Stock Team	stock@anandbazaar.com	Stock@123
+Procurement	procurement@anandbazaar.com	Proc@123
+Customer	customer@test.com	Cust@123
+
+
+
+I want a tool (end 2 end tool) that will help me do this - 
+1. customer will come check all the items - they will place the order for catering
+    - choose the items - Rice, dal, papad, roti, puri etc. etc...
+    - how many adults, kids etc.
+    - date, venue, their email id & phone number (mention that we will be using these info to contact you & keep updating you) etc.
+    - check if water bottle is required (what size & what number, tissue etc.)
+    - lets have some images of the iteams - will keep those pictures in one of the folder. i have some lords photos also, make it as the background & scrolling landing theme.
+    - mention that all the iteams are offered to jagannath & provided, all the iteeams are made by devotees
+    - make a very nice foody krishna concious theme landing page & ordering page, make the ordering also a nice seemless process.
+    - they will get notification as & when they place the order (in app notification, email, whatsapp)
+2. stock team
+    - they will be checking, inserting or updating all the details of all the raw materials available in the store room, stock taking (everyday), vegetabels, coconut, rice (differnt types)
+    - there will be all the raw material list, they cannot add new raw material, they can only update from the list, there might be items with 0 qty - let them use + or - to reduce or increase or they can mannual type the qty
+    - they will get notification for stock taking everyday (in app notification, email, whatsapp)
+3. procurement team -
+    - they will see the list requirements & get the raw materials required, 
+    - they will see the qty of items required since the order is placed & approved by admin
+    - they will get notification if any item is needed (in app notification, email, whatsapp)
+4. admin 
+    - the order (placed by general public) will be approved by the admin - they may change the qty after discussion with the customer, they will generate the price & invoice of this order, the customer will get the notification on email & phone number sms & whatsapp that their order of these iteams are confimed & the price per plate will be so & so & the final price is so & so
+    - only admin can add new items with right spelling
+    - have the qty accordingly (for liquid - oil, ghee it should be liter or ml) for veg should be kg, for wheat, rice etc should be kg & so on
+    - admin will add all the items prices, total invise sending, money recieving etc. 
+    - they will get all the notification after each & every step
+
+
+Keep all the users in a table, their roles, their login,roles. one person can be in 2 roles also.
+Make mongodb as our preferred database for everything. 
+
+I have a excel sheet which has all the iteams & all the calculations. 
+take information from that excel & keep it in a mongoDB database table.
+
+
+=================================================
+=================================================
+=================================================
+=================================================
+=================================================
+
+
+
+# GitHub Copilot Master Prompt
+
+Build a **full end-to-end catering management application** using the **MERN stack** \(`React`, `Node.js`, `Express.js`, `MongoDB`\) with **responsive design for both web and mobile**.
+
+This application is for a **Krishna conscious / Jagannath prasadam catering service**. The app should be **production-style**, modular, scalable, cleanly coded, and beautifully designed.
+
+## Product Vision
+
+Create a devotional food ordering and operations platform that supports:
+
+- **Public customers** placing catering orders
+- **Stock team** doing daily stock-taking
+- **Procurement team** managing shortages and required purchases
+- **Admin** approving orders, editing quantities, generating invoices, and tracking payments
+
+The app should have a **very attractive Krishna conscious food theme**, a **smooth and seamless ordering flow**, and practical internal dashboards for operational teams.
+
+---
+
+## Design and Branding Requirements
+
+Design the application with a **warm, premium, devotional, food-focused theme**.
+
+### Visual style
+Use a polished UI inspired by:
+
+- saffron
+- cream
+- gold
+- peacock blue
+- marble white
+- leaf green accents
+
+The overall experience should feel:
+
+- spiritual
+- trustworthy
+- festive
+- clean
+- elegant
+- mobile friendly
+- accessible
+
+### Images and assets
+- Use devotional background images from a local folder named `lord_image`
+- Use food item images from a local folder such as `public/item_images` or a configurable assets path
+- Build a **smooth scrolling landing page**
+- Use tasteful animations, section transitions, and a premium food-ordering feel
+- Keep religious visuals respectful and elegant, not overwhelming
+
+### Devotional messaging
+Display messaging like:
+
+- **All items are first offered to Lord Jagannath and then lovingly served as prasadam**
+- **All items are prepared by devotees**
+
+---
+
+## Technology Stack
+
+Use:
+
+- **Frontend:** React
+- **Backend:** Node.js + Express.js
+- **Database:** MongoDB + Mongoose
+- **Authentication:** email/password, OTP login, Google login, and admin-created users
+- **Authorization:** role-based access control with support for multiple roles per user
+- **Notifications:** in-app, email, WhatsApp, SMS
+- **Deployment readiness:** Docker + Docker Compose + cloud-friendly configuration
+
+Use clean project structure, reusable components, strong validation, environment-based configuration, and production-ready coding practices.
+
+---
+
+## User Roles
+
+Support these roles:
+
+- customer
+- stock team
+- procurement team
+- admin
+
+A single user can have **multiple roles**.
+
+Maintain a users collection/table with:
+
+- name
+- email
+- phone
+- password hash if applicable
+- login provider
+- roles array
+- active/inactive status
+- created by admin or self signup source
+- timestamps
+
+---
+
+## Main Modules
+
+## 1. Customer Ordering Module
+
+Create a public-facing landing page and ordering flow where customers can:
+
+- browse available catering items
+- view images for food items
+- select items such as:
+  - rice
+  - dal
+  - papad
+  - roti
+  - puri
+  - and many more
+- enter:
+  - number of adults
+  - number of kids
+  - event date
+  - venue
+  - email id
+  - phone number
+  - optional notes / special instructions
+- choose extras such as:
+  - water bottle required or not
+  - bottle size
+  - bottle quantity
+  - tissue required or not
+
+Near email and phone fields, display a notice such as:
+
+**We will use your email id and phone number to contact you and keep you updated about your order.**
+
+### Customer flow
+1. Customer places an order request
+2. Admin reviews the request
+3. Admin may edit item quantities after discussion with customer
+4. Admin approves the order
+5. Admin generates invoice and pricing
+6. Customer receives confirmation and updates
+
+### Customer notifications
+Send notifications when relevant through:
+
+- in-app notification
+- email
+- WhatsApp
+- SMS
+
+---
+
+## 2. Stock Team Module
+
+Create an internal stock-taking module for daily operations.
+
+### Rules
+- Stock taking happens **every day**, even when no external catering order exists
+- Temple cooking happens daily, so stock management is continuous
+- Stock team can **view and update only existing raw materials**
+- They **cannot add new raw materials**
+- Raw materials come from a predefined master list
+
+### Examples of raw materials
+- vegetables
+- coconut
+- rice \(different types\)
+- wheat
+- oil
+- ghee
+- spices
+- tissue
+- water bottles
+- other inventory items
+
+### Stock update UX
+Allow quantity updates using:
+- `+` button
+- `-` button
+- manual typed input
+
+Support items with:
+- zero quantity
+- low stock
+- unit-based quantity display
+
+Maintain:
+- daily stock logs
+- stock history
+- audit trail of updates
+
+### Stock notifications
+Send reminders for daily stock-taking through:
+- in-app notification
+- email
+- WhatsApp
+- SMS
+
+---
+
+## 3. Procurement Team Module
+
+Create a procurement dashboard where procurement users can:
+
+- see raw material requirements generated from approved orders
+- see shortages
+- compare current stock vs required stock
+- view pending procurement needs
+- update procurement status
+- track purchased / delivered items
+
+Suggested statuses:
+- pending
+- required
+- in progress
+- purchased
+- delivered
+- closed
+
+### Procurement notifications
+Send alerts when procurement is needed through:
+- in-app notification
+- email
+- WhatsApp
+- SMS
+
+---
+
+## 4. Admin Module
+
+Create a secure admin dashboard with full control.
+
+### Admin capabilities
+- approve or reject customer orders
+- modify quantities after customer discussion
+- set price per plate and/or item-level pricing
+- generate invoice
+- send invoice and confirmation updates
+- track money received
+- track pending payments
+- manage item pricing
+- manage master item list
+- correct spellings of items
+- manage recipe/raw-material mappings
+- manage units of measure
+- manage users and user roles
+- view operational dashboards and logs
+
+### Payment requirements
+For now, **do not integrate a payment gateway**.
+
+Keep the payment module **pluggable for future integration**, but currently support only:
+- **UPI**
+- **Cash**
+
+Admin should be able to:
+- mark invoice as unpaid / partially paid / paid
+- record payment mode as UPI or cash
+- store payment reference details for UPI
+- store remarks for cash collection
+
+---
+
+## Units and Quantity Rules
+
+Enforce proper unit handling.
+
+Examples:
+- liquids like oil, ghee -> `ml` or `liter`
+- vegetables -> `kg`
+- wheat, rice -> `kg`
+- countable items like tissue packs or bottles -> `count`
+
+Ensure unit consistency in:
+- admin forms
+- stock screens
+- procurement calculations
+- database schema
+- invoice representation where relevant
+
+---
+
+## Excel Import Requirement
+
+I already have an Excel sheet containing:
+- items
+- calculations
+- quantity logic
+
+Build an **initial import utility** that:
+
+- reads the Excel sheet
+- validates rows and columns
+- transforms the data
+- inserts the data into MongoDB
+- prevents bad duplicates
+- logs import summary and errors
+
+The import should support mapping Excel data into:
+- food items
+- raw materials
+- item-to-raw-material calculation mappings
+- prices if available
+- units if available
+
+Include:
+- a reusable import script
+- validation rules
+- duplicate checks
+- sample seed process
+- admin-triggerable import option if possible
+
+---
+
+## Database Design Requirements
+
+Use **MongoDB** for all application data.
+
+Create proper collections for:
+
+- users
+- roles / permissions
+- food items
+- raw materials
+- item images
+- recipes / consumption mappings
+- customer orders
+- order items
+- stock entries
+- stock history
+- procurement requirements
+- procurement actions
+- invoices
+- payments
+- notifications
+- audit logs
+- app settings / master configuration
+
+Separate:
+- master data
+- transactional data
+- audit data
+
+Use Mongoose schemas with:
+- validation
+- enums
+- references
+- timestamps
+- indexes where appropriate
+
+---
+
+## Business Logic Requirements
+
+Implement business logic for:
+
+- customer order placement
+- adults vs kids count capture
+- optional extras such as water and tissue
+- admin review and quantity adjustment
+- raw material requirement calculation from approved orders
+- daily stock-taking
+- stock shortage detection
+- procurement generation
+- invoice generation
+- payment tracking
+- notifications on each important event
+- audit logging of critical actions
+
+### Suggested order statuses
+- draft
+- placed
+- under review
+- customer contacted
+- updated
+- approved
+- rejected
+- invoiced
+- partially paid
+- paid
+- scheduled
+- completed
+- cancelled
+
+---
+
+## Notification System
+
+Build a **unified notification architecture** with provider abstraction.
+
+Phase 1 should support:
+- in-app notifications
+- email
+- WhatsApp
+- SMS
+
+Use an abstraction layer so providers can be configured later.
+
+Examples:
+- email via SMTP / Nodemailer
+- WhatsApp / SMS via Twilio or equivalent
+- in-app notifications stored in MongoDB and shown in the UI
+
+Notification triggers should include:
+- order placed
+- order updated
+- order approved
+- invoice generated
+- payment recorded
+- stock-taking reminder
+- low stock alert
+- procurement needed
+- procurement completed
+- admin workflow actions
+
+---
+
+## UI and UX Requirements
+
+Create a **beautiful, modern, premium UI**.
+
+## Landing page
+Include:
+- devotional hero section
+- smooth scrolling sections
+- food highlights
+- ordering CTA
+- prasadam trust message
+- gallery section using local images
+- testimonials placeholder
+- subtle animation and polished spacing
+- mobile-first responsive layout
+
+## Ordering page
+Create a seamless step-by-step ordering experience with:
+- item cards with images
+- quantity selectors
+- adult/kid counters
+- extras section
+- event details form
+- contact details form
+- order review summary
+- validations
+- success / confirmation page
+
+## Internal dashboards
+For admin, stock, and procurement modules include:
+- role-based sidebar or navigation
+- clean dashboard cards
+- searchable tables
+- filters
+- status chips/badges
+- forms with validation
+- audit history where relevant
+- responsive layouts for tablet/mobile use where possible
+
+### Frontend quality expectations
+Use:
+- reusable components
+- clear loading states
+- empty states
+- error states
+- toast alerts
+- accessible labels
+- keyboard-friendly interactions
+- modular component architecture
+
+---
+
+## Authentication and Security
+
+Implement:
+
+- email/password authentication
+- OTP login scaffold
+- Google login integration scaffold
+- admin-created user flow
+- JWT or session-based authentication
+- role-based access control middleware
+- support for multiple roles per user
+- protected routes on frontend and backend
+- password hashing
+- secure environment variables
+- request validation and basic security best practices
+
+---
+
+## Docker and Deployment
+
+Prepare the project for deployment.
+
+Include:
+- Dockerfile for frontend
+- Dockerfile for backend
+- Docker Compose for local full-stack setup
+- MongoDB service via Docker Compose or configurable external DB
+- `.env.example`
+- startup instructions
+- cloud-friendly configuration
+
+---
+
+## Code Structure and Engineering Quality
+
+Do not build a toy example.
+
+Build this as a **real production-ready starter project** with:
+- scalable folder structure
+- professional naming
+- clear separation of concerns
+- reusable services
+- modular controllers/routes/models
+- validation layers
+- error handling
+- logging
+- maintainable code
+- comments where necessary
+- README documentation
+
+---
+
+## Output Expected from Copilot
+
+Generate the solution in this order:
+
+1. high-level system architecture
+2. MongoDB schema design
+3. API endpoint list
+4. backend folder structure
+5. frontend folder structure
+6. authentication and RBAC design
+7. Excel import design
+8. notification system design
+9. invoice and payment module design
+10. Docker setup
+11. sample seed data
+12. core module sample code
+13. UI theme system and design tokens
+14. key screens and page structure
+
+---
+
+## Important Implementation Notes
+
+- Use MongoDB for all persistent data
+- Payment gateway should **not** be integrated now
+- Keep payment handling **pluggable for future gateways**
+- Current payment modes should be:
+  - UPI
+  - Cash
+- Use local project assets from:
+  - `lord_image` for devotional backgrounds
+  - local food image folder for item images
+- Customer-facing UI should be very attractive and devotional
+- Internal dashboards should be practical, fast, and easy to use
+- Where requirements are ambiguous, choose sensible defaults and clearly document assumptions
+
+---
+
+## Final Instruction to Copilot
+
+Build this as a **beautiful devotional catering operations platform** for a Jagannath prasadam service using MERN, with strong design, clear architecture, clean code, role-based workflows, Excel import into MongoDB, daily stock management, procurement support, admin approvals, invoice generation, UPI/cash payment tracking, and multi-channel notifications.
+

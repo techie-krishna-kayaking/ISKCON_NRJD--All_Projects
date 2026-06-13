@@ -1,0 +1,98 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-saffron-50) 100%);
+}
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-10);
+  width: 100%;
+  max-width: 440px;
+}
+.header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+.icon { font-size: 2.5rem; margin-bottom: var(--space-3); }
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  color: var(--color-saffron-dark);
+  margin-bottom: var(--space-1);
+}
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background: var(--color-cream);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+.tab {
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.tabActive {
+  background: var(--color-white);
+  color: var(--color-saffron);
+  box-shadow: var(--shadow-sm);
+}
+.errorMsg {
+  background: #FFEBEE;
+  color: #C62828;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--color-border);
+}
+.googleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+.googleBtn:hover { border-color: var(--color-peacock); background: var(--color-cream); }
+.footer {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

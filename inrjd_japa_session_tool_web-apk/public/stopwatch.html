@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#fdf6ec" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Japa Stopwatch</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --cream: #fdf6ec;
+        --cream-deep: #f5e9d5;
+        --petal: #fff8f2;
+        --saffron: #e07820;
+        --saffron-lite: #f59a3a;
+        --gold: #b8690e;
+        --gold-vivid: #d4860f;
+        --marigold: #f0a830;
+        --tulsi: #3d7a52;
+        --krishna: #6b5dd3;
+        --ink: #1e1008;
+        --ink-mid: #5a3212;
+        --ink-soft: #9b7040;
+        --ink-ghost: rgba(90, 50, 18, 0.35);
+        --glass: rgba(253, 246, 236, 0.76);
+        --glass-deep: rgba(250, 239, 218, 0.86);
+        --glass-border: rgba(196, 130, 30, 0.22);
+        --glass-shine: rgba(255, 255, 255, 0.65);
+        --f-sacred: "Cinzel", Georgia, serif;
+        --f-ui: "Nunito", "Segoe UI", sans-serif;
+        --f-mono: "Courier New", Courier, monospace;
+        --st: env(safe-area-inset-top, 0px);
+        --sb: env(safe-area-inset-bottom, 0px);
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      html { height: 100%; }
+      body {
+        width: 100%; height: 100%;
+        overflow: hidden;
+        font-family: var(--f-ui);
+        background: var(--cream);
+        color: var(--ink);
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+      }
+      button {
+        font-family: var(--f-ui);
+        cursor: pointer;
+        border: none;
+        outline: none;
+        background: none;
+        color: inherit;
+      }
+
+      /* ── Background ──────────────────────────────────── */
+      #bg {
+        position: fixed; inset: 0; z-index: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse 70% 55% at 12% 8%, rgba(240,168,48,0.2) 0%, transparent 60%),
+          radial-gradient(ellipse 55% 48% at 90% 88%, rgba(224,120,32,0.16) 0%, transparent 60%),
+          radial-gradient(ellipse 80% 65% at 50% 50%, rgba(253,240,218,0.55) 0%, transparent 80%),
+          linear-gradient(158deg, #fdf8f0 0%, #f8e8d0 45%, #fdf3e4 100%);
+      }
+      #bg::after {
+        content: ""; position: absolute; inset: 0;
+        background-image: radial-gradient(circle 1px at 1px 1px, rgba(180,100,20,0.08) 0%, transparent 0%);
+        background-size: 34px 34px;
+      }
+
+      /* ── Watermark ───────────────────────────────────── */
+      #watermark {
+        position: fixed; inset: 0; z-index: 1;
+        display: flex; flex-wrap: wrap;
+        align-content: center; justify-content: center;
+        gap: clamp(8px,2vw,16px) clamp(20px,5vw,46px);
+        padding: 16px; opacity: 0.042;
+        pointer-events: none; overflow: hidden;
+      }
+      #watermark span {
+        font-family: var(--f-sacred);
+        font-size: clamp(0.46rem,1.1vw,0.75rem);
+        font-weight: 600; color: var(--gold);
+        letter-spacing: 0.13em; white-space: nowrap;
+      }
+
+      /* ── Slideshow — contained box ─────────────────── */
+      #slideshow {
+        position: relative;
+        width: 100%;
+        height: clamp(140px, 30vh, 260px);
+        border-radius: 16px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(30, 20, 10, 0.06);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 4px 24px rgba(120,60,0,0.1);
+      }
+      .slide {
+        position: absolute; inset: 0;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 2.4s ease-in-out;
+        will-change: opacity;
+      }
+      .slide.active { opacity: 1; }
+      #slideshow::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(to bottom, transparent 60%, rgba(253,246,236,0.5) 100%);
+        pointer-events: none;
+        border-radius: 16px;
+      }
+
+      /* ── App Shell ───────────────────────────────────── */
+      #app {
+        position: fixed; inset: 0; z-index: 10;
+        display: flex; flex-direction: column;
+        align-items: center;
+        padding: calc(var(--st) + clamp(8px,2vw,14px)) clamp(12px,3vw,20px) calc(var(--sb) + clamp(10px,2.5vw,16px));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: clamp(8px, 1.5vh, 14px);
+      }
+
+      /* ── Top Bar ─────────────────────────────────────── */
+      #topbar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: clamp(8px,2vh,16px);
+        animation: fadeDown 0.6s var(--ease) both;
+      }
+      @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
+
+      #brand { display: flex; align-items: center; gap: clamp(8px,2vw,12px); }
+      #badge {
+        width: clamp(34px,8vw,46px); height: clamp(34px,8vw,46px);
+        object-fit: cover; border-radius: 50%; flex-shrink: 0;
+        box-shadow: 0 4px 18px rgba(212,134,15,0.4);
+      }
+      #b-name {
+        font-family: var(--f-sacred);
+        font-size: clamp(0.55rem,1.4vw,0.82rem);
+        font-weight: 700; color: var(--gold);
+        letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .ic-btn {
+        width: clamp(34px,7.5vw,42px); height: clamp(34px,7.5vw,42px);
+        border-radius: 10px;
+        background: var(--glass); border: 1px solid var(--glass-border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: clamp(0.85rem,2vw,1.05rem); color: var(--ink-mid);
+        backdrop-filter: blur(16px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 2px 10px rgba(120,60,0,0.08);
+        transition: background 0.18s, transform 0.12s;
+      }
+      .ic-btn:hover { background: rgba(212,134,15,0.18); color: var(--gold); }
+      .ic-btn:active { transform: scale(0.88); }
+
+      /* ── Mantra Section ──────────────────────────────── */
+      #mantra-section {
+        text-align: center;
+        margin-bottom: clamp(6px,1.5vh,12px);
+        animation: fadeDown 0.7s var(--ease) 0.1s both;
+      }
+      #mantra-pill {
+        display: inline-block;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: clamp(8px,2vw,14px) clamp(14px,3.5vw,24px);
+        backdrop-filter: blur(24px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 4px 28px rgba(120,60,0,0.11);
+      }
+      #mantra-text {
+        font-family: var(--f-sacred);
+        font-size: clamp(0.55rem,1.4vw,0.82rem);
+        font-weight: 700;
+        line-height: 1.6;
+        color: var(--ink-mid);
+        letter-spacing: 0.06em;
+      }
+
+      /* ── Stopwatch Display ───────────────────────────── */
+      #stopwatch-area {
+        display: flex; flex-direction: column;
+        align-items: center;
+        gap: clamp(10px,2vh,16px);
+        width: 100%;
+        animation: fadeDown 0.8s var(--ease) 0.2s both;
+      }
+      #sw-display {
+        font-family: var(--f-mono);
+        font-size: clamp(2.8rem, 10vw, 5.5rem);
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: 0.02em;
+        text-shadow: 0 2px 12px rgba(180,100,20,0.15);
+        background: var(--glass-deep);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: clamp(12px,3vw,20px) clamp(20px,5vw,40px);
+        backdrop-filter: blur(24px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 8px 40px rgba(120,60,0,0.12);
+        min-width: 220px;
+        text-align: center;
+        transition: color 0.3s;
+      }
+      #sw-display.running { color: var(--saffron); }
+
+      /* ── Controls ────────────────────────────────────── */
+      #sw-controls {
+        display: flex; align-items: center; gap: clamp(8px,2vw,12px);
+        flex-wrap: wrap; justify-content: center;
+      }
+      .sw-btn {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: clamp(10px,2.5vw,14px) clamp(18px,4vw,28px);
+        border-radius: 100px;
+        min-height: 48px;
+        font-size: clamp(0.78rem,1.8vw,0.92rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .sw-btn:active { transform: scale(0.92); }
+      .sw-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+
+      #btn-sw-start {
+        background: linear-gradient(148deg, var(--saffron), var(--marigold));
+        color: #fff;
+        box-shadow: 0 0 0 3px rgba(224,120,32,0.18), 0 6px 26px rgba(180,90,14,0.35);
+      }
+      #btn-sw-start:hover:not(:disabled) {
+        box-shadow: 0 0 0 5px rgba(224,120,32,0.22), 0 8px 34px rgba(180,90,14,0.5);
+        transform: scale(1.04);
+      }
+      #btn-sw-start.pause-mode {
+        background: linear-gradient(148deg, #d35400, #e67e22);
+      }
+
+      #btn-sw-lap {
+        background: var(--glass-deep);
+        border: 1px solid var(--glass-border);
+        color: var(--tulsi);
+        backdrop-filter: blur(16px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 4px 18px rgba(120,60,0,0.1);
+      }
+      #btn-sw-lap:hover:not(:disabled) {
+        background: rgba(61,122,82,0.15);
+        border-color: rgba(61,122,82,0.3);
+      }
+
+      #btn-sw-reset {
+        background: var(--glass-deep);
+        border: 1px solid var(--glass-border);
+        color: var(--ink-mid);
+        backdrop-filter: blur(16px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 4px 18px rgba(120,60,0,0.1);
+      }
+      #btn-sw-reset:hover:not(:disabled) {
+        background: rgba(180,100,20,0.12);
+        color: var(--gold);
+      }
+
+      /* ── Lap List ────────────────────────────────────── */
+      #lap-list-wrap {
+        width: 100%;
+        max-width: 420px;
+        max-height: clamp(120px, 25vh, 220px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: clamp(8px,2vw,12px);
+        backdrop-filter: blur(20px);
+        box-shadow: inset 0 1px 0 var(--glass-shine), 0 4px 20px rgba(120,60,0,0.08);
+        pointer-events: auto;
+      }
+      #lap-list-wrap:empty { display: none; }
+      #lap-list-wrap::-webkit-scrollbar { width: 4px; }
+      #lap-list-wrap::-webkit-scrollbar-thumb {
+        background: rgba(180,100,20,0.2); border-radius: 2px;
+      }
+
+      .lap-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: clamp(6px,1.5vw,10px) clamp(10px,2.5vw,14px);
+        border-bottom: 1px solid rgba(180,100,20,0.08);
+        animation: lapIn 0.35s var(--ease) both;
+      }
+      .lap-item:last-child { border-bottom: none; }
+      @keyframes lapIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+      .lap-name {
+        font-family: var(--f-sacred);
+        font-size: clamp(0.7rem,1.6vw,0.88rem);
+        font-weight: 700;
+        color: var(--saffron);
+        letter-spacing: 0.08em;
+      }
+      .lap-time {
+        font-family: var(--f-mono);
+        font-size: clamp(0.72rem,1.7vw,0.9rem);
+        font-weight: 600;
+        color: var(--ink-mid);
+      }
+      .lap-diff {
+        font-size: clamp(0.55rem,1.3vw,0.7rem);
+        color: var(--ink-soft);
+        margin-left: 8px;
+      }
+
+      /* Fastest / Slowest badges */
+      .lap-item.fastest .lap-name { color: var(--tulsi); }
+      .lap-item.slowest .lap-name { color: var(--krishna); }
+
+      /* ── Back link ───────────────────────────────────── */
+      #back-link {
+        display: inline-block;
+        margin-top: clamp(8px,2vh,14px);
+        font-size: clamp(0.65rem,1.5vw,0.78rem);
+        font-weight: 600;
+        color: var(--ink-soft);
+        text-decoration: none;
+        background: var(--glass-deep);
+        border: 1px solid var(--glass-border);
+        border-radius: 100px;
+        padding: 8px 18px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 4px 16px rgba(120,60,0,0.1);
+        transition: all 0.2s;
+      }
+      #back-link:hover { color: var(--gold); background: rgba(212,134,15,0.15); }
+
+      /* ── Responsive ──────────────────────────────────── */
+      @media (max-width: 380px) {
+        #sw-display { font-size: 2.4rem; padding: 10px 18px; }
+        .sw-btn { padding: 8px 14px; font-size: 0.7rem; min-height: 40px; }
+        #lap-list-wrap { max-height: 100px; }
+        #slideshow { height: clamp(100px, 22vh, 160px); }
+      }
+      @media (orientation: landscape) and (max-height: 480px) {
+        #app { flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+        #topbar { width: 100%; margin-bottom: 0; }
+        #slideshow { width: 35%; height: 120px; }
+        #mantra-section { display: none; }
+        #stopwatch-area { flex: 1; gap: 6px; }
+        #sw-display { font-size: 2rem; padding: 8px 14px; }
+        #lap-list-wrap { max-height: 70px; }
+      }
+      @media (min-width: 768px) {
+        #sw-display { font-size: 5rem; }
+        #lap-list-wrap { max-width: 500px; max-height: 260px; }
+        #slideshow { height: clamp(200px, 35vh, 320px); max-width: 600px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bg"></div>
+    <div id="watermark"></div>
+
+    <div id="app">
+      <!-- Top Bar -->
+      <div id="topbar">
+        <div id="brand">
+          <img id="badge" src="logo.jpeg" alt="Logo" />
+          <span id="b-name">Japa Stopwatch</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="ic-btn" id="btn-fs" title="Fullscreen">⛶</button>
+        </div>
+      </div>
+
+      <!-- Photo Slideshow (contained box) -->
+      <div id="slideshow"></div>
+
+      <!-- Mantra -->
+      <div id="mantra-section">
+        <div id="mantra-pill">
+          <div id="mantra-text">
+            Hare Krishna Hare Krishna · Krishna Krishna Hare Hare<br>
+            Hare Rama Hare Rama · Rama Rama Hare Hare
+          </div>
+        </div>
+      </div>
+
+      <!-- Stopwatch -->
+      <div id="stopwatch-area">
+        <div id="sw-display">0:00:00</div>
+        <div id="sw-controls">
+          <button class="sw-btn" id="btn-sw-start">▶ Start</button>
+          <button class="sw-btn" id="btn-sw-lap" disabled>📿 Lap</button>
+          <button class="sw-btn" id="btn-sw-reset" disabled>↺ Reset</button>
+        </div>
+        <div id="lap-list-wrap"></div>
+      </div>
+
+      <a id="back-link" href="index.html">← Back to Session</a>
+    </div>
+
+    <script>
+      "use strict";
+
+      /* ── Watermark ──────────────────────────────────── */
+      (function() {
+        const wm = document.getElementById("watermark");
+        const lines = ["HARE KRISHNA HARE KRISHNA","KRISHNA KRISHNA HARE HARE","HARE RAMA HARE RAMA","RAMA RAMA HARE HARE"];
+        for (let i = 0; i < 60; i++) {
+          const s = document.createElement("span");
+          s.textContent = lines[i % 4];
+          wm.appendChild(s);
+        }
+      })();
+
+      /* ── Slideshow ──────────────────────────────────── */
+      let imgs = [], iIdx = 0, sJob = null;
+      async function loadImgs() {
+        // Try image-list.json first (works in APK/offline), then fall back to API
+        for (const u of ["image-list.json", "/api/images"]) {
+          try {
+            const r = await fetch(u);
+            if (!r.ok) continue;
+            const d = await r.json();
+            if (Array.isArray(d) && d.length) { imgs = d; break; }
+          } catch {}
+        }
+        if (!imgs.length) return;
+        const ss = document.getElementById("slideshow");
+        const A = document.createElement("div"); A.id = "slide-a"; A.className = "slide active";
+        const B = document.createElement("div"); B.id = "slide-b"; B.className = "slide";
+        ss.append(A, B);
+        A.style.backgroundImage = `url("/NRJD_Pics/${encodeURIComponent(imgs[0])}")`;
+        imgs.forEach(n => { const i = new Image(); i.src = `/NRJD_Pics/${encodeURIComponent(n)}`; });
+        sJob = setInterval(nxtImg, 10000);
+      }
+      function nxtImg() {
+        if (imgs.length <= 1) return;
+        iIdx = (iIdx + 1) % imgs.length;
+        const A = document.getElementById("slide-a"), B = document.getElementById("slide-b");
+        if (!A || !B) return;
+        const [nx, pv] = A.classList.contains("active") ? [B, A] : [A, B];
+        nx.style.backgroundImage = `url("/NRJD_Pics/${encodeURIComponent(imgs[iIdx])}")`;
+        pv.classList.remove("active");
+        nx.classList.add("active");
+      }
+
+      /* ── Fullscreen ─────────────────────────────────── */
+      document.getElementById("btn-fs").addEventListener("click", () => {
+        !document.fullscreenElement
+          ? document.documentElement.requestFullscreen().catch(() => {})
+          : document.exitFullscreen().catch(() => {});
+      });
+
+      /* ── Stopwatch Logic ────────────────────────────── */
+      let swRunning = false;
+      let swStart = 0;      // timestamp when started
+      let swElapsed = 0;    // accumulated elapsed ms when paused
+      let swFrame = null;
+      let lapCount = 0;
+      let lastLapTime = 0;  // elapsed ms at last lap
+      let laps = [];        // array of { name, elapsed, diff }
+
+      const elDisplay = document.getElementById("sw-display");
+      const elStart = document.getElementById("btn-sw-start");
+      const elLap = document.getElementById("btn-sw-lap");
+      const elReset = document.getElementById("btn-sw-reset");
+      const elLapList = document.getElementById("lap-list-wrap");
+
+      function fmtSw(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+        return `${m}:${String(s).padStart(2,"0")}`;
+      }
+      function fmtFull(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        const cs = Math.floor((ms % 1000) / 10);
+        return `${m}:${String(s).padStart(2,"0")}.${String(cs).padStart(2,"0")}`;
+      }
+
+      function updateDisplay() {
+        const now = swRunning ? (performance.now() - swStart + swElapsed) : swElapsed;
+        const totalSec = Math.floor(now / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        const cs = Math.floor((now % 1000) / 10);
+        elDisplay.textContent = `${m}:${String(s).padStart(2,"0")}.${String(cs).padStart(2,"0")}`;
+        if (swRunning) swFrame = requestAnimationFrame(updateDisplay);
+      }
+
+      function startSw() {
+        if (swRunning) {
+          // Pause
+          swElapsed += performance.now() - swStart;
+          swRunning = false;
+          cancelAnimationFrame(swFrame);
+          elStart.textContent = "▶ Resume";
+          elStart.classList.remove("pause-mode");
+          elDisplay.classList.remove("running");
+          elLap.disabled = true;
+          elReset.disabled = false;
+        } else {
+          // Start / Resume
+          swStart = performance.now();
+          swRunning = true;
+          elStart.textContent = "⏸ Pause";
+          elStart.classList.add("pause-mode");
+          elDisplay.classList.add("running");
+          elLap.disabled = false;
+          elReset.disabled = true;
+          updateDisplay();
+        }
+      }
+
+      function lapSw() {
+        if (!swRunning) return;
+        const now = performance.now() - swStart + swElapsed;
+        lapCount++;
+        const diff = now - lastLapTime;
+        lastLapTime = now;
+        laps.push({ name: `Japa ${lapCount}`, elapsed: now, diff: diff });
+        renderLaps();
+      }
+
+      function resetSw() {
+        swRunning = false;
+        swElapsed = 0;
+        swStart = 0;
+        lapCount = 0;
+        lastLapTime = 0;
+        laps = [];
+        cancelAnimationFrame(swFrame);
+        elDisplay.textContent = "0:00.00";
+        elDisplay.classList.remove("running");
+        elStart.textContent = "▶ Start";
+        elStart.classList.remove("pause-mode");
+        elLap.disabled = true;
+        elReset.disabled = true;
+        elLapList.innerHTML = "";
+      }
+
+      function renderLaps() {
+        elLapList.innerHTML = "";
+        // Find fastest and slowest
+        let fastest = Infinity, slowest = 0, fi = -1, si = -1;
+        laps.forEach((l, i) => {
+          if (l.diff < fastest) { fastest = l.diff; fi = i; }
+          if (l.diff > slowest) { slowest = l.diff; si = i; }
+        });
+
+        // Render in reverse (latest on top)
+        for (let i = laps.length - 1; i >= 0; i--) {
+          const l = laps[i];
+          const div = document.createElement("div");
+          div.className = "lap-item";
+          if (laps.length > 2) {
+            if (i === fi) div.classList.add("fastest");
+            if (i === si) div.classList.add("slowest");
+          }
+          div.innerHTML = `
+            <span class="lap-name">${l.name}</span>
+            <span>
+              <span class="lap-time">${fmtFull(l.diff)}</span>
+              <span class="lap-diff">(${fmtFull(l.elapsed)} total)</span>
+            </span>`;
+          elLapList.appendChild(div);
+        }
+        // Auto-scroll to top
+        elLapList.scrollTop = 0;
+      }
+
+      /* ── Events ─────────────────────────────────────── */
+      elStart.addEventListener("click", startSw);
+      elLap.addEventListener("click", lapSw);
+      elReset.addEventListener("click", resetSw);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === " " || e.key === "Enter") { e.preventDefault(); startSw(); }
+        else if (e.key === "l" || e.key === "L") { lapSw(); }
+        else if (e.key === "r" || e.key === "R") { if (!swRunning) resetSw(); }
+        else if (e.key === "f" || e.key === "F") {
+          !document.fullscreenElement
+            ? document.documentElement.requestFullscreen().catch(() => {})
+            : document.exitFullscreen().catch(() => {});
+        }
+      });
+
+      /* ── Init ────────────────────────────────────────── */
+      loadImgs();
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+    </script>
+  </body>
+</html>

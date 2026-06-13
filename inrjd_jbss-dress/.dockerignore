@@ -1,0 +1,7 @@
+.dockerignore
+venv/
+__pycache__/
+*.pyc
+embeddings_cache.npz
+.DS_Store
+.git/

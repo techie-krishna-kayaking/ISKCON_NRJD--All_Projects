@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Form Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================
+     THEME VARIABLES — Celestial Blue (matches Attendance Portal)
+     ========================= */
+    :root {
+      --sky: #4A9ECC;
+      --sky-bright: #5BB8E8;
+      --sky-deep: #2D7DAE;
+      --sky-pale: #D6EEF8;
+      --arctic: #7BC8E2;
+      --arctic-soft: #A8DDF0;
+      --periwinkle: #7B8FD4;
+      --periwinkle-soft: #A4B2E4;
+      --navy-soft: #2C4A72;
+      --gold: #C8A84B;
+      --gold-soft: #E0C878;
+      --gold-pale: #F5EDCC;
+      --teal: #2BBFB0;
+      --teal-soft: #5FD4C8;
+      --coral: #E07B7B;
+
+      --bg-page: #F0F7FC;
+      --bg-card: rgba(255, 255, 255, 0.80);
+      --bg-card-hover: rgba(255, 255, 255, 0.96);
+      --bg-input: rgba(240, 248, 255, 0.90);
+
+      --text-dark: #0F2740;
+      --text-medium: #1E3D5C;
+      --text-warm: #2D6A8F;
+      --text-muted: #6A92AE;
+      --text-light: #9ABCD4;
+
+      --border-blue: rgba(74, 158, 204, 0.22);
+      --border-sky: rgba(91, 184, 232, 0.18);
+      --border-card: rgba(30, 58, 92, 0.07);
+      --glass-border: rgba(74, 158, 204, 0.12);
+
+      --shadow-soft: 0 4px 24px rgba(30, 58, 92, 0.09), 0 1px 4px rgba(74, 158, 204, 0.06);
+      --shadow-card: 0 8px 40px rgba(30, 58, 92, 0.11), 0 2px 10px rgba(74, 158, 204, 0.08);
+      --shadow-btn: 0 4px 22px rgba(43, 191, 176, 0.30), 0 2px 8px rgba(74, 158, 204, 0.22);
+
+      --radius-lg: 22px;
+      --radius-sm: 14px;
+      --r-xs: 8px;
+      --r-full: 999px;
+
+      --font-display: 'Cinzel', Georgia, serif;
+      --font-body: 'Jost', 'Segoe UI', sans-serif;
+
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --spring: cubic-bezier(0.22, 1, 0.36, 1);
+      --transition: 300ms cubic-bezier(.2, .9, .2, 1);
+    }
+
+    /* ====== RESET & GLOBAL ====== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-page);
+      color: var(--text-dark);
+      line-height: 1.65;
+      padding: 28px;
+      transition: background var(--transition);
+      -webkit-tap-highlight-color: transparent;
+      overflow-y: auto;
+    }
+
+    /* soft background orbs */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+
+    body::before {
+      width: 520px;
+      height: 520px;
+      left: -120px;
+      top: -80px;
+      background: linear-gradient(120deg, rgba(74, 158, 204, 0.6), rgba(43, 191, 176, 0.4));
+      transform: rotate(12deg);
+      animation: driftA 12s ease-in-out infinite;
+    }
+
+    body::after {
+      width: 420px;
+      height: 420px;
+      right: -80px;
+      bottom: -60px;
+      background: linear-gradient(120deg, rgba(200, 168, 75, 0.5), rgba(123, 143, 212, 0.4));
+      transform: rotate(-6deg);
+      animation: driftB 14s ease-in-out infinite;
+    }
+
+    @keyframes driftA {
+      0% { transform: translate(0, 0) rotate(12deg); }
+      50% { transform: translate(40px, 30px) rotate(18deg); }
+      100% { transform: translate(0, 0) rotate(12deg); }
+    }
+
+    @keyframes driftB {
+      0% { transform: translate(0, 0) rotate(-6deg); }
+      50% { transform: translate(-30px, -20px) rotate(-2deg); }
+      100% { transform: translate(0, 0) rotate(-6deg); }
+    }
+
+    /* ====== HEADER ====== */
+    header h2 {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      color: var(--navy-soft);
+      font-weight: 700;
+      margin-bottom: 28px;
+      position: relative;
+      letter-spacing: 1.5px;
+      z-index: 2;
+    }
+
+    header h2::after {
+      content: '';
+      display: block;
+      width: 76px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--sky), var(--teal));
+      margin: 10px auto 0;
+      border-radius: 6px;
+      box-shadow: 0 4px 14px rgba(74, 158, 204, 0.18);
+    }
+
+    /* ====== BUTTONS ====== */
+    .btn {
+      padding: 11px 20px;
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.88rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--r-full);
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+      box-shadow: var(--shadow-btn);
+      display: inline-block;
+      z-index: 3;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 32px rgba(43, 191, 176, 0.35), 0 4px 16px rgba(74, 158, 204, 0.25);
+    }
+
+    .btn:active {
+      transform: translateY(-1px) scale(0.995);
+    }
+
+    .btn:focus {
+      outline: 2px solid rgba(74, 158, 204, 0.3);
+      outline-offset: 4px;
+    }
+
+    /* sheen on hover */
+    .btn::after {
+      content: "";
+      position: absolute;
+      left: -40%;
+      top: -40%;
+      width: 40%;
+      height: 180%;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.08));
+      transform: skewX(-20deg);
+      transition: all 0.6s ease;
+      opacity: 0;
+    }
+
+    .btn:hover::after {
+      left: 120%;
+      opacity: 1;
+      transition: all 0.9s cubic-bezier(.2, .9, .2, 1);
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, var(--periwinkle), var(--sky-deep));
+      color: #fff;
+      border-radius: var(--r-full);
+      padding: 10px 20px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.28s ease;
+      box-shadow: 0 4px 14px rgba(44, 74, 114, 0.2);
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 24px rgba(44, 74, 114, 0.3);
+    }
+
+    /* disabled styling */
+    button:disabled,
+    .btn[disabled] {
+      opacity: 0.5;
+      transform: none;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ====== FORM CONTAINER ====== */
+    .form-container {
+      max-width: 980px;
+      margin: 18px auto;
+      padding: 28px 34px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-card);
+      border-left: 5px solid rgba(74, 158, 204, 0.25);
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
+      backdrop-filter: blur(12px);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .form-container:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 56px rgba(30, 58, 92, 0.14), 0 4px 16px rgba(74, 158, 204, 0.10);
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(24px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* decorative left stripe */
+    .form-container::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--sky), var(--teal));
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* ====== INPUTS & TEXTAREAS ====== */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-blue);
+      border-radius: var(--r-xs);
+      margin-top: 8px;
+      font-size: 0.95rem;
+      font-family: var(--font-body);
+      background: var(--bg-input);
+      color: var(--text-dark);
+      transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+      box-shadow: inset 0 1px 2px rgba(30, 58, 92, 0.04);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(74, 158, 204, 0.15), 0 4px 16px rgba(74, 158, 204, 0.08);
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    /* ====== LABELS ====== */
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 14px;
+      color: var(--text-warm);
+      font-size: 0.92rem;
+      font-family: var(--font-body);
+    }
+
+    /* ====== FIELDSETS ====== */
+    fieldset {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-sky);
+      background: rgba(240, 247, 252, 0.6);
+      box-shadow: inset 0 1px 2px rgba(30, 58, 92, 0.03);
+      transition: transform 280ms ease, box-shadow 280ms ease;
+    }
+
+    fieldset:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(30, 58, 92, 0.08);
+    }
+
+    legend {
+      font-family: var(--font-display);
+      font-weight: 600;
+      color: var(--sky-deep);
+      padding: 0 8px;
+      font-size: 0.95rem;
+      letter-spacing: 0.6px;
+    }
+
+    /* ====== RADIO & CHECKBOX GROUPS ====== */
+    .radio-group label {
+      cursor: pointer;
+      position: relative;
+      padding-left: 36px;
+      margin-right: 20px;
+      user-select: none;
+      color: var(--text-medium);
+      display: inline-block;
+      transition: color var(--transition);
+      font-weight: 500;
+    }
+
+    .radio-group input[type="radio"],
+    .radio-group input[type="checkbox"] {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      cursor: pointer;
+      accent-color: var(--sky);
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ====== SEARCH RESULTS ====== */
+    .search-results {
+      margin-top: 15px;
+      padding: 12px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-sky);
+      box-shadow: var(--shadow-soft);
+      transition: transform var(--transition), opacity var(--transition);
+      z-index: 3;
+    }
+
+    .result-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(74, 158, 204, 0.08);
+      transition: background 260ms ease, transform 260ms ease, box-shadow 260ms ease;
+      border-radius: var(--r-xs);
+      margin-bottom: 6px;
+      display: block;
+      background: rgba(240, 247, 252, 0.5);
+    }
+
+    .result-item:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .result-item:hover {
+      background: rgba(74, 158, 204, 0.06);
+      transform: translateX(4px);
+      box-shadow: 0 4px 14px rgba(30, 58, 92, 0.08);
+    }
+
+    .small-muted {
+      color: var(--text-muted);
+      font-size: .88rem;
+    }
+
+    /* ====== DECLARATION SECTION ====== */
+    #declarationCheckbox {
+      accent-color: var(--sky);
+      transform: translateY(2px);
+    }
+
+    /* ====== TICKS & STATUS ====== */
+    .tick {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-left: 8px;
+      background: rgba(74, 158, 204, 0.08);
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .tick.valid {
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      box-shadow: 0 4px 14px rgba(43, 191, 176, 0.2);
+      transform: scale(1.08);
+    }
+
+    .tick.invalid {
+      background: var(--coral);
+      box-shadow: none;
+      transform: scale(1);
+    }
+
+    .error-message {
+      color: var(--coral);
+      font-size: .9rem;
+      margin-top: 6px;
+    }
+
+    /* ====== FOOTER ====== */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 0.85rem;
+      letter-spacing: 0.4px;
+      z-index: 2;
+    }
+
+    /* ====== LANDING PAGE ====== */
+    #landingPage h3 {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      margin-bottom: 18px;
+      color: var(--gold);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px rgba(200, 168, 75, 0.15);
+    }
+
+    #landingPage .btn {
+      width: 220px;
+      margin: 12px auto;
+      display: block;
+      box-shadow: var(--shadow-btn);
+    }
+
+    /* ====== ANIMATIONS ====== */
+    .btn.pulse {
+      animation: submitPulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes submitPulse {
+      0% { box-shadow: var(--shadow-btn); transform: translateY(0); }
+      50% { box-shadow: 0 8px 36px rgba(43, 191, 176, 0.35); transform: translateY(-2px) scale(1.01); }
+      100% { box-shadow: var(--shadow-btn); transform: translateY(0); }
+    }
+
+    /* spinner */
+    .btn.loading {
+      position: relative;
+      color: transparent;
+      pointer-events: none;
+    }
+
+    .btn.loading::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      animation: spin 0.85s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    /* subtle grow on focus */
+    input:focus,
+    select:focus,
+    textarea:focus,
+    button:focus {
+      transform: translateY(-1px) scale(1.001);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ====== RESPONSIVE ====== */
+    @media (min-width: 1200px) {
+      .form-container { max-width: 1000px; padding: 44px 54px; }
+      header h2 { font-size: 3rem; }
+    }
+
+    @media (max-width: 1199px) and (min-width: 768px) {
+      .form-container { max-width: 92%; padding: 24px 30px; }
+      header h2 { font-size: 2.2rem; }
+      .btn, .back-btn { padding: 12px 22px; font-size: 0.9rem; }
+    }
+
+    @media (max-width: 767px) {
+      body { padding: 14px; }
+      .form-container { padding: 18px; border-radius: 14px; }
+      header h2 { font-size: 1.8rem; }
+      .btn, .back-btn { width: 100%; display: block; margin-bottom: 10px; }
+      .declaration-input { width: 140px; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .form-container { padding: 12px; box-shadow: none; }
+      header h2 { font-size: 1.4rem; margin-bottom: 18px; }
+      input, select, textarea { padding: 10px 12px; font-size: 0.9rem; }
+      .btn, .back-btn { font-size: 0.9rem; padding: 10px; }
+      footer { font-size: 0.78rem; }
+    }
+
+    /* ====== MAHAMANTRA MARQUEE ====== */
+    .mahamantra-marquee {
+      width: 100%;
+      overflow: hidden;
+      padding: 12px 0;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .mahamantra-marquee marquee {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--gold);
+      text-shadow: 0 2px 8px rgba(200, 168, 75, 0.2);
+      letter-spacing: 2px;
+      animation: glowText 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glowText {
+      0% { text-shadow: 0 2px 8px rgba(200, 168, 75, 0.2); color: var(--gold); }
+      50% { text-shadow: 0 2px 14px rgba(200, 168, 75, 0.35); color: var(--gold-soft); }
+      100% { text-shadow: 0 2px 8px rgba(200, 168, 75, 0.2); color: var(--gold); }
+    }
+
+    @media(max-width:767px) {
+      .mahamantra-marquee marquee { font-size: 1.0rem; }
+    }
+
+    @media(max-width:480px) {
+      .mahamantra-marquee marquee { font-size: 0.85rem; letter-spacing: 1px; }
+    }
+  </style>
+
+<body>
+  <header>
+    <h2>ISKCON NRJD</h2>
+  </header>
+
+  <div id="landingPage">
+    <h3>Hare Krishna!!!</h3>
+    <div class="mahamantra-marquee">
+      <marquee behavior="scroll" direction="left" scrollamount="6" onmouseover="this.stop();"
+        onmouseout="this.start();">
+        Hare Krishna Hare Krishna Krishna Krishna Hare Hare | Hare Rama Hare Rama Rama Rama Hare Hare |
+      </marquee>
+    </div>
+    <button class="btn" onclick="showForm('shiksha')">Shiksha Form</button>
+    <button class="btn" onclick="showForm('biodata')">Bio-data Form</button>
+  </div>
+
+  <!-- Shiksha -->
+  <div id="shikshaForm" class="form-container hidden">
+    <button class="back-btn" onclick="backToLanding()">Back</button>
+    <h3>Shiksha Form</h3>
+
+    <label for="unifiedSearch">Search (Type Shiksha Code, Program Key, or Aadhar Number)</label>
+    <div style="display:flex; gap:8px;">
+      <input id="unifiedSearch" type="text" placeholder="Type Shiksha Code, Program Key, or Aadhar Number" onkeydown="if(event.key==='Enter'){doUnifiedSearch();}" />
+      <button class="btn" onclick="doUnifiedSearch()">Search</button>
+    </div>
+    <div id="searchFeedback" class="small-muted"></div>
+    <div id="searchResults" class="search-results hidden"></div>
+
+    <div id="shikshaMain" class="hidden" style="margin-top:12px;">
+      <form id="shiksha">
+
+        <label for="shiksha-code">Shiksha Code:</label>
+        <input type="text" id="shiksha-code" readonly />
+
+        <label for="program-key">Program Key:</label>
+        <input type="text" id="program-key" readonly />
+        <span id="program-key-status" class="tick"></span>
+        <div id="program-key-error" class="error-message"></div>
+
+        <label for="aadhar1">Aadhar Number:</label>
+        <input type="text" id="aadhar1" readonly />
+        <span id="aadhar-number-status" class="tick"></span>
+        <div id="aadhar-number-error" class="error-message"></div>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" readonly required />
+
+        <!-- hidden / form-only helpers to avoid nulls -->
+        <input type="hidden" id="initiatedNameShiksha">
+        <input type="hidden" id="bvLeaderShiksha">
+        <input type="hidden" id="sexShiksha">
+        <input type="hidden" id="contactNumberShiksha">
+        <input type="hidden" id="emailShiksha">
+        <input type="hidden" id="dobShiksha">
+        <textarea id="contactAddressShiksha" style="display:none;"></textarea>
+        <input type="hidden" id="languageShiksha">
+
+        <label for="current_level">Current Level (SIKSHA STATUS):</label>
+        <input type="text" id="current_level" readonly required />
+
+        <label for="proposed-level">Proposed Level:*</label>
+        <select id="proposed-level" required disabled>
+          <option value="">-----Select Proposed Level-----</option>
+          <option value="Shraddhavan">Shraddhavan</option>
+          <option value="Krishna Sevak">Krishna Sevak</option>
+          <option value="Krishna Sadhak">Krishna Sadhak</option>
+          <option value="Srila Prabhupada Ashraya">Srila Prabhupada Ashraya</option>
+          <option value="Srila Guru Charana Ashraya">Sri Guru Charana Ashraya</option>
+        </select>
+
+        <label for="date">Date:*</label>
+        <input type="date" id="date" required />
+
+        <fieldset>
+          <legend>A-F Level Codes</legend>
+          <label>A (Association)*</label>
+          <div class="radio-group" id="aRadios">
+            <label><input type="radio" name="A" value="Regular"> Regular</label>
+            <label><input type="radio" name="A" value="Irregular"> Irregular</label>
+          </div>
+
+          <label>B (Books)*</label>
+          <div class="radio-group" id="bRadios">
+            <label><input type="radio" name="B" value="Regular"> Regular</label>
+            <label><input type="radio" name="B" value="Irregular"> Irregular</label>
+          </div>
+
+          <label>C (Chanting)*</label>
+          <div class="radio-group" id="cRadios">
+            <label><input type="radio" name="C" value="Regular"> Regular</label>
+            <label><input type="radio" name="C" value="Irregular"> Irregular</label>
+          </div>
+
+          <label>D (Diet)*</label>
+          <div class="radio-group" id="dRadios">
+            <label><input type="radio" name="D" value="Yes"> Yes</label>
+            <label><input type="radio" name="D" value="No"> No</label>
+          </div>
+
+          <label>E (Ekadesi)*</label>
+          <div class="radio-group" id="eRadios">
+            <label><input type="radio" name="E" value="Yes"> Yes</label>
+            <label><input type="radio" name="E" value="No"> No</label>
+          </div>
+
+          <label>F (Family)*</label>
+          <div class="radio-group" id="fRadios">
+            <label><input type="radio" name="F" value="Positive"> Positive</label>
+            <label><input type="radio" name="F" value="Negative"> Negative</label>
+          </div>
+        </fieldset>
+
+        <fieldset id="chantingRoundSection" class="hidden">
+          <legend>Chanting Round*</legend>
+          <label><input type="checkbox" id="chantingCheckbox" value=""> <span id="chantingText"></span></label>
+        </fieldset>
+
+        <fieldset id="booksSection" class="hidden">
+          <legend>Books Finished*</legend>
+          <div id="booksCheckboxes"></div>
+        </fieldset>
+
+        <fieldset id="commitmentsSection" class="hidden">
+          <legend>Commitments*</legend>
+          <div id="commitmentsCheckboxes"></div>
+        </fieldset>
+
+        <fieldset id="sevaSection" class="hidden">
+          <legend>Seva Currently Doing*</legend>
+          <textarea id="sevaDoing" rows="4" placeholder="Describe seva..."></textarea>
+        </fieldset>
+
+        <label for="recommendedBy">Recommended By:*</label>
+        <input type="text" id="recommendedBy" placeholder="Enter name of recommender" />
+        <br/>
+
+        <div style="margin-top:12px;">
+          <label style="display:flex; align-items:center;">
+            <input type="checkbox" id="declarationCheckbox" style="margin-right:8px;">
+            <span>I hereby declare that this form is filled by
+              <input type="text" id="filledByDisplay" style="border:none; border-bottom:2px solid var(--sky); margin-left:6px; padding:4px; background:transparent; color:var(--text-dark); font-family:var(--font-body);" placeholder="Your name" />
+              and the Devotee is following all rules under the proposed level.
+            </span>
+          </label>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button type="button" id="shikshaSubmitBtn" class="btn" onclick="submitShikshaForm()">Submit</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Biodata -->
+  <div id="biodataForm" class="form-container hidden">
+    <button class="back-btn" onclick="backToLanding()">Back</button>
+    <h3>Bio-data Form</h3>
+    <form id="biodata">
+      <label for="fname">Name:*</label>
+      <input type="text" id="fname" required />
+
+      <label for="aadhar">Aadhar Number:*</label>
+      <input type="text" id="aadhar" required />
+
+      <label for="bvLeader">BV Leader Name:*</label>
+      <input type="text" id="bvLeader" required />
+
+      <label>Gender:*</label>
+      <div class="radio-group">
+        <label><input type="radio" name="sex" value="Male" required> Male</label>
+        <label><input type="radio" name="sex" value="Female" required> Female</label>
+      </div>
+
+      <!-- <label for="initiatedName">Initiated Name:</label>
+      <input type="text" id="initiatedName" /> -->
+
+      <label for="email">Email ID:*</label>
+      <input type="email" id="email" required />
+
+      <label for="country">Country:*</label>
+      <input type="text" id="country" value="India" required />
+
+      <label for="contactAddress">Address (including PIN):*</label>
+      <textarea id="contactAddress" required></textarea>
+
+      <label for="city">City:*</label>
+      <input type="text" id="city" value="Bangalore" required />
+
+      <label for="contactNumber">Contact Number:*</label>
+      <input type="text" id="contactNumber" pattern="^[0-9]{10}$" required />
+
+      <label for="language">Preferred Language:*</label>
+      <select id="language" required>
+        <option>Hindi</option>
+        <option>English</option>
+        <option>Kannada</option>
+        <option>Tamil</option>
+        <option>Telugu</option>
+      </select>
+
+      <label for="dob">Date of Birth:*</label>
+      <input type="date" id="dob" required />
+
+      <label for="subArea">Sub-Area:*</label>
+      <input type="text" id="subArea" required />
+
+      <label for="programKey">Program Key:*</label>
+      <input type="text" id="programKey" required />
+
+      <label for="sikshaStatus">SIKSHA STATUS:*</label>
+      <select id="sikshaStatus" required disabled>
+        <option value="">---Select Shiksha Status---</option>
+        <option value="SHRADDHAVAN" selected>SHRADDHAVAN</option>
+        <!-- <option>KRISHNA SEVAK</option>
+        <option>KRISHNA SADHAK</option>
+        <option>SP ASHRAYA</option>
+        <option>GURU ASHRAYA</option>
+        <option>INITIATION</option> -->
+      </select>
+
+      <!-- <label for="comments">Comments:</label>
+      <input type="text" id="comments" /> -->
+
+      <input type="hidden" id="userAgent" name="USER_AGENT">
+      <input type="hidden" id="platform" name="PLATFORM">
+      <input type="hidden" id="screenSize" name="SCREEN_SIZE">
+      <input type="hidden" id="ipAddress" name="IP_ADDRESS">
+
+
+      <div style="margin-top:12px;">
+        <button type="button" id="bioSubmitBtn" class="btn" onclick="submitBioForm()">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <footer style="margin-top:18px;">&copy; 2025 INRJD - All Rights Reserved | Developed by INRJD Tech Team</footer>
+
+  <script>
+    const levelData = {
+      "Shraddhavan": { chanting:["chanting hare Krishna mantra a minimum 1 round (1 x 108)"], books:["Hare Krishna Challenge"], commitments:[] },
+      "Krishna Sevak": { chanting:["chanting hare Krishna mantra a minimum of 4 round (4 x 108)"], books:["A Second Chance : The Story of a Near - Death Experience","Beyond Birth & Death","Elevation to Krsna Consciousness"], commitments:["I promise not eat meat including eggs throughout my life"]},
+      "Krishna Sadhak": { chanting:["chanting hare Krishna mantra a minimum of 8 round (8 x 108)"], books:["Bhadavad Gita Chapters 1 to 6","Krsna Consciousness The Topmost Yoga System","Perfect Questions, Perfect Answers","Teachings of Queen Kunti","The Perfection of Yoga","The Path of Perfection","The Science of Self Realization","Transcendental Teachings of Prahlada Maharaja","Srila Prabhupada's other books(if any)"], commitments:["In addition to the above I will not eat meat including eggs, onion and garlic.","I will avoid drinking coffee and Tea.","I will make all efforts to attend atleast two Mangalarthi Programs in a week","I will make all efforts to attend the Sunday Mangalarthi Program","I will follow Ekadashi"]},
+      "Srila Prabhupada Ashraya": { chanting:["chanting hare Krishna mantra a minimum of 16 round (16 x 108)"], books:["Krsna - the Supreme Personality of Godhead","Bhagavad Gita Chapters 7 to 12","Srila Prabhupada Lilamrita (abridged version)","Nectar of Instruction"], commitments:["In addition to the above I will not eat meat including eggs, onion and garlic.","I will avoid drinking coffee and Tea.","I will make all efforts to attend atleast two Mangalarthi Programs in a week","I will make all efforts to attend the Sunday Mangalarthi Program","I will make all efforts to eat only prasadam","I will avoid frivolous sports","I will not have illicit sex","I will avoid watching mundane Television and Cinemas"]},
+      "Srila Guru Charana Ashraya": { chanting:["chanting hare Krishna mantra a minimum of 16 round (16 x 108)"], books:["Bhagavad Gita Chapter (all chapters)","Spiritual Master and Disciple","Teachings of Lord Caitanya","Nectar of Devotion"], commitments:["I will follow the FOUR regulative principles","Accept Krsna as the Supreme Personality of Godhead","Perform/attend Tulasi Arati Everyday at home/temple","Perform/attend Mangal Arati, Guru puja & gaura Atati atleast FOUR times a week at home/temple","Listen to Srila Prabhupada's lectures everyday"]}
+    };
+
+    const nextLevelMap = {
+      "shraddhavan": "Krishna Sevak",
+      "krishna sevak": "Krishna Sadhak",
+      "krishna sadhak": "Srila Prabhupada Ashraya",
+      "srila prabhupada ashraya": "Srila Guru Charana Ashraya"
+    };
+
+    function toUpperCaseFields(obj, keys) {
+      keys.forEach(function(k){
+      if(obj[k]) obj[k] = obj[k].toString().toUpperCase();
+      });
+    }
+
+
+    const searchInput = document.getElementById('unifiedSearch');
+    const searchResultsDiv = document.getElementById('searchResults');
+    const searchFeedback = document.getElementById('searchFeedback');
+
+    function doUnifiedSearch() {
+      var q = (searchInput.value || '').toString().trim();
+      if (!q) {
+        searchFeedback.textContent = 'Please enter Shiksha Code, Program Key or Aadhar Number.';
+        searchResultsDiv.classList.add('hidden');
+        return;
+      }
+      searchFeedback.textContent = 'Searching...';
+      searchResultsDiv.innerHTML = '';
+      searchResultsDiv.classList.remove('hidden');
+
+      google.script.run.withSuccessHandler(handleSearchResults).findShikshaByQuery(q);
+    }
+
+    function handleSearchResults(resp) {
+      searchResultsDiv.innerHTML = '';
+      if (!resp || !resp.matches || resp.matches.length === 0) {
+        searchFeedback.textContent = 'No active records found.';
+        return;
+      }
+      searchFeedback.textContent = (resp.matches.length === 1 ? '1 match found.' : resp.matches.length + ' matches found.');
+
+      resp.matches.forEach(function(m){
+        var mapped = m.mapped || {};
+        var name = mapped['NAME'] || mapped['Name'] || mapped['name'] || mapped['Devotee Name'] || '';
+        var sc = mapped['SIKSHA CODE'] || mapped['SIKSHA CODE'] || mapped['shiksha_code'] || mapped['Shiksha Code'] || mapped['shiksha code'] || '';
+        var aadhar = mapped['AADHAR_NO'] || mapped['AADHAR_NO'] || mapped['aadhar'] || mapped['Aadhar'] || '';
+        var div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = '<strong>' + (name || '(No name)') + '</strong><div class="small-muted">Shiksha: ' + sc + ' &nbsp; Aadhar: ' + aadhar + '</div>' +
+                        '<div style="margin-top:6px;"><button class="btn" onclick="showDetailsFromSearch(' + m.rowIndex + ')">Show Details</button></div>';
+        div.dataset.rowIndex = m.rowIndex;
+        div.dataset.mapped = JSON.stringify(mapped || {});
+        searchResultsDiv.appendChild(div);
+      });
+    }
+
+    // prefer fresh server mapping; fallback to DOM-mapped only if server fails
+    function showDetailsFromSearch(rowIndex) {
+      var el = Array.from(searchResultsDiv.querySelectorAll('.result-item')).find(function(d){ return d.dataset.rowIndex == rowIndex; });
+      var domMapped = el && el.dataset && el.dataset.mapped ? JSON.parse(el.dataset.mapped) : null;
+
+      google.script.run
+        .withSuccessHandler(function(resp){
+          var mapped = (resp && typeof resp === 'object' && Object.keys(resp).length) ? resp : (domMapped || {});
+          if (!mapped || !Object.keys(mapped).length) { alert('Could not retrieve record details. Please search again.'); return; }
+          populateShikshaFormWithRow(mapped);
+        })
+        .withFailureHandler(function(err){
+          if (domMapped && Object.keys(domMapped).length) {
+            populateShikshaFormWithRow(domMapped);
+          } else {
+            alert('Could not retrieve record details. Please search again (server failure).');
+          }
+        })
+        .getRecordForRowIndex(rowIndex);
+    }
+
+    // normalization helpers
+    function normalizeKey(k) { return (k || '').toString().trim().toLowerCase().replace(/[\s_]+/g, ''); }
+    function buildNormalizedKeyIndex(mappedObj) {
+      var idx = [];
+      if (!mappedObj) return idx;
+      Object.keys(mappedObj).forEach(function(k){
+        var kk = normalizeKey(k);
+        idx.push({ origKey: k, normKey: kk, value: mappedObj[k] });
+      });
+      return idx;
+    }
+    function lookupValue(mappedIndex, candidateVariants) {
+      if (!mappedIndex || !Array.isArray(candidateVariants)) return '';
+      // exact normalized match
+      for (var i=0;i<candidateVariants.length;i++){
+        var c = normalizeKey(candidateVariants[i]);
+        if (!c) continue;
+        for (var j=0;j<mappedIndex.length;j++){
+          if (mappedIndex[j].normKey === c) return mappedIndex[j].value || '';
+        }
+      }
+      // substring match (normKey includes candidate)
+      for (var i=0;i<candidateVariants.length;i++){
+        var c = normalizeKey(candidateVariants[i]);
+        if (!c) continue;
+        for (var j=0;j<mappedIndex.length;j++){
+          if (mappedIndex[j].normKey.indexOf(c) !== -1) return mappedIndex[j].value || '';
+        }
+      }
+      // reverse substring (candidate includes part of key)
+      for (var j=0;j<mappedIndex.length;j++){
+        for (var i=0;i<candidateVariants.length;i++){
+          var c = normalizeKey(candidateVariants[i]);
+          if (!c) continue;
+          if (c.indexOf(mappedIndex[j].normKey) !== -1 && mappedIndex[j].normKey.length>0) return mappedIndex[j].value || '';
+        }
+      }
+      return '';
+    }
+
+    // parse DOB to YYYY-MM-DD (handles Date objects and strings)
+    function parseToInputDate(val) {
+      if (val === null || typeof val === 'undefined' || val === '') return '';
+      // if it's a Date object
+      if (Object.prototype.toString.call(val) === '[object Date]' || val instanceof Date) {
+        var d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          var y = d.getFullYear();
+          var m = (d.getMonth()+1).toString().padStart(2,'0');
+          var day = d.getDate().toString().padStart(2,'0');
+          return y + '-' + m + '-' + day;
+        }
+      }
+      var s = val.toString().trim();
+      var isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) return isoMatch[0];
+      var d2 = new Date(s);
+      if (!isNaN(d2.getTime())) {
+        var y2 = d2.getFullYear();
+        var m2 = (d2.getMonth()+1).toString().padStart(2,'0');
+        var day2 = d2.getDate().toString().padStart(2,'0');
+        return y2 + '-' + m2 + '-' + day2;
+      }
+      return '';
+    }
+
+    function setSelectValueInsensitive(selectEl, targetValue) {
+      if (!selectEl || !targetValue) return false;
+      for (var i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].value === targetValue) { selectEl.value = selectEl.options[i].value; return true; }
+      }
+      var targetLower = targetValue.toString().trim().toLowerCase();
+      for (var i = 0; i < selectEl.options.length; i++) {
+        if ((selectEl.options[i].value || '').toString().trim().toLowerCase() === targetLower) { selectEl.value = selectEl.options[i].value; return true; }
+      }
+      for (var i = 0; i < selectEl.options.length; i++) {
+        if ((selectEl.options[i].text || '').toString().trim().toLowerCase() === targetLower) { selectEl.value = selectEl.options[i].value; return true; }
+      }
+      for (var i = 0; i < selectEl.options.length; i++) {
+        var optVal = (selectEl.options[i].value || '').toString().trim().toLowerCase();
+        var optText = (selectEl.options[i].text || '').toString().trim().toLowerCase();
+        if (optVal.indexOf(targetLower) !== -1 || targetLower.indexOf(optVal) !== -1 || optText.indexOf(targetLower) !== -1 || targetLower.indexOf(optText) !== -1) {
+          selectEl.value = selectEl.options[i].value;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function populateShikshaFormWithRow(mapped) {
+      var idx = buildNormalizedKeyIndex(mapped);
+      function safeSet(id, val) { var el=document.getElementById(id); if(!el) return; if('value' in el) el.value = val || ''; else el.textContent = val || ''; }
+
+      // try many header variants - including the exact headers you posted
+      var shikshaCode = lookupValue(idx, ['SIKSHA CODE','shiksha code','shiksha_code','siksha code','siksha_code','shikshacode']) || '';
+      var aadhar = lookupValue(idx, ['AADHAR_NO','aadhar_no','aadhar','aadhaar','aadhar number']) || '';
+      var name = lookupValue(idx, ['NAME','name','devotee name','fname','full name']) || '';
+      var currentLevel = lookupValue(idx, ['SIKSHA STATUS','siksha status','siksha_status','current level','current_level']) || '';
+      var programKey = lookupValue(idx, ['PROGRAM KEY','program key','program_key','program','programid']) || '';
+
+      safeSet('shiksha-code', shikshaCode);
+      safeSet('aadhar1', aadhar);
+      safeSet('name', name);
+      safeSet('current_level', currentLevel);
+      safeSet('program-key', programKey);
+
+      // fields user reported (explicitly including the exact sheet header strings you gave)
+      var initiatedVal = lookupValue(idx, ['INITIATED NAME','initiated name','initiatedname','initiated_name','initiated']) || '';
+      var bvVal = lookupValue(idx, ['BV LEADER','bv leader','bv_leader','bvleader','bv']) || '';
+      var emailVal = lookupValue(idx, ['EMAIL ID','email id','email','email_id','emailid']) || '';
+      var langVal = lookupValue(idx, ['PREFERRED LANGUAGE OF COMM','preferred language of comm','preferred language','language','preferred_language']) || '';
+      var sexVal = lookupValue(idx, ['SEX','sex','gender']) || '';
+
+      // contact and address (explicit header names)
+      var contactVal = lookupValue(idx, ['CONTACT NUMBER','contact number','contact_number','contactnumber','contact']) || '';
+      var contactAddr = lookupValue(idx, ['CONTACT ADDRESS','contact address','contact_address','address']) || '';
+
+      // set hidden Shiksha fields
+      safeSet('initiatedNameShiksha', initiatedVal);
+      safeSet('bvLeaderShiksha', bvVal);
+      safeSet('emailShiksha', emailVal);
+      safeSet('languageShiksha', langVal);
+      safeSet('sexShiksha', sexVal);
+      safeSet('contactNumberShiksha', contactVal);
+      safeSet('contactAddressShiksha', contactAddr);
+
+      // also set visible biodata fields
+      safeSet('initiatedName', initiatedVal);
+      safeSet('bvLeader', bvVal);
+      safeSet('email', emailVal);
+      var langSelect = document.getElementById('language');
+      if (langSelect && langVal) setSelectValueInsensitive(langSelect, langVal);
+      safeSet('languageShiksha', langVal);
+
+      // set sex radio in biodata if possible
+      if (sexVal) {
+        var s = sexVal.toString().trim().toLowerCase();
+        if (s === 'm' || s.indexOf('male') !== -1) {
+          var mradio = document.querySelector('input[name="sex"][value="Male"]'); if (mradio) mradio.checked = true;
+        } else if (s === 'f' || s.indexOf('female') !== -1) {
+          var fradio = document.querySelector('input[name="sex"][value="Female"]'); if (fradio) fradio.checked = true;
+        }
+      }
+
+      // DOB normalize to YYYY-MM-DD for <input type="date">
+      var dobRaw = lookupValue(idx, ['DATE OF BIRTH','DATE_OF_BIRTH','dob','DOB','birthdate','birth date']) || '';
+      var dobIso = parseToInputDate(dobRaw);
+      safeSet('dobShiksha', dobIso);
+      safeSet('dob', dobIso);
+
+      // some biodata helpers
+      safeSet('country', lookupValue(idx, ['COUNTRY','country']) || '');
+      safeSet('city', lookupValue(idx, ['CITY','city']) || '');
+      safeSet('subArea', lookupValue(idx, ['SUB-AREA','sub area','subarea','SUB-AREA']) || '');
+      // safeSet('comments', lookupValue(idx, ['COMMENTS','comments','comment']) || '');
+
+      // determine proposed dropdown selection using currentLevel -> nextLevelMap
+      var proposedDropdown = document.getElementById('proposed-level');
+      try {
+        var curNorm = (currentLevel || '').toString().trim().toLowerCase();
+        var desiredNext = nextLevelMap[curNorm] || null;
+        if (desiredNext && proposedDropdown) {
+          var ok = setSelectValueInsensitive(proposedDropdown, desiredNext);
+          if (!ok) proposedDropdown.value = desiredNext;
+        } else if (proposedDropdown) {
+          proposedDropdown.value = '';
+        }
+      } catch(e) {
+        if (proposedDropdown) proposedDropdown.value = '';
+      }
+      if (proposedDropdown) proposedDropdown.disabled = false;
+
+      resetDynamicSections();
+
+      // prefill A-F codes using tolerant lookup
+      function setRadioDefault(name, keys) {
+        var val = lookupValue(idx, keys) || '';
+        var radios = document.querySelectorAll('input[name="'+name+'"]');
+        if (!val) {
+          var defaultMap = { A: 'Regular', B: 'Regular', C: 'Regular', D: 'Yes', E: 'Yes', F: 'Positive' };
+          val = defaultMap[name] || '';
+        }
+        radios.forEach(function(r){ if (r.value && r.value.toString().toLowerCase() === val.toString().toLowerCase()) r.checked = true; });
+      }
+      setRadioDefault('A', ['A (Association)','a (association)','a','a(association)']);
+      setRadioDefault('B', ['B (Books)','b (books)','b','b(books)']);
+      setRadioDefault('C', ['C (Chanting)','c (chanting)','c','c(chanting)']);
+      setRadioDefault('D', ['D (Diet)','d (diet)','d','d(diet)']);
+      setRadioDefault('E', ['E (Ekadesi)','e (ekadesi)','e','e(ekadesi)']);
+      setRadioDefault('F', ['F (Family)','f (family)','f','f(family)']);
+
+      // show form and dispatch change so dynamic sections populate if needed
+      var shikshaMainEl = document.getElementById('shikshaMain');
+      if (shikshaMainEl) shikshaMainEl.classList.remove('hidden');
+      if (proposedDropdown) {
+        try {
+          var ev = document.createEvent('HTMLEvents');
+          ev.initEvent('change', true, false);
+          proposedDropdown.dispatchEvent(ev);
+        } catch(e){}
+      }
+
+      // ticks
+      var pkTick = document.getElementById('program-key-status'); if (pkTick) { pkTick.classList.add('valid'); pkTick.classList.remove('invalid'); }
+      var scTick = document.getElementById('aadhar-number-status'); if (scTick) { scTick.classList.add('valid'); scTick.classList.remove('invalid'); }
+    }
+
+    function resetDynamicSections(){
+      document.getElementById('booksCheckboxes').innerHTML = '';
+      document.getElementById('commitmentsCheckboxes').innerHTML = '';
+      document.getElementById('chantingText').textContent = '';
+      if (document.getElementById('chantingCheckbox')) document.getElementById('chantingCheckbox').value = '';
+      document.getElementById('chantingRoundSection').classList.add('hidden');
+      document.getElementById('booksSection').classList.add('hidden');
+      document.getElementById('commitmentsSection').classList.add('hidden');
+      document.getElementById('sevaSection').classList.add('hidden');
+    }
+
+    document.getElementById('proposed-level').addEventListener('change', function(){
+      var selected = this.value;
+      resetDynamicSections();
+      if (!selected) return;
+      if (!levelData[selected]) return;
+      var data = levelData[selected];
+      if (data.chanting && data.chanting.length) {
+        document.getElementById('chantingCheckbox').value = data.chanting[0];
+        document.getElementById('chantingText').textContent = 'Rounds requirement: ' + data.chanting[0];
+        document.getElementById('chantingRoundSection').classList.remove('hidden');
+      }
+      if (data.books && data.books.length) {
+        var booksDiv = document.getElementById('booksCheckboxes');
+        data.books.forEach(function(b, idx){
+          var id = 'book_chk_' + idx;
+          var label = document.createElement('label');
+          label.innerHTML = '<input type="checkbox" name="books" id="'+id+'" value="'+b+'"> ' + b;
+          booksDiv.appendChild(label);
+          booksDiv.appendChild(document.createElement('br'));
+        });
+        document.getElementById('booksSection').classList.remove('hidden');
+      }
+      if (data.commitments && data.commitments.length) {
+        var cDiv = document.getElementById('commitmentsCheckboxes');
+        data.commitments.forEach(function(c, idx){
+          var id = 'commit_chk_' + idx;
+          var label = document.createElement('label');
+          label.innerHTML = '<input type="checkbox" name="commitments" id="'+id+'" value="'+c+'"> ' + c;
+          cDiv.appendChild(label);
+          cDiv.appendChild(document.createElement('br'));
+        });
+        document.getElementById('commitmentsSection').classList.remove('hidden');
+      }
+      document.getElementById('sevaSection').classList.remove('hidden');
+    });
+
+function submitShikshaForm() {
+  function getVal(id) { var el = document.getElementById(id); return el ? (el.value || '') : ''; }
+
+  var name = getVal('name').trim();
+  var shikshaCode = getVal('shiksha-code').trim();
+  var programKey = getVal('program-key').trim();
+  var aadhar = getVal('aadhar1').trim();
+
+  if (!shikshaCode || !programKey || !name) {
+    alert('Please search and load a valid record before submitting.');
+    return;
+  }
+  if (!document.getElementById('declarationCheckbox').checked || !getVal('filledByDisplay').trim()) {
+    alert('Please complete the declaration and fill "Filled By" name.');
+    return;
+  }
+
+    var radioGroups = ['A','B','C','D','E','F'];
+  for(var i=0;i<radioGroups.length;i++){
+    if(!document.querySelector('input[name="'+radioGroups[i]+'"]:checked')){
+      alert('Please select an option for '+radioGroups[i]+' (A-F Level Codes).');
+      return;
+    }
+  }
+
+  // ✅ NEW CHECK: Ensure all dynamic checkboxes are checked if visible
+  var dynamicSections = ['chantingCheckbox','booksCheckboxes','commitmentsCheckboxes'];
+  for(var j=0;j<dynamicSections.length;j++){
+    var section = document.getElementById(dynamicSections[j]);
+    if(section && !section.classList.contains('hidden')){
+      if(dynamicSections[j]==='chantingCheckbox'){
+        if(!section.checked){
+          alert('Please complete the Chanting requirement.');
+          return;
+        }
+      } else {
+        var checkboxes = section.querySelectorAll('input[type="checkbox"]');
+        if(checkboxes.length>0){
+          var allChecked = Array.from(checkboxes).every(cb => cb.checked);
+          if(!allChecked){
+            alert('Please check all boxes in '+section.closest('fieldset').querySelector('legend').textContent);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  // A-F / dynamic values
+  var chanting = document.getElementById('chantingCheckbox') && document.getElementById('chantingCheckbox').checked ? document.getElementById('chantingCheckbox').value : '';
+  var books = Array.from(document.querySelectorAll('input[name="books"]:checked')).map(cb => cb.value).join('; ');
+  var commitments = Array.from(document.querySelectorAll('input[name="commitments"]:checked')).map(cb => cb.value).join('; ');
+  var seva = getVal('sevaDoing');
+
+  function getRadioValue(name){ var r = document.querySelector('input[name="'+name+'"]:checked'); return r ? r.value : ''; }
+  var A_code = getRadioValue('A'), B_code = getRadioValue('B'), C_code = getRadioValue('C'),
+      D_code = getRadioValue('D'), E_code = getRadioValue('E'), F_code = getRadioValue('F');
+
+  // IMPORTANT: send keys server expects (INITIATED_NAME, BV_LEADER, PREFERRED_LANGUAGE)
+  var initiatedNameVal = getVal('initiatedNameShiksha') || getVal('initiatedName') || '';
+  var bvLeaderVal      = getVal('bvLeaderShiksha') || getVal('bvLeader') || '';
+  var preferredLangVal = getVal('languageShiksha') || getVal('language') || '';
+
+  // ensure we supply EMAIL in the exact key server might be using, plus EMAIL_ID for safety
+  var emailValue = getVal('emailShiksha') || getVal('email') || '';
+
+  var proposed = getVal('proposed-level');
+  var currentVisible = getVal('current_level');
+
+  var formData = {
+    SHIKSHA_CODE: shikshaCode,
+    PROGRAM_KEY: programKey,
+    AADHAR: aadhar,
+    NAME: name,
+
+    // email: provide both keys (EMAIL and EMAIL_ID) so server finds it whichever it expects
+    EMAIL: emailValue,
+
+    // map sex/contact/dob/contact_address using hidden shiksha fields if present else page fields
+    SEX: getVal('sexShiksha') || (document.querySelector('input[name="sex"]:checked') ? document.querySelector('input[name="sex"]:checked').value : '') || '',
+    CONTACT_NUMBER: getVal('contactNumberShiksha') || getVal('contactNumber') || '',
+    DATE_OF_BIRTH: getVal('dobShiksha') || getVal('dob') || '',
+    CONTACT_ADDRESS: getVal('contactAddressShiksha') || getVal('contactAddress') || '',
+    COUNTRY: getVal('country') || '',
+    CITY: getVal('city') || '',
+    // send preferred language with exact key the server expects:
+    PREFERRED_LANGUAGE: preferredLangVal || '',
+    SUB_AREA: getVal('subArea') || '',
+    // send initiated name and bv leader with exact keys the server expects:
+    INITIATED_NAME: initiatedNameVal || '',
+    BV_LEADER: bvLeaderVal || '',
+    // Ensure SIKSHA_STATUS gets the proposed value so server writes it to the SIKSHA STATUS column:
+    CURRENT_LEVEL: proposed || currentVisible || '',
+    SIKSHA_STATUS: proposed || currentVisible || '',
+    PROPOSED_LEVEL: proposed || '',
+    DATE: getVal('date') || '',
+    A_CODE: A_code, B_CODE: B_code, C_CODE: C_code, D_CODE: D_code, E_CODE: E_code, F_CODE: F_code,
+    CHANTING: chanting, SP_BOOKS: books, COMMITMENTS: commitments, SEVA: seva,
+    RECOMMENDED_BY: getVal('recommendedBy').trim() || '',
+    FILLED_BY: getVal('filledByDisplay').trim() || '',
+    // COMMENTS: getVal('comments') || '',
+    USER_AGENT: navigator.userAgent || '',
+    PLATFORM: navigator.platform || '',
+    SCREEN_SIZE: (window.screen ? (window.screen.width + 'x' + window.screen.height) : ''),
+    IP_ADDRESS: '' // to fetch
+  };
+
+  var btn = document.getElementById('shikshaSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  // Fetch client IP (best-effort) then send to server
+  fetch('https://api.ipify.org?format=json')
+    .then(res => res.json())
+    .then(data => {
+      formData.IP_ADDRESS = data.ip || 'unknown';
+      google.script.run.withSuccessHandler(function(resp){
+        alert(resp || 'Submitted');
+        // reset UI
+        document.getElementById('shiksha').reset();
+        document.getElementById('shikshaMain').classList.add('hidden');
+        if (document.getElementById('proposed-level')) document.getElementById('proposed-level').disabled = true;
+        document.getElementById('searchFeedback').textContent = '';
+        document.getElementById('searchResults').innerHTML = '';
+        document.getElementById('searchResults').classList.add('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+        backToLanding();
+      }).submitShikshaData(formData);
+    })
+    .catch(err => {
+      console.error('Failed to fetch IP:', err);
+      formData.IP_ADDRESS = 'unknown';
+      google.script.run.withSuccessHandler(function(resp){
+        alert(resp || 'Submitted');
+        document.getElementById('shiksha').reset();
+        document.getElementById('shikshaMain').classList.add('hidden');
+        if (document.getElementById('proposed-level')) document.getElementById('proposed-level').disabled = true;
+        document.getElementById('searchFeedback').textContent = '';
+        document.getElementById('searchResults').innerHTML = '';
+        document.getElementById('searchResults').classList.add('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+        backToLanding();
+      }).submitShikshaData(formData);
+    });
+}
+
+    function submitBioForm() {
+      var form = document.getElementById('biodata');
+      if (!form.checkValidity()) { alert('Please fill all required fields'); return; }
+
+  var bioformData = {
+    fname: document.getElementById('fname').value,
+    aadhar: document.getElementById('aadhar').value,
+    bvLeader: document.getElementById('bvLeader').value,
+    sex: document.querySelector('input[name="sex"]:checked') ? document.querySelector('input[name="sex"]:checked').value : '',
+    email: document.getElementById('email').value,
+    contactAddress: document.getElementById('contactAddress').value,
+    country: document.getElementById('country').value,
+    city: document.getElementById('city').value,
+    contactNumber: document.getElementById('contactNumber').value,
+    language: document.getElementById('language').value,
+    dob: document.getElementById('dob').value,
+    subArea: document.getElementById('subArea').value,
+    programKey: document.getElementById('programKey').value,
+    sikshaStatus: 'SHRADDHAVAN', // always uppercase
+
+    USER_AGENT: navigator.userAgent || '',
+    PLATFORM: navigator.platform || '',
+    SCREEN_SIZE: (window.screen ? (window.screen.width + 'x' + window.screen.height) : ''),
+    IP_ADDRESS: '' // will fetch
+  };
+
+  // Convert to uppercase
+  toUpperCaseFields(bioformData, [
+    'fname', 'aadhar', 'bvLeader', 'email', 'contactAddress',
+    'country', 'city', 'contactNumber', 'language', 'subArea', 'programKey'
+  ]);
+
+  var btn = document.getElementById('bioSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  // Fetch IP before sending
+  fetch('https://api.ipify.org?format=json')
+    .then(res => res.json())
+    .then(data => {
+      bioformData.IP_ADDRESS = data.ip || 'unknown';
+      google.script.run.withSuccessHandler(function(resp){
+        alert(resp || 'Bio-data submitted');
+        form.reset();
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+        backToLanding();
+      }).submitBioForm(bioformData);
+    })
+    .catch(err => {
+      console.error('Failed to fetch IP:', err);
+      bioformData.IP_ADDRESS = 'unknown';
+      google.script.run.withSuccessHandler(function(resp){
+        alert(resp || 'Bio-data submitted');
+        form.reset();
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+        backToLanding();
+      }).submitBioForm(bioformData);
+    });
+}
+
+    function showForm(formType) {
+      document.getElementById('landingPage').classList.add('hidden');
+      document.getElementById(formType + 'Form').classList.remove('hidden');
+      Array.from(document.querySelectorAll('.back-btn')).forEach(function(b){ b.style.display = 'inline-block'; });
+      if (formType === 'shiksha') {
+        document.getElementById('shikshaMain').classList.add('hidden');
+        document.getElementById('proposed-level').disabled = true;
+        document.getElementById('searchResults').classList.add('hidden');
+        document.getElementById('searchFeedback').textContent = '';
+      }
+    }
+
+    function backToLanding() {
+      document.getElementById('shikshaForm').classList.add('hidden');
+      document.getElementById('biodataForm').classList.add('hidden');
+      document.getElementById('landingPage').classList.remove('hidden');
+      Array.from(document.querySelectorAll('.back-btn')).forEach(function(b){ b.style.display = 'none'; });
+    }
+
+    (function init() {
+      Array.from(document.querySelectorAll('.back-btn')).forEach(function(b){ b.style.display = 'none'; });
+      document.getElementById('proposed-level').disabled = true;
+
+      // Check for certify prefill token from URL
+      var urlParams = <?= JSON.stringify(urlParams || {}) ?>;
+      var certifyToken = urlParams.certify || '';
+      var certifyMode = urlParams.mode || ''; // 'shiksha' or 'biodata'
+
+      if (certifyToken) {
+        google.script.run
+          .withSuccessHandler(function(prefill) {
+            if (!prefill) return;
+            if (certifyMode === 'biodata') {
+              // Open biodata form and prefill
+              showForm('biodata');
+              if (prefill.name) document.getElementById('fname').value = prefill.name;
+              if (prefill.programKey) document.getElementById('programKey').value = prefill.programKey;
+              if (prefill.programOwner) document.getElementById('bvLeader').value = prefill.programOwner;
+              if (prefill.subArea) document.getElementById('subArea').value = prefill.subArea;
+            } else {
+              // Open shiksha form and prefill from mapped data
+              showForm('shiksha');
+              if (prefill.mapped) {
+                populateShikshaFormWithRow(prefill.mapped);
+                document.getElementById('shikshaMain').classList.remove('hidden');
+                document.getElementById('proposed-level').disabled = false;
+                // Auto-select next level
+                var currentLevel = (document.getElementById('current_level').value || '').trim().toLowerCase();
+                var nextLevel = nextLevelMap[currentLevel];
+                if (nextLevel) {
+                  setSelectValueInsensitive(document.getElementById('proposed-level'), nextLevel);
+                  document.getElementById('proposed-level').dispatchEvent(new Event('change'));
+                }
+              }
+            }
+          })
+          .getCertifyPrefill(certifyToken);
+      }
+    })();
+  </script>
+</body>
+
+</html>

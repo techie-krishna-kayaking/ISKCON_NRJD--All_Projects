@@ -1,0 +1,85 @@
+Build a simple, distraction-free “Japa Session Tool” designed for group chanting sessions over Google Meet.
+
+🎯 Core Purpose
+
+The tool will be screen-shared during a session. It should display a slideshow with a mantra and manage a 3-minute chanting timer for each participant.
+
+🖥️ 1. Slideshow System
+Display a fullscreen slideshow.
+
+Images must be automatically loaded from a local project folder named:
+
+/NRJD_images
+Supported formats: .jpg, .png, .jpeg
+Images change automatically every 10 seconds.
+Loop continuously.
+Overlay Text (on every slide, centered and clearly visible):
+
+Hare Krishna Hare Krishna
+Krishna Krishna Hare Hare
+Hare Rama Hare Rama
+Rama Rama Hare Hare
+
+Text must be:
+Large
+High contrast (visible on all images)
+Center-aligned
+⏱️ 2. Chant Timer
+A visible countdown timer starting from 3:00 minutes.
+Format: MM:SS
+Behavior:
+Starts when user clicks Start
+When timer reaches 00:00:
+Play a loud, clear bell sound
+Timer stops (does NOT auto-switch)
+👤 3. Participant Flow
+No automatic switching.
+No participant names displayed.
+User manually controls flow:
+Button: “Start Timer”
+Button: “Reset Timer (3:00)”
+Button: “Next (Bell + Reset)”
+🔊 4. Audio
+Include a temple bell sound that is:
+Loud
+Clear
+Plays instantly at timer completion or when “Next” is clicked
+No background music.
+🎛️ 5. Controls UI (Minimal)
+
+Provide a simple overlay or control bar with:
+
+Start Timer
+Pause Timer
+Reset Timer (3:00)
+Next (plays bell + resets timer)
+Fullscreen toggle
+
+UI must:
+
+Be minimal and non-distracting
+Hideable for clean screen sharing
+🌐 6. Platform Requirements
+Web App
+Runs in browser (Chrome preferred)
+Optimized for screen sharing via Google Meet
+Works offline after first load (use caching or PWA)
+Android APK
+Build as a simple Android app
+Same functionality as web version
+Works fully offline
+Can reuse web code (e.g., via WebView or similar)
+🎨 7. Design Requirements
+Clean, spiritual, distraction-free UI
+Smooth fade or crossfade transitions between slides
+Timer should be clearly visible but not overpowering
+No clutter, no unnecessary animations
+⚙️ 8. Technical Suggestions (Optional but Recommended)
+Use:
+HTML + CSS + JavaScript (for web app)
+Convert to APK using Capacitor / Cordova / Trusted Web Activity
+Preload images for smooth transitions
+Use requestAnimationFrame or setInterval for timing accuracy
+
+
+            

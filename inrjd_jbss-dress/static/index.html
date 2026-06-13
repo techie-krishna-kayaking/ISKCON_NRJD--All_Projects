@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JBSS Dress Search</title>
+    <link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="mainNav" style="display:none;">
+        <div class="nav-brand">JBSS Dress</div>
+        <div class="nav-tabs">
+            <a href="#calendar" class="nav-tab active" data-view="calendar">Calendar</a>
+            <a href="#gallery" class="nav-tab" data-view="gallery">Gallery</a>
+            <a href="#assign" class="nav-tab admin-only" data-view="assign">Dress Assignment</a>
+        </div>
+        <div class="nav-actions">
+            <span id="sharedLinkBtn" class="admin-only nav-action" title="Copy shared view link">Share Link</span>
+            <span id="logoutBtn" class="admin-only nav-action">Logout</span>
+        </div>
+    </nav>
+
+    <!-- Login View -->
+    <div id="loginView" class="view" style="display:none;">
+        <div class="login-container">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required>
+                <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
+                <button type="submit">Login</button>
+                <div id="loginError" class="login-error" style="display:none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Calendar View -->
+    <div id="calendarView" class="view" style="display:none;">
+        <div class="calendar-header">
+            <button id="prevMonth" class="cal-nav-btn">&lsaquo;</button>
+            <h2 id="calendarTitle">April 2026</h2>
+            <button id="nextMonth" class="cal-nav-btn">&rsaquo;</button>
+        </div>
+        <div class="calendar-search-bar">
+            <input type="text" id="calendarSearch" placeholder="Search by color, design, date, festival...">
+        </div>
+        <div class="calendar-weekdays">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
+
+    <!-- Gallery View (existing search + gallery) -->
+    <div id="galleryView" class="view" style="display:none;">
+        <header>
+            <div class="header-content">
+                <h1>JBSS Dress Search</h1>
+                <p class="subtitle">Search lord's dress collection by color, design, or pattern</p>
+            </div>
+            <div class="search-container">
+                <form id="searchForm">
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search: pink, swan dress, fire design, dark blue, lion dress..."
+                            autocomplete="off"
+                        >
+                        <button type="submit" id="searchBtn">Search</button>
+                        <button type="button" id="clearBtn" title="Show all">&#10005;</button>
+                    </div>
+                </form>
+                <div class="search-tags">
+                    <span class="tag" data-query="pink">Pink</span>
+                    <span class="tag" data-query="dark pink">Dark Pink</span>
+                    <span class="tag" data-query="baby pink">Baby Pink</span>
+                    <span class="tag" data-query="yellow">Yellow</span>
+                    <span class="tag" data-query="blue">Blue</span>
+                    <span class="tag" data-query="green">Green</span>
+                    <span class="tag" data-query="red">Red</span>
+                    <span class="tag" data-query="black">Black</span>
+                    <span class="tag" data-query="white">White</span>
+                    <span class="tag" data-query="gold">Gold</span>
+                    <span class="tag" data-query="orange">Orange</span>
+                    <span class="tag" data-query="purple">Purple</span>
+                    <span class="tag" data-query="fire design">Fire</span>
+                    <span class="tag" data-query="multi color">Multi Color</span>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div id="resultInfo" class="result-info"></div>
+            <div id="gallery" class="gallery"></div>
+            <div id="loading" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Searching...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Assignment View (admin only) -->
+    <div id="assignmentView" class="view admin-only" style="display:none;">
+        <div class="assign-layout">
+            <div class="assign-calendar-wrap">
+                <div class="calendar-header">
+                    <button id="assignPrevMonth" class="cal-nav-btn">&lsaquo;</button>
+                    <h2 id="assignCalendarTitle">April 2026</h2>
+                    <button id="assignNextMonth" class="cal-nav-btn">&rsaquo;</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div id="assignCalendarGrid" class="calendar-grid assign-calendar"></div>
+            </div>
+            <div class="assign-sidebar">
+                <h3>Dresses</h3>
+                <input type="text" id="dressFilter" placeholder="Filter dresses...">
+                <div id="dressPalette" class="dress-palette"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lord Photo Modal -->
+    <div id="lordPhotoModal" class="modal" style="display:none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="lordModalClose">&times;</button>
+            <h3 id="lordModalTitle">Lord's Photos</h3>
+            <div id="lordPhotoGrid" class="lord-photo-grid"></div>
+            <div id="lordUploadSection" class="admin-only lord-upload">
+                <input type="file" id="lordPhotoFile" accept="image/*" style="display:none;">
+                <button id="lordUploadBtn" class="upload-btn">Upload Lord Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox overlay -->
+    <div id="lightbox" class="lightbox" style="display:none;">
+        <button class="lightbox-close" id="lightboxClose">&#10005;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&lsaquo;</button>
+        <button class="lightbox-nav lightbox-next" id="lightboxNext">&rsaquo;</button>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="">
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+    </div>
+
+    <script src="/static/auth.js?v=4"></script>
+    <script src="/static/app.js?v=4"></script>
+    <script src="/static/calendar.js?v=4"></script>
+    <script src="/static/admin.js?v=4"></script>
+</body>
+</html>
