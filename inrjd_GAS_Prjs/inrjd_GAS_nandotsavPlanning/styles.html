@@ -228,6 +228,16 @@ body {
   width: 44px;
 }
 
+.td-phone-actions {
+  width: 88px;
+}
+
+.phone-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .btn-call {
   display: inline-flex;
   align-items: center;
@@ -237,11 +247,41 @@ body {
   background: #27ae60;
   border-radius: 50%;
   text-decoration: none;
-  font-size: 1.1rem;
   transition: transform 0.15s;
 }
 
+.btn-call svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
 .btn-call:hover {
+  transform: scale(1.15);
+}
+
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #25d366;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 700;
+  transition: transform 0.15s;
+}
+
+.btn-whatsapp svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+.btn-whatsapp:hover {
   transform: scale(1.15);
 }
 
@@ -283,6 +323,77 @@ body {
 
 .tbl-input-wide {
   min-width: 140px;
+}
+
+.comments-cell {
+  min-width: 220px;
+}
+
+.comment-toggle {
+  width: 100%;
+  border: 1px solid #d6e2ee;
+  border-radius: 8px;
+  background: #f7fbff;
+  color: #1d456a;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.comment-toggle:hover {
+  background: #edf6ff;
+}
+
+.comment-panel {
+  display: none;
+  margin-top: 8px;
+  border: 1px solid #e3ebf3;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+}
+
+.comment-panel.open {
+  display: block;
+}
+
+.comment-history {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  background: #fafcff;
+  border: 1px solid #edf3f8;
+}
+
+.comment-line {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: #345066;
+  margin-bottom: 6px;
+  word-break: break-word;
+}
+
+.comment-line:last-child {
+  margin-bottom: 0;
+}
+
+.comment-empty {
+  display: inline-block;
+  font-size: 0.76rem;
+  color: #7c8c9a;
+}
+
+.comment-input {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+  font-size: 0.8rem;
+  font-family: 'Jost', sans-serif;
 }
 
 .btn-save-sm {

@@ -95,7 +95,18 @@ function updateSchoolRecord(rowIndex, updates) {
     sheet.getRange(rowIndex, COL.INITIAL_VISIT_DATE).setValue(dateVal);
   }
   if (updates.comments !== undefined) {
-    sheet.getRange(rowIndex, COL.COMMENTS).setValue(updates.comments);
+    const commentRange = sheet.getRange(rowIndex, COL.COMMENTS);
+    const newComment = String(updates.comments || '').trim();
+
+    // Keep full comment history and always prepend latest updates.
+    if (newComment) {
+      const existingComments = String(commentRange.getValue() || '').trim();
+      const stampedComment = buildStampedComment_(newComment);
+      const mergedComments = existingComments
+        ? stampedComment + '\n' + existingComments
+        : stampedComment;
+      commentRange.setValue(mergedComments);
+    }
   }
   if (updates.prelimsDate !== undefined) {
     const dateVal = updates.prelimsDate ? new Date(updates.prelimsDate) : '';
@@ -144,4 +155,10 @@ function formatDate(value) {
     return y + '-' + m + '-' + d;
   }
   return String(value);
+}
+
+function buildStampedComment_(comment) {
+  const tz = Session.getScriptTimeZone() || 'Asia/Kolkata';
+  const timestamp = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd-HHmmss');
+  return timestamp + ' - ' + comment;
 }

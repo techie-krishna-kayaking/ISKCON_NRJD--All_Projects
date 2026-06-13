@@ -86,8 +86,11 @@ function renderSchools(data) {
 }
 
 function buildTableRow(s) {
-  var phoneLink = s.contactNumber ? 'tel:+91' + s.contactNumber.replace(/\D/g, '') : '#';
+  var normalizedPhone = normalizePhoneNumber(s.contactNumber);
+  var phoneLink = normalizedPhone ? 'tel:+' + normalizedPhone : '#';
+  var whatsappLink = normalizedPhone ? 'https://wa.me/' + normalizedPhone : '#';
   var mapsLink = s.location || '';
+  var commentsPreview = getLatestCommentPreview(s.comments);
 
   var row = '<tr id="row-' + s.rowIndex + '">';
 
@@ -100,8 +103,21 @@ function buildTableRow(s) {
   // Contact
   row += '<td class="td-contact">' + escapeHtml(s.contactName) + '</td>';
 
-  // Phone - call button
-  row += '<td class="td-action"><a class="btn-call" href="' + phoneLink + '" title="Call">📞</a></td>';
+  // Phone - call + whatsapp buttons
+  row += '<td class="td-action td-phone-actions">';
+  if (normalizedPhone) {
+    row += '<div class="phone-action-group">';
+    row += '<a class="btn-call" href="' + phoneLink + '" title="Call" aria-label="Call">';
+    row += '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.11.37 2.3.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.28.2 2.47.57 3.58a1 1 0 0 1-.24 1.01l-2.21 2.2z"/></svg>';
+    row += '</a>';
+    row += '<a class="btn-whatsapp" href="' + whatsappLink + '" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="WhatsApp">';
+    row += '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.601 2.326A7.854 7.854 0 0 0 8 0C3.582 0 0 3.582 0 8c0 1.4.365 2.762 1.057 3.965L0 16l4.153-1.089A7.94 7.94 0 0 0 8 16c4.418 0 8-3.582 8-8a7.96 7.96 0 0 0-2.399-5.674zM8 14.629a6.63 6.63 0 0 1-3.372-.92l-.242-.145-2.464.646.658-2.404-.157-.248a6.61 6.61 0 0 1-1.014-3.558c0-3.659 2.972-6.631 6.63-6.631a6.58 6.58 0 0 1 4.687 1.944A6.58 6.58 0 0 1 14.629 8c0 3.658-2.97 6.629-6.629 6.629zm3.63-4.968c-.199-.1-1.173-.578-1.355-.644-.182-.066-.314-.1-.446.1-.132.198-.512.644-.628.776-.116.132-.232.149-.43.05-.198-.1-.835-.308-1.59-.982-.587-.523-.984-1.168-1.1-1.366-.115-.198-.012-.305.087-.404.09-.09.198-.232.297-.347.1-.116.132-.198.198-.33.066-.132.033-.248-.017-.347-.05-.1-.446-1.074-.611-1.47-.161-.387-.324-.334-.446-.34l-.38-.007a.73.73 0 0 0-.528.248c-.182.198-.694.677-.694 1.652 0 .975.71 1.917.81 2.05.099.132 1.394 2.128 3.378 2.985.472.204.84.326 1.127.417.474.151.905.13 1.246.079.38-.056 1.173-.479 1.338-.941.165-.463.165-.859.116-.942-.05-.083-.182-.132-.38-.231z"/></svg>';
+    row += '</a>';
+    row += '</div>';
+  } else {
+    row += '—';
+  }
+  row += '</td>';
 
   // Location
   if (mapsLink) {
@@ -113,8 +129,14 @@ function buildTableRow(s) {
   // Initial Visit Date (editable)
   row += '<td><input type="date" class="tbl-input" id="visit-' + s.rowIndex + '" value="' + escapeHtml(s.initialVisitDate) + '"></td>';
 
-  // Comments (editable)
-  row += '<td><input type="text" class="tbl-input tbl-input-wide" id="comments-' + s.rowIndex + '" value="' + escapeHtml(s.comments) + '" placeholder="Add comment..."></td>';
+  // Comments (expandable per row)
+  row += '<td class="comments-cell">';
+  row += '<button type="button" class="comment-toggle" onclick="toggleComments(' + s.rowIndex + ')" id="comment-toggle-' + s.rowIndex + '">💬 ' + escapeHtml(commentsPreview) + '</button>';
+  row += '<div class="comment-panel" id="comment-panel-' + s.rowIndex + '">';
+  row += '<div class="comment-history" id="comment-history-' + s.rowIndex + '">' + formatCommentsForDisplay(s.comments) + '</div>';
+  row += '<textarea class="tbl-input comment-input" id="comments-' + s.rowIndex + '" placeholder="Add new comment..."></textarea>';
+  row += '</div>';
+  row += '</td>';
 
   // Prelims Date (editable)
   row += '<td><input type="date" class="tbl-input" id="prelims-' + s.rowIndex + '" value="' + escapeHtml(s.prelimsDate) + '"></td>';
@@ -201,9 +223,11 @@ function saveRecord(rowIndex) {
   btn.disabled = true;
   btn.textContent = '⏳';
 
+  var newComment = document.getElementById('comments-' + rowIndex).value;
+
   var updates = {
     initialVisitDate: document.getElementById('visit-' + rowIndex).value,
-    comments: document.getElementById('comments-' + rowIndex).value,
+    comments: newComment,
     prelimsDate: document.getElementById('prelims-' + rowIndex).value,
     volunteers: document.getElementById('volunteers-' + rowIndex).value,
     ipAddress: clientIP,
@@ -213,6 +237,9 @@ function saveRecord(rowIndex) {
 
   google.script.run
     .withSuccessHandler(function() {
+      if (newComment && newComment.trim()) {
+        applyCommentUpdateLocally(rowIndex, newComment);
+      }
       btn.disabled = false;
       btn.textContent = '💾';
       showToast('✅ Saved successfully!');
@@ -241,6 +268,83 @@ function escapeHtml(str) {
   var div = document.createElement('div');
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;
+}
+
+function normalizePhoneNumber(value) {
+  if (!value) return '';
+  var digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 10) return '91' + digits;
+  if (digits.length === 11 && digits.charAt(0) === '0') return '91' + digits.slice(1);
+  return digits;
+}
+
+function toggleComments(rowIndex) {
+  var panel = document.getElementById('comment-panel-' + rowIndex);
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
+function getLatestCommentPreview(comments) {
+  if (!comments) return 'Add / View';
+  var firstLine = String(comments).split('\n').map(function(line) {
+    return line.trim();
+  }).find(function(line) {
+    return line;
+  });
+  if (!firstLine) return 'Add / View';
+  return firstLine.length > 28 ? firstLine.slice(0, 28) + '...' : firstLine;
+}
+
+function formatCommentsForDisplay(comments) {
+  if (!comments) return '<span class="comment-empty">No comments yet.</span>';
+  var lines = String(comments).split('\n').map(function(line) {
+    return line.trim();
+  }).filter(function(line) {
+    return line;
+  });
+
+  if (!lines.length) return '<span class="comment-empty">No comments yet.</span>';
+  return lines.map(function(line) {
+    return '<div class="comment-line">' + escapeHtml(line) + '</div>';
+  }).join('');
+}
+
+function buildStampedCommentClient(comment) {
+  var dt = new Date();
+  var yyyy = dt.getFullYear();
+  var mm = String(dt.getMonth() + 1).padStart(2, '0');
+  var dd = String(dt.getDate()).padStart(2, '0');
+  var hh = String(dt.getHours()).padStart(2, '0');
+  var min = String(dt.getMinutes()).padStart(2, '0');
+  var ss = String(dt.getSeconds()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd + '-' + hh + min + ss + ' - ' + comment;
+}
+
+function applyCommentUpdateLocally(rowIndex, newComment) {
+  var commentInput = document.getElementById('comments-' + rowIndex);
+  var historyEl = document.getElementById('comment-history-' + rowIndex);
+  var toggleEl = document.getElementById('comment-toggle-' + rowIndex);
+  if (!historyEl || !toggleEl) return;
+
+  var stamped = buildStampedCommentClient(String(newComment).trim());
+  if (!stamped.trim()) return;
+
+  var rowData = allSchoolData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+
+  if (rowData) {
+    rowData.comments = rowData.comments
+      ? stamped + '\n' + rowData.comments
+      : stamped;
+    toggleEl.textContent = '💬 ' + getLatestCommentPreview(rowData.comments);
+    historyEl.innerHTML = formatCommentsForDisplay(rowData.comments);
+  }
+
+  if (commentInput) {
+    commentInput.value = '';
+  }
 }
 
 </script>
