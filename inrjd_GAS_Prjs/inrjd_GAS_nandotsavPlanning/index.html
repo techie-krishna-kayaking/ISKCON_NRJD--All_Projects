@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+
+  <?!= include('styles'); ?>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <img
+      src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+      alt="ISKCON Logo"
+      class="header-logo"
+    >
+
+    <div class="header-title-wrap">
+      <div class="title">NANDOTSAV 2026</div>
+      <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+      <div class="subtitle">New Rajapur Jagannatha Dhama</div>
+    </div>
+
+    <img
+      src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+      alt="Jagannatha Logo"
+      class="header-logo"
+    >
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('schools')">🏫 Schools</button>
+  <button class="tab-btn" onclick="switchTab('rules')">📋 Rules & Regulations</button>
+</div>
+
+<!-- Schools Tab -->
+<div id="tab-schools" class="tab-content active">
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="🔍 Search by school name or contact..." onkeyup="filterSchools()">
+  </div>
+  <div class="loading" id="loading">🎨 Loading school data...</div>
+  <div id="school-list" class="school-list"></div>
+</div>
+
+<!-- Rules Tab -->
+<div id="tab-rules" class="tab-content">
+  <?!= include('rules'); ?>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
+<script>
+  var SCRIPT_URL = '<?= scriptUrl ?>';
+</script>
+
+<?!= include('scripts'); ?>
+
+</body>
+</html>

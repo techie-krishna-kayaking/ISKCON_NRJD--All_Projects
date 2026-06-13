@@ -1,0 +1,1760 @@
+function doGet() {
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('Puruṣottama Month 2026')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+
+  <?!= include('styles'); ?>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="header">
+  <div class="title">Puruṣottama Month 2026</div>
+  <div class="subtitle">New Rajapur Jagannatha Dhama</div>
+</div>
+
+<div class="search-container">
+
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search songs, prayers, stotras..."
+    onkeyup="searchSections()"
+  >
+
+</div>
+
+<div class="container">
+
+<?!= include('data'); ?>
+
+</div>
+
+<?!= include('scripts'); ?>
+
+</body>
+</html>
+
+
+<style>
+
+body{
+  margin:0;
+  padding:0;
+  background:#f7f2e8;
+  color:#2e2e2e;
+  font-family:'Noto Serif', serif;
+}
+
+.header{
+  text-align:center;
+  padding:24px 16px 10px;
+  background:#fff8ee;
+  position:sticky;
+  top:0;
+  z-index:999;
+  border-bottom:1px solid #ddd;
+}
+
+.title{
+  font-size:32px;
+  font-weight:700;
+  color:#7b2e00;
+}
+
+.subtitle{
+  font-size:15px;
+  margin-top:8px;
+  color:#777;
+}
+
+.search-container{
+  padding:16px;
+  background:#f7f2e8;
+  position:sticky;
+  top:96px;
+  z-index:998;
+}
+
+#searchInput{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  font-size:16px;
+  box-sizing:border-box;
+}
+
+.container{
+  padding:10px 14px 50px;
+}
+
+.section{
+  margin-bottom:14px;
+}
+
+.accordion{
+  width:100%;
+  background:#ffffff;
+  border:none;
+  outline:none;
+  padding:18px 22px;
+  border-radius:14px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  position:relative;
+  line-height:1.4;
+}
+
+.accordion:after{
+  content:'+';
+  position:absolute;
+  right:20px;
+  font-size:22px;
+}
+
+.active:after{
+  content:'−';
+}
+
+.panel{
+  display:none;
+  padding:18px;
+  background:#fffdfa;
+  border-radius:14px;
+  margin-top:8px;
+  line-height:2;
+  font-size:20px;
+}
+
+.verse{
+  margin-bottom:26px;
+}
+
+.verse-title{
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:18px;
+  color:#8b3a00;
+}
+
+@media screen and (max-width:600px){
+
+  .title{
+    font-size:26px;
+  }
+
+  .accordion{
+    font-size:17px;
+  }
+
+  .panel{
+    font-size:18px;
+  }
+
+}
+
+</style>
+
+
+
+<script>
+
+const accordions = document.getElementsByClassName("accordion");
+
+for(let i = 0; i < accordions.length; i++){
+
+  accordions[i].addEventListener("click", function(){
+
+    this.classList.toggle("active");
+
+    const panel = this.nextElementSibling;
+
+    if(panel.style.display === "block"){
+      panel.style.display = "none";
+    }else{
+      panel.style.display = "block";
+    }
+
+  });
+
+}
+
+function searchSections(){
+
+  const input = document.getElementById('searchInput');
+  const filter = input.value.toLowerCase();
+
+  const sections = document.getElementsByClassName('section');
+
+  for(let i = 0; i < sections.length; i++){
+
+    const text = sections[i].innerText.toLowerCase();
+
+    if(text.includes(filter)){
+      sections[i].style.display = "";
+    }else{
+      sections[i].style.display = "none";
+    }
+
+  }
+
+}
+
+</script>
+
+
+
+<div class="section">
+
+<button class="accordion">
+🙏 Śrī Gaurāṅga-Aṣṭottara-Śata-Nāma-Stotram 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+108 NAMES OF LORD ŚRĪ CAITANYA MAHAPRABHU by Śrīla Sārvabhauma Bhaṭṭācārya
+</div>
+
+<div class="verse">
+
+namaskṛtya pravakṣyāmi deva-devaṁ jagad-gurum<br>
+nāmnām aṣṭottara-śataṁ caitanyasya mahātmanaḥ (1)<br><br>
+
+viśvambharo jita-krodho māyā-mānuṣa-vigrahaḥ<br>
+amāyī māyināṁ śreṣṭho varo-deśo dvijottamaḥ (2)<br><br>
+
+jagannātha-priyā-sutaḥ pitṛ-bhakto mahā-manāḥ<br>
+lakṣmī-kāntaḥ śacī-putraḥ premado bhakta-vatsalaḥ (3)<br><br>
+
+dvija-priyo dvija-varo vaiṣṇava-prāṇa-nāyakaḥ<br>
+dvi-jāti-pūjakaḥ śāntaḥ śrīvāsa-priyā īśvaraḥ (4)<br><br>
+
+tapta-kāñcana-gaurāṅgaḥ siṁha-grīvo mahā-bhujaḥ<br>
+pīta-vāsā rakta-paṭṭaḥ ṣaḍ-bhujo 'tha catur-bhujaḥ (5)<br><br>
+
+dvi-bhujaś ca gadā-pāṇiḥ cakrī padma-dharo 'malaḥ<br>
+pāñca-janya-dharaḥ śārṅgī veṇu-pāṇiḥ surottamaḥ (6)<br><br>
+
+kamalākṣeśvaraḥ prīto gopa-līlā-dharo yuvā<br>
+nīla-ratna-dharo raupya-hārī kaustubha-bhūṣaṇaḥ (7)<br><br>
+
+śrīvatsa-lāñchano bhāsvan maṇi-dhṛk kañja-locanaḥ<br>
+tāṭaṅka-nīla-śrīḥ rudra-līlā-kārī guru-priyāḥ (8)<br><br>
+
+sva-nāma-guṇa-vaktā ca nāmopadeśa-dāyakaḥ<br>
+ācāṇḍāla-priyaḥ śuddhaḥ sarva-prāṇi-hite rataḥ (9)<br><br>
+
+viśvarūpānujaḥ sandhyā-vatāraḥ śītalāśayaḥ<br>
+niḥsīma-karuṇo gupta ātma-bhakti-pravartakaḥ (10)<br><br>
+
+mahānando naṭo nṛtya-gīta-nāma-priyaḥ kaviḥ<br>
+ārti-priyaḥ śuciḥ śuddho bhāvado bhagavat-priyaḥ (11)<br><br>
+
+indrādi-sarva-lokeśa-vandita-śrī-padāmbujaḥ<br>
+nyāsi-cūḍāmaṇiḥ kṛṣṇaḥ sannyāsāśrama-pāvanaḥ (12)<br><br>
+
+caitanyaḥ kṛṣṇa-caitanyo daṇḍa-dhṛk nyasta-daṇḍakaḥ<br>
+avadhūta-priyo nityānanda-ṣaḍ-bhuja-darśakaḥ (13)<br><br>
+
+mukunda-siddhi-do dīno vāsudevāmṛta-pradaḥ<br>
+gadādhara-prāṇa-nātha ārti-hā śaraṇa-pradaḥ (14)<br><br>
+
+akiñcana-priyaḥ prāṇo guṇa-grāhī jitendriyaḥ<br>
+adoṣa-darśī sumukho madhuraḥ priyā-darśanaḥ (15)<br><br>
+
+pratāpa-rudra-saṁtrātā rāmānanda-priyo guruḥ<br>
+ananta-guṇa-sampannaḥ sarva-tīrthaika-pāvanaḥ (16)<br><br>
+
+vaikuṇṭha-nātho lokeśo bhaktābhimata-rūpa-dhṛk<br>
+nārāyaṇo mahā-yogī jñāna-bhakti-pradaḥ prabhuḥ (17)<br><br>
+
+pīyūṣa-vacanaḥ pṛthvī-pāvanaḥ satya-vāk sahaḥ<br>
+oḍa-deśa-janānandī sandohāmṛta-rūpa-dhṛk (18)<br><br>
+
+yaḥ paṭhed prātar utthāya caitanyasya mahātmanaḥ<br>
+śraddhayā parayopetaḥ stotraṁ sarvāgha-nāśanam (19)<br><br>
+
+prema-bhaktir harau tasya jāyate nātra saṁśayaḥ<br>
+asādhya-roga-yukto 'pi mucyate roga-saṅkaṭāt (20)<br><br>
+
+sarvāparādha-yukto 'pi so 'parādhāt pramucyate<br>
+phālgunī-paurṇamāsyāṁ tu caitanya-janma-vāsare (21)<br><br>
+
+śraddhayā parayā bhaktyā mahā-stotraṁ japan puraḥ<br>
+yad yat prakurute kāmaṁ tat tad evācirāl labhet (22)<br><br>
+
+aputro vaiṣṇavaṁ putraṁ labhate nātra saṁśayaḥ<br>
+ante caitanya-devasya smṛtir bhavati śāśvatī
+
+</div>
+</div>
+</div>
+<div class="section">
+
+<button class="accordion">
+🙏 Śrī Kṛṣṇa-Caitanya-Dvādaśa-Nāma-Stotram 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+TWELVE NAMES OF LORD ŚRĪ CAITANYA MAHĀPRABHU by Śrīla Sārvabhauma Bhaṭṭācārya
+</div>
+
+<div class="verse">
+
+caitanyaḥ kṛṣṇa-caitanyo gaurāṅgo dvija-nāyakaḥ<br>
+yatīnāṁ daṇḍināṁ caiva nyāsināṁ ca śiromaṇiḥ<br><br>
+
+raktāmbara-dharaḥ śrīmān navadvīpa-sudhākaraḥ<br>
+prema-bhakti-pradaś caiva śrī-śacī-nandanas tathā<br><br>
+
+dvādaśaitāni nāmāni tri-sandhyaṁ yaḥ paṭhen naraḥ<br>
+tasya vāñchā-susiddhiḥ syāt bhaktiḥ śrīla-padāmbuje
+
+</div>
+</div>
+</div>
+
+
+
+<div class="section">
+
+<button class="accordion">
+🙏 Śrī Nityānanda-Candrasya Nāma-Dvādaśaka Stotram 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+12 Holy Names of Lord Nityananda by Shrila Sarvabhauma Bhattacharya
+</div>
+
+<div class="verse">
+
+nityānando avadhūtendur vasudhā-prāṇa-vallabhaḥ<br>
+jāhnavī-jīvita-patiḥ kṛṣṇa-prema-pradaḥ prabhuḥ<br><br>
+
+padmāvatī-sutaḥ śrīmān śacī-nandana-pūrvajaḥ<br>
+bhāvonmatto jagat-trātā rakta-gaura-kalevaraḥ<br><br>
+
+śrī nityānanda-candrasya nāma-dvādaśakaṁ śubham<br>
+ya idaṁ pratyahaṁ prātaḥ praty utthāya paṭhen naraḥ<br><br>
+
+sa kleśa-rahito bhūtvā prāpnuyāt sva-mano-ratham<br>
+tūrṇaṁ caitanya-devasya karuṇā-bhājanaṁ bhavet
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Jāhnavā-Mātā Praṇāma & Nitāi-Jāhnavā Praṇāma 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Jāhnavā-Mātā Praṇāma Mantra
+</div>
+
+<div class="verse">
+
+nityānanda-priyaṁ prema-bhakti-ratna-pradāyinīm<br>
+śrī-jāhnaveśvarīṁ vande tāpa-traya-nivāriṇīm
+
+</div>
+
+<div class="verse-title">
+Nitāi-Jāhnavā Praṇāma Mantra
+</div>
+
+<div class="verse">
+
+nityānanda namas tubhyaṁ premānanda-pradāyine<br>
+kalau kalmaṣa-nāśāya jāhnavā-pataye namaḥ<br>
+
+<div class="verse-title">
+Nitai Prayers
+</div>
+
+<div class="verse">
+
+nityānandam aham naumi<br>
+sarvānanda-karam param<br>
+hari-nam-pradam devam<br>
+avadhuta-shiromanim<br>
+nityānandam aham vande<br>
+karne lambita-mauktikam<br>
+chaitanyāgraja-rupena<br>
+pavitri-krita-bhutalam<br>
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 108 Names of Śrīmatī Rādhārāṇī 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+from "Radha Kunda Mahima Madhuri” by Mahanidhi Swami
+</div>
+
+<div class="verse">
+
+śrīmad rādhā rasa-mayī, rasa-jñā rasikā tathā<br>
+rāseśvarī rasa-bhaktiḥ, rasa-pūrṇā rasa-pradā (1)<br><br>
+
+raṅgiṇī rasa-lubdhā ca, rāsa-maṇḍala-kāriṇī<br>
+rasa-vilāsinī rādhā, rādhikā rasa-pūrṇadā (2)<br><br>
+
+rāmā-ratnā ratna-mayī, ratna-mālā su-śobhanā<br>
+raktoṣṭhī rakta-nayanā, raktotpala-vidhāriṇī (3)<br><br>
+
+ramaṇī rāmaṇī gopī, vṛndāvana-vilāsinī<br>
+nānā-ratnā-vicitrāṅgī, nānā-sukha-mayī sadā (4)<br><br>
+
+saṁsāra-pāra-tāraṇī, veṇu-gītā-vinodinī<br>
+kṛṣṇa-priyā kṛṣṇa-mayī, kṛṣṇa-dhyāna-parāyaṇī (5)<br><br>
+
+sadānandā kṣīṇa-madhyā, kṛṣṇā kṛṣṇālayā śubhā<br>
+candrāvalī candra-mukhī, candrā ca kṛṣṇa-vallabhā (6)<br><br>
+
+vṛndāvaneśvarī devī, kṛṣṇa-raṅgī parā-gatiḥ<br>
+dhyānātītā dhyāna-magnā, sadā kṛṣṇa-kutūhalī (7)<br><br>
+
+prema-mayī prema-rūpā, premā prema-vinodinī<br>
+kṛṣṇa-priyā sadānandī, gopī-maṇḍala-vāsinī (8)<br><br>
+
+sundarāṅgī ca svarṇābhā, nīla-paṭṭa-vidhāriṇī<br>
+kṛṣṇānurāgiṇī caiva, kṛṣṇa-prema-sulakṣaṇā (9)<br><br>
+
+nigūḍha-rasa-sarāṅgī, mṛgākṣī mṛga-locanā<br>
+aśeṣa-guṇa-pārā ca, kṛṣṇa-prāṇeśvarī samā (10)<br><br>
+
+rāsa-maṇḍala-madhya-sthā, kṛṣṇa-raṅgī sadā-śuciḥ<br>
+vrajeśvarī vraja-rūpā, vraja-bhūmi-sukha-pradā (11)<br><br>
+
+rasollāsā madonmattā, lalitā rasa-sundarī<br>
+sarva-gopī-mayī nityā, nānā-śāstra-viśāradā (12)<br><br>
+
+kāmeśvarī kāma-rūpā sadā kṛṣṇa-parāyaṇā<br>
+parā-śakti-svarūpā ca sṛṣṭi-sthiti-vināśinī (13)<br><br>
+
+saumyā saumya-mayī rādhā, rādhikā sarva-kāmadā<br>
+gaṅgā ca tulasī caiva yamunā ca sarasvatī (14)<br><br>
+
+bhogāvatī bhagavatī, bhagavac-citta-rūpiṇī<br>
+prema-bhakti sadā saṅgī, premānanda-vilāsinī (15)<br><br>
+
+sadānanda-mayī nityā, nitya-dharma-parāyaṇī<br>
+trailokyākarṣaṇī ādyā, sundarī kṛṣṇa-rūpiṇī (16)<br><br>
+
+śatam aṣṭottaraṁ nāma yaḥ paṭhet prāyataḥ śuciḥ<br>
+prātaḥ-kāle ca madhyāhne sandhyāyāṁ madhya-rātrike<br><br>
+
+yatra tatra bhavet tasya kṛṣṇaḥ prema-yuto bhavet (17)
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Śrī Rādhā-Kṛpā-Kaṭākṣa-Stava-Rāja 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Author: Vyasadeva | Book Name: Urdhvamnaya Tantra
+</div>
+
+<div class="verse">
+
+munīndra-vṛnda-vandite, triloka-śoka-hāriṇi<br>
+prasanna-vaktra-paṅkaje, nikuñja-bhū-vilāsini<br>
+vrajendra-bhānu-nandini, vrajendra-sūnu-saṅgate<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (1)<br><br>
+
+aśoka-vṛkṣa-vallarī, vitāna-maṇḍapa-sthite<br>
+pravāla-vāla-pallava, prabhā 'ruṇāṅghri-komale<br>
+varābhaya-sphurat-kare, prabhūta-sampadālaye<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (2)<br><br>
+
+anaṅga-raṅga-maṅgala, prasaṅga-bhaṅgura-bhruvāṁ<br>
+sa-vibhramaṁ sa-sambhramaṁ, dṛganta-vāṇa-pātanaiḥ<br>
+nirantaraṁ vaśī-kṛta, pratīta-nanda-nandane<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (3)<br><br>
+
+taḍit-suvarṇa-campaka, pradīpta-gaura-vigrahe<br>
+mukha-prabhā-parāsta-koṭi, śāradendu-maṇḍale<br>
+vicitra-citra-sañcarac, cakora-śāva-locane<br>
+kadā kariṣyasīha māṁ kṛpā-kaṭākṣa-bhājanam (4)<br><br>
+
+madonmadāti-yauvane, pramoda-māna-maṇḍite<br>
+priyānurāga-rañjite, kalā-vilāsa-paṇḍite<br>
+ananya-dhanya-kuñja-rājya, kāma-keli-kovide<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (5)<br><br>
+
+aśeṣa-hāva-bhāva-dhīra, hīra-hāra-bhūṣite<br>
+prabhūta-śāta-kumbha-kumbha, kumbhi-kumbha-sustani<br>
+praśasta-manda-hāsya-cūrṇa, pūrṇa-saukhya-sāgare<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (6)<br><br>
+
+mṛṇāla-vāla-vallarī, taraṅga-raṅga-dor-late<br>
+latāgra-lāsya-lola-nīla, locanāvalokane<br>
+lalal-lulan-milan-manojña, mugdha-mohanāśrite<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (7)<br><br>
+
+suvarṇa-mālikāñcita, tri-rekha-kambu-kaṇṭhage<br>
+tri-sūtra-maṅgalī-guṇa, tri-ratna-dīpti-dīdhiti<br>
+salola-nīla-kuntala, prasūna-guccha-gumphite<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (8)<br><br>
+
+nitamba-bimba-lambamāna, puṣpa-mekhalā-guṇe<br>
+praśasta-ratna-kiṅkiṇī, kalāpa-madhya-mañjule<br>
+karīndra-śuṇḍa-daṇḍikā, varoha-saubhagoruke<br>
+kadā kariṣyasīha māṁ, kṛpā-kaṭākṣa-bhājanam (9)<br><br>
+
+aneka-mantra-nāda-mañju, nūpurā-rava-skhalat<br>
+samāja-rāja-haṁsa-vaṁśa, nikvanāti-gaurave<br><br>
+
+vilola-hema-vallarī, viḍambi-cāru-caṅkrame<br>
+kadā kariṣyasīha māṁ kṛpā-kaṭākṣa-bhājanam (10)<br><br>
+
+ananta-koṭi-viṣṇu-loka, namra-padmajārcite<br>
+himādrijā-pulomajā, viriñcajā-vara-prade<br>
+apāra-siddhi-ṛddhi-digdha, sat-padāṅgulī-nakhe<br>
+kadā kariṣyasīha māṁ kṛpā-kaṭākṣa-bhājanam (11)<br><br>
+
+makheśvari kriyeśvari, svadheśvari sureśvari<br>
+triveda-bhāratīśvari, pramāṇa-śāsaneśvari<br>
+rameśvari, kṣameśvari, pramoda-kānaneśvari<br>
+vrajeśvari, vrajādhipe, śrī rādhike namo 'stu te (12)<br><br>
+
+itī mam adbhutaṁ stavaṁ niśamya bhānu-nandinī<br>
+karotu santataṁ janaṁ kṛpā-kaṭākṣa-bhājanam<br>
+bhavet tadaiva-sañcita-tri-rūpa-karma-nāśanaṁ<br>
+labhet tadā vrajendra-sūnu-maṇḍala-praveśanam (13)
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Eight Names of Tulasī-devī 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Eight Holy Names of Tulasī Mahārāṇī
+</div>
+
+<div class="verse">
+vṛndāvanī · vṛndā · viśva-pūjitā · puṣpa-sārā · nandinī<br>
+kṛṣṇa-jīvanī · viśva-pāvanī · tulasī
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Sixteen Names of Śrī Rādhā 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+From Brahma-Vaivarta Purāṇa
+</div>
+
+<div class="verse">
+
+1. Rādhā<br>
+2. Rāseśvarī<br>
+3. Rāsa-Vāsinī<br>
+4. Rāsikeśvarī<br>
+5. Kṛṣṇa-Prāṇādhikā<br>
+6. Kṛṣṇa-Priyā<br>
+7. Kṛṣṇa-Svarūpiṇī<br>
+8. Kṛṣṇa-Vāmāṅga-sambhūtā<br>
+9. Paramānanda-Rūpiṇī<br>
+10. Kṛṣṇā<br>
+11. Vṛndāvanī<br>
+12. Vṛndā<br>
+13. Vṛndāvana-Vinodinī<br>
+14. Candrāvalī<br>
+15. Candra-Kāntā<br>
+16. Śarac-candra-Prabhānanā
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Ānanda-candrikākhyam Rādhā-Daśa-Nāma-Stotra 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Ten Names of Śrī Rādhā — The Moonlight of Bliss by Srila Rupa Goswami
+</div>
+
+<div class="verse">
+
+rādhā dāmodara-preṣṭhā<br>
+rādhikā vārṣabhānavī<br>
+samasta-ballavī-vṛnda-<br>
+dhamillottaṁsa-mallikā (1)<br><br>
+
+kṛṣṇa-priyāvalī-mukhyā<br>
+gāndharvā lalitā-sakhī<br>
+viśākhā-sakhya-sukhinī<br>
+hari-hṛd-bhṛṅga-mañjarī (2)<br><br>
+
+imāṁ vṛndāvaneśvaryā<br>
+daśa-nāma-manoramā<br>
+ānanda-candrikāṁ nāma<br>
+yo rahasyaṁ stutiṁ paṭhet (3)<br><br>
+
+sa kleśa-rahito bhūtvā<br>
+bhūri-saubhāgya-bhūṣitaḥ<br>
+tvaritaṁ karuṇā-pātraṁ<br>
+rādhā-mādhavayor bhavet (4)
+
+</div>
+</div>
+</div>
+
+
+<div class="section">
+
+<button class="accordion">
+🙏 Navadvīpa Dhāma — Nine Islands 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+The Nine Islands of Śrī Navadvīpa Dhāma
+</div>
+
+<div class="verse">
+1) Antardvīpa — Śrī Māyāpura (surrendering everything)<br>
+2) Simantadvīpa (hearing)<br>
+3) Godrumadvīpa (chanting)<br>
+4) Madhyadvīpa (remembering)<br>
+5) Koladvīpa (serving the lotus feet)<br>
+6) Ṛtudvīpa (worshipping)<br>
+7) Jāhnudvīpa (praying)<br>
+8) Modadrumadvīpa (being a servant)<br>
+9) Rudradvīpa(being a friend)
+</div>
+</div>
+</div>
+
+
+<div class="section">
+
+<button class="accordion">
+🙏 Govardhana Praṇāma Mantra 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Govardhana Praṇāma
+</div>
+
+<div class="verse">
+govardhana-dharaṁ vande<br>
+gopālaṁ gopa-rūpiṇam<br>
+gokulotsavam īśānaṁ<br>
+govindaṁ gopikā-priyam<br><br>
+
+vande nava-ghana-śyāmam<br>
+dvi-bhujaṁ muralī-dharam<br>
+pītāmbara-dharaṁ devaṁ<br>
+sa-rādhaṁ puruṣottamam<br><br>
+
+namaste girirajaya sri govardhana namine<br>
+ashesha klesha nashaya paramananda dayine
+
+<div class="verse-title">
+SB 10.21.18
+</div>
+hantāyam adrir abalā hari-dāsa-varyo<br>
+yad rāma-kṛṣṇa-caraṇa-sparaśa-pramodaḥ<br>
+mānaṁ tanoti saha-go-gaṇayos tayor yat<br>
+pānīya-sūyavasa-kandara-kandamūlaiḥ
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 The Twelve Forests of Vraja 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Dvādaśa-Vana
+</div>
+
+<div class="verse">
+
+<b>West Bank · under Śrī Kṛṣṇa's patronage</b><br><br>
+Madhuvana · Tālavana · Kumudavana · Bahulāvana · Kāmyavana · Khadiravana · Vṛndāvana<br>
+The 7 forests on the western side of the Yamunā.<br><br><br>
+
+<b>East Bank · under Balarāmajī's jurisdiction</b><br><br>
+Bhadravana · Bhāṇḍīravana · Bilvavana · Lohavana · Mahāvana<br>
+The remaining 5 forests on the Yamunā's eastern side.
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Adi vanas of Vrajamandal 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Adi vanas of Vrajamandal
+</div>
+
+<div class="verse">
+Mathurā<br>
+Rādhā Kundā<br>
+Nandagaon<br>
+Gadhā<br>
+Lalitha grāma<br>
+Vrsabhānupura<br>
+Gokulā<br>
+Balabhadravana<br>
+Govardhana<br>
+Yāvata<br>
+Vrndāvana<br>
+Sanketavana<br>
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Tulasī Kavaca 🕉️
+</button>
+
+<div class="panel">
+Tulasī Kavaca
+<div class="verse-title">
+
+</div>
+
+<div class="verse">
+
+<div class="verse-title">
+Nyāsa mantra
+</div>
+
+Om asya srī-tulasī-kavaca-stotra-mahā-mantrasya<br>
+Srī-mahādeva rsih<br>
+Anustup chandah<br>
+Srī-tulasī devatā<br>
+Mano ‘bhista kāmāni sarva vidyārthe<br>
+jape viniyogah<br>
+
+<div class="verse-title">
+Atha dhyānam
+</div>
+
+Tulasy mrta-janmāsi<br>
+Sadā tvam kesava-priye<br>
+Prasīda vara-de devi<br>
+Visnoh Priya-kāri sadā<br>
+
+<div class="verse-title">
+Atha kavacam
+</div>
+
+tulasī śrī-mahā-devi<br>
+namaḥ paṅkaja-dhāriṇi<br>
+śiro me tulasī pātu<br>
+bhālaṁ pātu yaśasvinī (1)<br><br>
+
+dṛśau me padma-nayanā<br>
+śrī-sakhī śravaṇe mama<br>
+ghrāṇaṁ pātu sugandhā me<br>
+mukhaṁ ca sumukhī mama (2)<br><br>
+
+jihvāṁ me pātu śubha-dā<br>
+kaṇṭhaṁ vidyā-mayī mama<br>
+skandhau kalhāriṇī pātu<br>
+hṛdayaṁ viṣṇu-vallabhā (3)<br><br>
+
+puṇya-dā pātu me madhyaṁ<br>
+nābhiṁ saubhāgya-dāyinī<br>
+kaṭiṁ kuṇḍalinī pātu<br>
+ūrū nārada-vanditā (4)<br><br>
+
+jananī jānunī pātu<br>
+jaṅghe sakala-vanditā<br>
+nārāyaṇa-priyā pādau<br>
+sarvāṅgaṁ sarva-rakṣiṇī (5)<br><br>
+
+saṅkaṭe viṣame durge<br>
+bhaya-vāde mahāhave<br>
+nityaṁ dvi-sandhyayoḥ pātu<br>
+tulasī sarvataḥ sadā (6)<br><br>
+
+itīdaṁ paramaṁ guhyaṁ<br>
+tulasyāḥ kavacāmṛtam (7)
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 JBS Pranam mantra 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+JBS Pranam mantra
+</div>
+
+<div class="verse">
+Nilachala Nivasaya ,Nityaya Paramatmane<br>
+Balabhadra Subhadrabhyam,Jagannathayate Namah <br>
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Śrī Jagannāthāṣṭakam 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Author: Adi Sankaracarya
+</div>
+
+<div class="verse">
+
+kadācit kālindī-taṭa-vipina-saṅgīta-taralo<br>
+mudābhīrī-nārī-vadana-kamalāsvāda-madhupaḥ<br><br>
+
+ramā-śambhu-brahmāmara-pati-gaṇeśārcita-pādo<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (1)<br><br>
+
+bhuje savye veṇuṁ śirasi śikhi-picchaṁ kaṭitaṭe<br>
+dukūlaṁ netrānte sahacara-kaṭākṣaṁ vidadhate<br><br>
+
+sadā śrīmad-vṛndāvana-vasati-līlā-paricayo<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (2)<br><br>
+
+mahāmbhodhes tīre kanaka-rucire nīla-śikhare<br>
+vasan prāsādāntaḥ sahaja-balabhadreṇa balinā<br><br>
+
+subhadrā-madhya-sthaḥ sakala-sura-sevāvasara-do<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (3)<br><br>
+
+kṛpā-pārāvāraḥ sajala-jalada-śreṇi-ruciro<br>
+ramā-vāṇī-rāmaḥ sphurad-amala-paṅkeruha-mukhaḥ<br><br>
+
+surendrair ārādhyaḥ śruti-gaṇa-śikhā-gīta-carito<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (4)<br><br>
+
+rathārūḍho gacchan pathi milita-bhūdeva-paṭalaiḥ<br>
+stuti-prādurbhāvaṁ prati-padam upākarṇya sadayaḥ<br><br>
+
+dayā-sindhur bandhuḥ sakala jagatāṁ sindhu-sutayā<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (5)<br><br>
+
+paraṁ-brahmāpīḍaḥ kuvalaya-dalotphulla-nayano<br>
+nivāsī nīlādrau nihita-caraṇo 'nanta-śirasi<br><br>
+
+rasānandī rādhā-sarasa-vapur-āliṅgana-sukho<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (6)<br><br>
+
+na vai yāce rājyaṁ na ca kanaka-māṇikya-vibhavaṁ<br>
+na yāce 'haṁ ramyāṁ sakala jana-kāmyāṁ vara-vadhūm<br><br>
+
+sadā kāle kāle pramatha-patinā gīta-carito<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (7)<br><br>
+
+hara tvaṁ saṁsāraṁ druta-taram asāraṁ sura-pate<br>
+hara tvaṁ pāpānāṁ vitatim aparāṁ yādava-pate<br><br>
+
+aho dīne 'nāthe nihita-caraṇo niścitam idaṁ<br>
+jagannāthaḥ svāmī nayana-patha-gāmī bhavatu me (8)<br><br>
+
+jagannāthāṣṭakaṁ puṇyaṁ yaḥ paṭhet prayataḥ śuciḥ<br>
+sarva-pāpa-viśuddhātmā viṣṇu-lokaṁ sa gacchati
+
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 108 Names of Jagannātha 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Śrī Jagannātha Aṣṭottara-Śata-Nāmāvaliḥ
+</div>
+
+<div class="verse">
+1. Om Padmanābhāya Namah<br>
+2. Om Parama Hamsine Namah<br>
+3. Om Baladāyine Namah<br>
+4. Om Jana Rakṣakāya Namah<br>
+5. Om Sureśwarāya Namah<br>
+6. Om Puruṣottamāya Namah<br>
+7. Om Bimla Pritivardhane Namah<br>
+8. Om Mahā Viṣnave Namah<br>
+9. Om Prabha Viṣnave Namah<br>
+10. Om Indradyumna ātmajāya Namah<br><br>
+
+11. Om Jagannāthāya Namah<br>
+12. Om Kṛṣṇāya Namah<br>
+13. Om Śankha Kṣetra Nivāsine Namah<br>
+14. Om Samsāra Pālakāya Namah<br>
+15. Om Sacchidānandāya Namah<br>
+16. Om Mahā Jośine Namah<br>
+17. Om Sahasrakāya Namah<br>
+18. Om Sūryachandra Lochanāya Namah<br>
+19. Om Jagadīśāya Namah<br>
+20. Om Nīla Sundarāya Namah<br><br>
+
+21. Om Nīlāchalādhipataye Namah<br>
+22. Om Kamalavallabhāya Namah<br>
+23. Om Śatrunāśine Namah<br>
+24. Om Balabhadrānujāya Namah<br>
+25. Om Nilachakra Dhāriṇe Namah<br>
+26. Om Suraharāya Namah<br>
+27. Om Gundichā ātmajāya Namah<br>
+28. Om Vṛndāvana Vihāriṇe Namah<br>
+29. Om Dāru Brahmaṇe Namah<br>
+30. Om Jagat Samsāra Pālakāya Namah<br><br>
+
+31. Om Paramātmāya Namah<br>
+32. Om Mantrada Janmadātriṇe Namah<br>
+33. Om Sarvadāta Para Harāya Namah<br>
+34. Om Dhāmeśwarāya Namah<br>
+35. Om Parama Puruṣāya Namah<br>
+36. Om Paramānanda Dāyine Namah<br>
+37. Om Parameśwarāya Namah<br>
+38. Om Lokanāthāya Namah<br>
+39. Om Dhāmadhāmātmāya Namah<br>
+40. Om Dhāma Bāndhavāya Namah<br><br>
+
+41. Om Suśānta Caturuttamāya Namah<br>
+42. Om Jīvātma Janakāya Namah<br>
+43. Om Narapālakāya Namah<br>
+44. Om Nīla Bhadravāsine Namah<br>
+45. Om Purandarāya Namah<br>
+46. Om Gopavallabhāya Namah<br>
+47. Om Mahā Brahmaṇe Namah<br>
+48. Om Sadāchāriṇe Namah<br>
+49. Om Satyarādhine Namah<br>
+50. Om Kāmadēvāya Namah<br><br>
+
+51. Om Kāmamūrtaye Namah<br>
+52. Om Lakṣmīnārāyaṇāya Namah<br>
+53. Om Jagatpālakāya Namah<br>
+54. Om Surapataye Namah<br>
+55. Om Suradēvāya Namah<br>
+56. Om Mahāyogine Namah<br>
+57. Om Jagat Kartāya Namah<br>
+58. Om Gopa Govatsapālakāya Namah<br>
+59. Om Brahmachāriṇe Namah<br>
+60. Om Krodhanāśine Namah<br><br>
+
+61. Om Jīthendriyāya Namah<br>
+62. Om Brahmamūrtāya Namah<br>
+63. Om Veda Pataye Namah<br>
+64. Om Vanamāline Namah<br>
+65. Om Pralayādhīrāya Namah<br>
+66. Om Dayānidhine Namah<br>
+67. Om Bhṛgupataye Namah<br>
+68. Om Śrīvatsāya Namah<br>
+69. Om Śrī Gadāgrajāya Namah<br>
+70. Om Śrīpataye Namah<br><br>
+
+71. Om Śrīnivāsāya Namah<br>
+72. Om Tulasi Pritivardhanāya Namah<br>
+73. Om Dārurūpāya Namah<br>
+74. Om Mahāvaikuṇṭa Vāsine Namah<br>
+75. Om Duṣṭa Nāśine Namah<br>
+76. Om Bhakta Pradāyakāya Namah<br>
+77. Om Punyasampatti Dātāya Namah<br>
+78. Om Sadānīlādri Vāsine Namah<br>
+79. Om Naranārāyaṇāya Namah<br>
+80. Om Govindāya Namah<br><br>
+
+81. Om Devakī Putrāya Namah<br>
+82. Om Murāri Venu Hartakāya Namah<br>
+83. Om Patīta Pāvanāya Namah<br>
+84. Om Pāṇḍava Rakṣakāya Namah<br>
+85. Om Mathurāpuri Vāsine Namah<br>
+86. Om Dwārakāpataye Namah<br>
+87. Om Vasanta Ṛtu Mātāya Namah<br>
+88. Om Mādhavāya Namah<br>
+89. Om Madhusūdanāya Namah<br>
+90. Om Anantakalpa Vāsine Namah<br><br>
+
+91. Om Caturyuga Pataye Namah<br>
+92. Om Śaraṇāgata Pālakāya Namah<br>
+93. Om Bhūpataye Namah<br>
+94. Om Chakrapāṇāya Namah<br>
+95. Om Surachāryāya Namah<br>
+96. Om Devarājāya Namah<br>
+97. Om Dehadhārine Namah<br>
+98. Om Sarvapriyāya Namah<br>
+99. Om Devavallabhāya Namah<br>
+100. Om Sarvamangalāya Namah<br><br>
+
+101. Om Sahasra Śīrṣāya Namah<br>
+102. Om Vanapriyāya Namah<br>
+103. Om Dāśarātātmajāya Namah<br>
+104. Om Girivāsine Namah<br>
+105. Om Śrīdhara Harāya Namah<br>
+106. Om Lokarājaya Namah<br>
+107. Om Mahākālāya Namah<br>
+108. Om Bṛhat Netrāya Namah
+
+</div>
+</div>
+</div>
+<div class="section">
+
+<button class="accordion">
+🙏 Corāṣṭakam 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Vraje Prasiddham Navanita | Author: Bilvamangala Thakura
+</div>
+
+<div class="verse">
+
+(1)<br>
+vraje prasiddhaḿ navanīta-cauraḿ<br>
+gopāńganānāḿ ca dukūla-cauram<br>
+aneka-janmārjita-pāpa-cauraḿ<br>
+caurāgragaṇyaḿ puruṣaḿ namāmi<br><br>
+
+(2)<br>
+śrī rādhikāyā hṛdayasya cauraḿ<br>
+navāmbuda-śyāmala-kānti-cauram<br>
+padāśritānāḿ ca samasta-cauraḿ<br>
+caurāgragaṇyaḿ puruṣaḿ namāmi<br>
+
+(3)
+akiñcanī-kṛtya padāśritaḿ yaḥ<br>
+karoti bhikṣuḿ pathi geha-hīnam<br>
+kenāpy aho bhīṣaṇa-caura īdṛg<br>
+dṛṣṭaḥ-śruto vā na jagat-traye ’pi<br><br>
+
+(4)
+yadīya nāmāpi haraty aśeṣaḿ<br>
+giri-prasārān api pāpa-rāśīn<br>
+āścarya-rūpo nanu caura īdṛg<br>
+dṛṣṭaḥ śruto vā na mayā kadāpi<br><br>
+
+(5)
+dhanaḿ ca mānaḿ ca tathendriyāṇi<br>
+prāṇāḿś ca hṛtvā mama sarvam eva<br>
+palāyase kutra dhṛto ’dya caura<br>
+tvaḿ bhakti-dāmnāsi mayā niruddhaḥ<br><br>
+
+(6)
+chinatsi ghoraḿ yama-pāśa-bandhaḿ<br>
+bhinatsi bhīmaḿ bhava-pāśa-bandham<br>
+chinatsi sarvasya samasta-bandhaḿ<br>
+naivātmano bhakta-kṛtaḿ tu bandham<br><br>
+
+(7)
+man-mānase tāmasa-rāśi-ghore<br>
+kārāgṛhe duḥkha-maye nibaddhaḥ<br>
+labhasva he caura! hare! cirāya<br>
+sva-caurya-doṣocitam eva daṇḍam<br><br>
+
+(8)
+kārāgṛhe vasa sadā hṛdaye madīye<br>
+mad-bhakti-pāśa-dṛḍha-bandhana-niścalaḥ san<br>
+tvāḿ kṛṣṇa he! pralaya-koṭi-śatāntare ’pi<br>
+sarvasva-caura! hṛdayān na hi mocayāmi<br><br>
+
+</div>
+</div>
+</div>
+<div class="section">
+
+<button class="accordion">
+🙏 Bhagavad-gītā Chapter 15 — Puruṣottama Yoga 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+TEXT 1
+</div>
+
+<div class="verse">
+
+śrī-bhagavān uvāca<br>
+ūrdhva-mūlam adhaḥ-śākham<br>
+aśvatthaṁ prāhur avyayam<br>
+chandāṁsi yasya parṇāni<br>
+yas taṁ veda sa veda-vit
+
+</div>
+
+<div class="verse-title">
+TEXT 2
+</div>
+
+<div class="verse">
+
+adhaś cordhvaṁ prasṛtās tasya śākhā<br>
+guṇa-pravṛddhā viṣaya-pravālāḥ<br>
+adhaś ca mūlāny anusantatāni<br>
+karmānubandhīni manuṣya-loke
+
+</div>
+
+<div class="verse-title">
+TEXTS 3–4
+</div>
+
+<div class="verse">
+
+na rūpam asyeha tathopalabhyate<br>
+nānto na cādir na ca sampratiṣṭhā<br>
+aśvattham enaṁ su-virūḍha-mūlam<br>
+asaṅga-śastreṇa dṛḍhena chittvā<br><br>
+
+tataḥ padaṁ tat parimārgitavyaṁ<br>
+yasmin gatā na nivartanti bhūyaḥ<br>
+tam eva cādyaṁ puruṣaṁ prapadye<br>
+yataḥ pravṛttiḥ prasṛtā purāṇī
+
+</div>
+
+<div class="verse-title">
+TEXT 5
+</div>
+
+<div class="verse">
+
+nirmāna-mohā jita-saṅga-doṣā<br>
+adhyātma-nityā vinivṛtta-kāmāḥ<br>
+dvandvair vimuktāḥ sukha-duḥkha-saṁjñair<br>
+gacchanty amūḍhāḥ padam avyayaṁ tat
+
+</div>
+
+<div class="verse-title">
+TEXT 6
+</div>
+
+<div class="verse">
+
+na tad bhāsayate sūryo<br>
+na śaśāṅko na pāvakaḥ<br>
+yad gatvā na nivartante<br>
+tad dhāma paramaṁ mama
+
+</div>
+
+<div class="verse-title">
+TEXT 7
+</div>
+
+<div class="verse">
+
+mamaivāṁśo jīva-loke<br>
+jīva-bhūtaḥ sanātanaḥ<br>
+manaḥ-ṣaṣṭhānīndriyāṇi<br>
+prakṛti-sthāni karṣati
+
+</div>
+
+<div class="verse-title">
+TEXT 8
+</div>
+
+<div class="verse">
+
+śarīraṁ yad avāpnoti<br>
+yac cāpy utkrāmatīśvaraḥ<br>
+gṛhītvaitāni saṁyāti<br>
+vāyur gandhān ivāśayāt
+
+</div>
+
+<div class="verse-title">
+TEXT 9
+</div>
+
+<div class="verse">
+
+śrotraṁ cakṣuḥ sparśanaṁ ca<br>
+rasanaṁ ghrāṇam eva ca<br>
+adhiṣṭhāya manaś cāyaṁ<br>
+viṣayān upasevate
+
+</div>
+
+<div class="verse-title">
+TEXT 10
+</div>
+
+<div class="verse">
+
+utkrāmantaṁ sthitaṁ vāpi<br>
+bhuñjānaṁ vā guṇānvitam<br>
+vimūḍhā nānupaśyanti<br>
+paśyanti jñāna-cakṣuṣaḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 11
+</div>
+
+<div class="verse">
+
+yatanto yoginaś cainaṁ<br>
+paśyanty ātmany avasthitam<br>
+yatanto ’py akṛtātmāno<br>
+nainaṁ paśyanty acetasaḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 12
+</div>
+
+<div class="verse">
+
+yad āditya-gataṁ tejo<br>
+jagad bhāsayate ’khilam<br>
+yac candramasi yac cāgnau<br>
+tat tejo viddhi māmakam
+
+</div>
+
+<div class="verse-title">
+TEXT 13
+</div>
+
+<div class="verse">
+
+gām āviśya ca bhūtāni<br>
+dhārayāmy aham ojasā<br>
+puṣṇāmi cauṣadhīḥ sarvāḥ<br>
+somo bhūtvā rasātmakaḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 14
+</div>
+
+<div class="verse">
+
+ahaṁ vaiśvānaro bhūtvā<br>
+prāṇināṁ deham āśritaḥ<br>
+prāṇāpāna-samāyuktaḥ<br>
+pacāmy annaṁ catur-vidham
+
+</div>
+
+<div class="verse-title">
+TEXT 15
+</div>
+
+<div class="verse">
+
+sarvasya cāhaṁ hṛdi sanniviṣṭo<br>
+mattaḥ smṛtir jñānam apohanaṁ ca<br>
+vedaiś ca sarvair aham eva vedyo<br>
+vedānta-kṛd veda-vid eva cāham
+
+</div>
+
+<div class="verse-title">
+TEXT 16
+</div>
+
+<div class="verse">
+
+dvāv imau puruṣau loke<br>
+kṣaraś cākṣara eva ca<br>
+kṣaraḥ sarvāṇi bhūtāni<br>
+kūṭa-stho ’kṣara ucyate
+
+</div>
+
+<div class="verse-title">
+TEXT 17
+</div>
+
+<div class="verse">
+
+uttamaḥ puruṣas tv anyaḥ<br>
+paramātmety udāhṛtaḥ<br>
+yo loka-trayam āviśya<br>
+bibharty avyaya īśvaraḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 18
+</div>
+
+<div class="verse">
+
+yasmāt kṣaram atīto ’ham<br>
+akṣarād api cottamaḥ<br>
+ato ’smi loke vede ca<br>
+prathitaḥ puruṣottamaḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 19
+</div>
+
+<div class="verse">
+
+yo mām evam asammūḍho<br>
+jānāti puruṣottamam<br>
+sa sarva-vid bhajati māṁ<br>
+sarva-bhāvena bhārata
+
+</div>
+
+<div class="verse-title">
+TEXT 20
+</div>
+
+<div class="verse">
+
+iti guhya-tamaṁ śāstram<br>
+idam uktaṁ mayānagha<br>
+etad buddhvā buddhimān syāt<br>
+kṛta-kṛtyaś ca bhārata
+
+</div>
+</div>
+</div>
+<div class="section">
+
+<button class="accordion">
+🙏 Śrīmad Bhagavad-gītā Catuḥśloki 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+TEXT 8
+</div>
+
+<div class="verse">
+
+ahaṁ sarvasya prabhavo<br>
+mattaḥ sarvaṁ pravartate<br>
+iti matvā bhajante māṁ<br>
+budhā bhāva-samanvitāḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 9
+</div>
+
+<div class="verse">
+
+mac-cittā mad-gata-prāṇā<br>
+bodhayantaḥ parasparam<br>
+kathayantaś ca māṁ nityaṁ<br>
+tuṣyanti ca ramanti ca
+
+</div>
+
+<div class="verse-title">
+TEXT 10
+</div>
+
+<div class="verse">
+
+teṣāṁ satata-yuktānāṁ<br>
+bhajatāṁ prīti-pūrvakam<br>
+dadāmi buddhi-yogaṁ taṁ<br>
+yena mām upayānti te
+
+</div>
+
+<div class="verse-title">
+TEXT 11
+</div>
+
+<div class="verse">
+
+teṣām evānukampārtham<br>
+aham ajñāna-jaṁ tamaḥ<br>
+nāśayāmy ātma-bhāva-stho<br>
+jñāna-dīpena bhāsvatā
+
+</div>
+</div>
+</div>
+<div class="section">
+
+<button class="accordion">
+🙏 Śrīmad Bhāgavatam Catuḥśloki 🕉️
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+TEXT 33
+</div>
+
+<div class="verse">
+
+aham evāsam evāgre<br>
+nānyad yat sad-asat param<br>
+paścād ahaṁ yad etac ca<br>
+yo ’vaśiṣyeta so ’smy aham
+
+</div>
+
+<div class="verse-title">
+TEXT 34
+</div>
+
+<div class="verse">
+
+ṛte ’rthaṁ yat pratīyeta<br>
+na pratīyeta cātmani<br>
+tad vidyād ātmano māyāṁ<br>
+yathābhāso yathā tamaḥ
+
+</div>
+
+<div class="verse-title">
+TEXT 35
+</div>
+
+<div class="verse">
+
+yathā mahānti bhūtāni<br>
+bhūteṣūccāvaceṣv anu<br>
+praviṣṭāny apraviṣṭāni<br>
+tathā teṣu na teṣv aham
+
+</div>
+
+<div class="verse-title">
+TEXT 36
+</div>
+
+<div class="verse">
+
+etāvad eva jijñāsyaṁ<br>
+tattva-jijñāsunātmanaḥ<br>
+anvaya-vyatirekābhyāṁ<br>
+yat syāt sarvatra sarvadā
+
+</div>
+</div>
+</div>
+
+<div class="section">
+
+<button class="accordion">
+🙏 Nandanandanāṣṭakam 🕉️ 
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+Eight Prayers to the Son of Nanda
+</div>
+
+<div class="verse">
+
+sucāru-vaktra-maṇḍalaṁ sukarṇa-ratna-kuṇḍalam<br>
+sucarcitāṅga-candanaṁ namāmi nanda-nandanam (1)<br><br>
+
+sudīrgha-netra-paṅkajaṁ śikhi-śikhaṇḍa-mūrdhajam<br>
+anaṅga-koṭi-mohanaṁ namāmi nanda-nandanam (2)<br><br>
+
+sunāsikāgra-mauktikaṁ svacchanda-danta-paṅktikam<br>
+navāmbudāṅga-cikkanaṁ namāmi nanda-nandanam (3)<br><br>
+
+kareṇa veṇu-rañjitaṁ gati-karīndra-gañjitam<br>
+dukūla-pīta-śobhanaṁ namāmi nanda-nandanam (4)<br><br>
+
+tri-bhaṅga-deha-sundaraṁ nakha-dyuti-sudhā-karam<br>
+amūlya-ratna-bhūṣaṇaṁ namāmi nanda-nandanam (5)<br><br>
+
+sugandha-aṅga-saurabhaṁ uro-virāji-kaustubham<br>
+sphurac-chrīvatsa-lāñchanaṁ namāmi nanda-nandanam (6)<br><br>
+
+vṛndāvana-sunāgaraṁ vilāsānuga-vāsasam<br>
+surendra-garva-mocanaṁ namāmi nanda-nandanam (7)<br><br>
+
+vrajāṅganā-sunāyakaṁ sadā sukha-pradāyakam<br>
+jagan-manaḥ pralobhanaṁ namāmi nanda-nandanam (8)<br><br>
+
+śrī-nanda-nandanāṣṭakaṁ paṭhed yaḥ śraddhayānvitaḥ<br>
+tared bhavābdhiṁ dustaraṁ labhet tad-aṅghri-yugmakam
+
+</div>
+</div>
+</div>
+
+<button class="accordion">
+🙏 (Gopi Geet)🕉️ 
+</button>
+
+<div class="panel">
+
+<div class="verse-title">
+SRIMAD BHAGAVATAM | CHAPTER THIRTY-ONE | The Gopīs’ Songs of Separation
+</div>
+
+<div class="verse">
+
+<div class="verse-title">
+Text 1
+</div>
+gopya ūcuḥ
+jayati te ’dhikaṁ janmanā vrajaḥ<br>
+śrayata indirā śaśvad atra hi<br>
+dayita dṛśyatāṁ dikṣu tāvakās<br>
+tvayi dhṛtāsavas tvāṁ vicinvate<br>
+
+<div class="verse-title">
+Text 2
+</div>
+śarad-udāśaye sādhu-jāta-sat-<br>
+sarasijodara-śrī-muṣā dṛśā<br>
+surata-nātha te ’śulka-dāsikā<br>
+vara-da nighnato neha kiṁ vadhaḥ<br>
+
+<div class="verse-title">
+Text 3
+</div>
+viṣa-jalāpyayād vyāla-rākṣasād<br>
+varṣa-mārutād vaidyutānalāt<br>
+vṛṣa-mayātmajād viśvato bhayād<br>
+ṛṣabha te vayaṁ rakṣitā muhuḥ<br>
+
+<div class="verse-title">
+Text 4
+</div>
+na khalu gopīkā-nandano bhavān<br>
+akhila-dehinām antarātma-dṛk<br>
+vikhanasārthito viśva-guptaye<br>
+sakha udeyivān sātvatāṁ kule<br>
+
+<div class="verse-title">
+Text 5
+</div>
+viracitābhayaṁ vṛṣṇi-dhūrya te<br>
+caraṇam īyuṣāṁ saṁsṛter bhayāt<br>
+kara-saroruhaṁ kānta kāma-daṁ<br>
+śirasi dhehi naḥ śrī-kara-graham<br>
+
+<div class="verse-title">
+Text 6
+</div>
+vraja-janārti-han vīra yoṣitāṁ<br>
+nija-jana-smaya-dhvaṁsana-smita<br>
+bhaja sakhe bhavat-kiṅkarīḥ sma no<br>
+jalaruhānanaṁ cāru darśaya<br>
+
+<div class="verse-title">
+Text 7
+</div>
+praṇata-dehināṁ pāpa-karṣaṇaṁ<br>
+tṛṇa-carānugaṁ śrī-niketanam<br>
+phaṇi-phaṇārpitaṁ te padāmbujaṁ<br>
+kṛṇu kuceṣu naḥ kṛndhi hṛc-chayam<br>
+
+<div class="verse-title">
+Text 8
+</div>
+madhurayā girā valgu-vākyayā<br>
+budha-manojñayā puṣkarekṣaṇa<br>
+vidhi-karīr imā vīra muhyatīr<br>
+adhara-sīdhunāpyāyayasva naḥ<br>
+
+<div class="verse-title">
+Text 9
+</div>
+tava kathāmṛtaṁ tapta-jīvanaṁ<br>
+kavibhir īḍitaṁ kalmaṣāpaham<br>
+śravaṇa-maṅgalaṁ śrīmad ātataṁ<br>
+bhuvi gṛṇanti ye bhūri-dā janāḥ<br>
+
+<div class="verse-title">
+Text 10
+</div>
+prahasitaṁ priya-prema-vīkṣaṇaṁ<br>
+viharaṇaṁ ca te dhyāna-maṅgalam<br>
+rahasi saṁvido yā hṛdi spṛśaḥ<br>
+kuhaka no manaḥ kṣobhayanti hi<br>
+
+<div class="verse-title">
+Text 11
+</div>
+calasi yad vrajāc cārayan paśūn<br>
+nalina-sundaraṁ nātha te padam<br>
+śila-tṛṇāṅkuraiḥ sīdatīti naḥ<br>
+kalilatāṁ manaḥ kānta gacchati<br>
+
+<div class="verse-title">
+Text 12
+</div>
+dina-parikṣaye nīla-kuntalair<br>
+vanaruhānanaṁ bibhrad āvṛtam<br>
+ghana-rajasvalaṁ darśayan muhur<br>
+manasi naḥ smaraṁ vīra yacchasi<br>
+
+<div class="verse-title">
+Text 13
+</div>
+praṇata-kāma-daṁ padmajārcitaṁ<br>
+dharaṇi-maṇḍanaṁ dhyeyam āpadi<br>
+caraṇa-paṅkajaṁ śantamaṁ ca te<br>
+ramaṇa naḥ staneṣv arpayādhi-han<br>
+
+<div class="verse-title">
+Text 14
+</div>
+surata-vardhanaṁ śoka-nāśanaṁ<br>
+svarita-veṇunā suṣṭhu cumbitam<br>
+itara-rāga-vismāraṇaṁ nṛṇāṁ<br>
+vitara vīra nas te ’dharāmṛtam<br>
+
+<div class="verse-title">
+Text 15
+</div>
+aṭati yad bhavān ahni kānanaṁ<br>
+truṭi yugāyate tvām apaśyatām<br>
+kuṭila-kuntalaṁ śrī-mukhaṁ ca te<br>
+jaḍa udīkṣatāṁ pakṣma-kṛd dṛśām<br>
+
+<div class="verse-title">
+Text 16
+</div>
+pati-sutānvaya-bhrātṛ-bāndhavān<br>
+ativilaṅghya te ’nty acyutāgatāḥ<br>
+gati-vidas tavodgīta-mohitāḥ<br>
+kitava yoṣitaḥ kas tyajen niśi<br>
+
+<div class="verse-title">
+Text 17
+</div>
+rahasi saṁvidaṁ hṛc-chayodayaṁ<br>
+prahasitānanaṁ prema-vīkṣaṇam<br>
+bṛhad-uraḥ śriyo vīkṣya dhāma te<br>
+muhur ati-spṛhā muhyate manaḥ<br>
+
+<div class="verse-title">
+Text 18
+</div>
+vraja-vanaukasāṁ vyaktir aṅga te<br>
+vṛjina-hantry alaṁ viśva-maṅgalam<br>
+tyaja manāk ca nas tvat-spṛhātmanāṁ<br>
+sva-jana-hṛd-rujāṁ yan niṣūdanam<br>
+
+<div class="verse-title">
+Text 19
+</div>
+yat te sujāta-caraṇāmburuhaṁ staneṣu<br>
+bhītāḥ śanaiḥ priya dadhīmahi karkaśeṣu<br>
+tenāṭavīm aṭasi tad vyathate na kiṁ svit<br>
+kūrpādibhir bhramati dhīr bhavad-āyuṣāṁ naḥ<br>
+
+</div>
+</div>
+</div>

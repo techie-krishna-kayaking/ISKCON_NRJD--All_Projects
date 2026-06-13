@@ -1,0 +1,269 @@
+.hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2D1B0E 0%, #5C2D0E 40%, #E86B1A 100%);
+  overflow: hidden;
+}
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: url('/lord_image/background.jpg') center/cover no-repeat;
+  opacity: 0.15;
+}
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  max-width: 800px;
+}
+.heroOm {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  animation: pulse 3s ease-in-out infinite;
+}
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-gold-light);
+  margin-bottom: var(--space-4);
+  line-height: 1.2;
+}
+.heroSubtitle {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--space-8);
+  line-height: 1.6;
+}
+.heroCta {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-base);
+  text-decoration: none;
+}
+.ctaPrimary {
+  background: var(--color-saffron);
+  color: white;
+  box-shadow: 0 4px 20px rgba(232, 107, 26, 0.4);
+}
+.ctaPrimary:hover {
+  background: var(--color-saffron-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(232, 107, 26, 0.5);
+  color: white;
+}
+.ctaSecondary {
+  border: 2px solid var(--color-gold-light);
+  color: var(--color-gold-light);
+}
+.ctaSecondary:hover {
+  background: var(--color-gold-light);
+  color: var(--color-text-primary);
+}
+
+/* Trust Banner */
+.trustBanner {
+  background: linear-gradient(90deg, var(--color-saffron-50), var(--color-cream), var(--color-saffron-50));
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+.trustText {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  color: var(--color-saffron-dark);
+  font-style: italic;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Section */
+.section {
+  padding: var(--space-16) var(--space-4);
+}
+.sectionAlt { background: var(--color-white); }
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  text-align: center;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+.sectionSubtitle {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-12);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Features Grid */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+.featureCard {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  text-align: center;
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+}
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-saffron-light);
+}
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+}
+.featureTitle {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+.featureDesc {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+/* Menu Preview */
+.menuGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-6);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+.menuCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+}
+.menuCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.menuImage {
+  height: 180px;
+  background: linear-gradient(135deg, var(--color-saffron-50), var(--color-cream-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+.menuImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.menuInfo {
+  padding: var(--space-4);
+}
+.menuName {
+  font-weight: 600;
+  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
+}
+.menuDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.menuPrice {
+  font-weight: 700;
+  color: var(--color-saffron-dark);
+}
+
+/* Process */
+.processGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-8);
+  max-width: var(--container-lg);
+  margin: 0 auto;
+}
+.processStep {
+  text-align: center;
+}
+.processNum {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-saffron);
+  color: white;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+}
+.processTitle {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+.processDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Testimonials */
+.testimonialGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  max-width: var(--container-xl);
+  margin: 0 auto;
+}
+.testimonialCard {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  border: 1px solid var(--color-border-light);
+  position: relative;
+}
+.testimonialQuote {
+  font-size: var(--text-3xl);
+  color: var(--color-saffron-light);
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-6);
+}
+.testimonialText {
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  padding-top: var(--space-6);
+  line-height: 1.7;
+}
+.testimonialAuthor {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}

@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design Blueprint — Program & Devotee Management System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Cinzel:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* ── CORE PALETTE ── */
+        --sky-dawn: #eff8ff;
+        --sky-soft: #dbeeff;
+        --sky-mid: #b8daff;
+        --sky-deep: #7fb9f5;
+        --sky-vivid: #4a9ce8;
+        --sky-royal: #2176ae;
+
+        --teal-light: #d4f1f4;
+        --teal-mid: #75c6cf;
+        --teal-deep: #1a8fa1;
+
+        --gold-pale: #fff9ed;
+        --gold-soft: #f5d88a;
+        --gold-warm: #d4a017;
+        --gold-deep: #a0760d;
+
+        --lotus-pale: #fff0f6;
+        --lotus-blush: #f9c4dc;
+        --lotus-rose: #e07ba8;
+
+        --text-dark: #0f2a3f;
+        --text-mid: #2d5474;
+        --text-muted: #6b8fad;
+        --text-light: #a8c4d8;
+
+        --white: #ffffff;
+        --glass: rgba(255, 255, 255, 0.72);
+        --glass-border: rgba(167, 210, 245, 0.45);
+        --shadow-soft: 0 4px 32px rgba(33, 118, 174, 0.1);
+        --shadow-card: 0 8px 40px rgba(33, 118, 174, 0.14);
+
+        /* ── TYPOGRAPHY ── */
+        --font-display: "Cinzel", serif;
+        --font-serif: "Cormorant Garamond", serif;
+        --font-body: "DM Sans", sans-serif;
+
+        /* ── SPACING ── */
+        --r-sm: 8px;
+        --r-md: 14px;
+        --r-lg: 22px;
+        --r-xl: 32px;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background: var(--sky-dawn);
+        color: var(--text-dark);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* ════════════════════════════════
+     COVER
+  ════════════════════════════════ */
+      .cover {
+        min-height: 100vh;
+        background: linear-gradient(
+          145deg,
+          #c9e8ff 0%,
+          #eff8ff 40%,
+          #d4f1f4 70%,
+          #e8f4ff 100%
+        );
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 60px 24px;
+      }
+
+      /* Sacred geometry background */
+      .cover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(
+            circle at 20% 20%,
+            rgba(75, 156, 232, 0.12) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 75%,
+            rgba(26, 143, 161, 0.1) 0%,
+            transparent 45%
+          ),
+          radial-gradient(
+            circle at 55% 10%,
+            rgba(212, 160, 23, 0.08) 0%,
+            transparent 35%
+          );
+        pointer-events: none;
+      }
+
+      .mandala-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(74, 156, 232, 0.18);
+        pointer-events: none;
+        animation: rotateRing 30s linear infinite;
+      }
+      .mandala-ring:nth-child(1) {
+        width: 600px;
+        height: 600px;
+        top: -100px;
+        left: -200px;
+        animation-duration: 40s;
+      }
+      .mandala-ring:nth-child(2) {
+        width: 400px;
+        height: 400px;
+        top: 60%;
+        right: -100px;
+        animation-direction: reverse;
+        animation-duration: 28s;
+      }
+      .mandala-ring:nth-child(3) {
+        width: 280px;
+        height: 280px;
+        bottom: 10%;
+        left: 10%;
+        animation-duration: 22s;
+        border-color: rgba(212, 160, 23, 0.12);
+      }
+
+      @keyframes rotateRing {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .cover-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 100px;
+        padding: 6px 18px;
+        font-family: var(--font-body);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--sky-royal);
+        margin-bottom: 28px;
+        backdrop-filter: blur(12px);
+      }
+
+      .cover-title {
+        font-family: var(--font-display);
+        font-size: clamp(36px, 6vw, 72px);
+        font-weight: 600;
+        color: var(--text-dark);
+        text-align: center;
+        line-height: 1.1;
+        letter-spacing: 0.04em;
+        margin-bottom: 12px;
+      }
+
+      .cover-subtitle {
+        font-family: var(--font-serif);
+        font-size: clamp(18px, 3vw, 28px);
+        font-weight: 300;
+        color: var(--sky-royal);
+        text-align: center;
+        letter-spacing: 0.06em;
+        margin-bottom: 20px;
+        font-style: italic;
+      }
+
+      .cover-desc {
+        font-size: 15px;
+        color: var(--text-mid);
+        text-align: center;
+        max-width: 540px;
+        line-height: 1.75;
+        margin-bottom: 48px;
+      }
+
+      .cover-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .tag {
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 12px;
+        color: var(--text-mid);
+        backdrop-filter: blur(8px);
+        font-weight: 500;
+      }
+
+      /* ════════════════════════════════
+     SECTION WRAPPER
+  ════════════════════════════════ */
+      .section {
+        padding: 80px 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        margin-bottom: 56px;
+      }
+
+      .section-label {
+        font-family: var(--font-body);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--sky-vivid);
+        margin-bottom: 10px;
+      }
+
+      .section-title {
+        font-family: var(--font-display);
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 500;
+        color: var(--text-dark);
+        letter-spacing: 0.04em;
+        line-height: 1.15;
+      }
+
+      .section-divider {
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--sky-vivid), var(--teal-mid));
+        border-radius: 2px;
+        margin-top: 16px;
+      }
+
+      /* ════════════════════════════════
+     COLOUR PALETTE
+  ════════════════════════════════ */
+      .palette-section {
+        background: white;
+      }
+
+      .palette-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+      }
+
+      .palette-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .palette-group-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      .swatch {
+        height: 52px;
+        border-radius: var(--r-md);
+        display: flex;
+        align-items: flex-end;
+        padding: 6px 10px;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      .swatch-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 0.05em;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .swatch.light .swatch-label {
+        color: var(--text-muted);
+        text-shadow: none;
+      }
+
+      /* ════════════════════════════════
+     TYPOGRAPHY SHOWCASE
+  ════════════════════════════════ */
+      .type-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      .type-card {
+        background: var(--sky-dawn);
+        border: 1px solid var(--sky-mid);
+        border-radius: var(--r-lg);
+        padding: 36px;
+      }
+
+      .type-meta {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--sky-vivid);
+        margin-bottom: 16px;
+      }
+
+      /* ════════════════════════════════
+     COMPONENT LIBRARY
+  ════════════════════════════════ */
+      .comp-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+      }
+
+      .comp-card {
+        background: white;
+        border: 1px solid var(--sky-mid);
+        border-radius: var(--r-lg);
+        padding: 32px;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .comp-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border-radius: 100px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        letter-spacing: 0.03em;
+        transition: all 0.22s ease;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--sky-vivid), var(--sky-royal));
+        color: white;
+        box-shadow: 0 4px 18px rgba(33, 118, 174, 0.35);
+      }
+
+      .btn-secondary {
+        background: var(--glass);
+        border: 1.5px solid var(--sky-vivid);
+        color: var(--sky-royal);
+        backdrop-filter: blur(8px);
+      }
+
+      .btn-gold {
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold-warm));
+        color: var(--text-dark);
+        box-shadow: 0 4px 18px rgba(212, 160, 23, 0.3);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-mid);
+        border: 1px solid var(--sky-mid);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #ff8fab, #e84a6e);
+        color: white;
+        box-shadow: 0 4px 18px rgba(232, 74, 110, 0.28);
+      }
+
+      .btns-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* Input Fields */
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .field-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-mid);
+        letter-spacing: 0.06em;
+      }
+
+      .field-input {
+        background: var(--sky-dawn);
+        border: 1.5px solid var(--sky-mid);
+        border-radius: var(--r-sm);
+        padding: 10px 14px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-dark);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .field-input:focus {
+        border-color: var(--sky-vivid);
+        box-shadow: 0 0 0 3px rgba(74, 156, 232, 0.15);
+      }
+
+      .field-input.active {
+        border-color: var(--sky-vivid);
+        box-shadow: 0 0 0 3px rgba(74, 156, 232, 0.15);
+      }
+
+      /* Badges */
+      .badges-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge {
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+
+      .badge-active {
+        background: #e0f8f0;
+        color: #0e8a5a;
+        border: 1px solid #a3e6c9;
+      }
+      .badge-pending {
+        background: #fff4db;
+        color: #a0760d;
+        border: 1px solid #f5d88a;
+      }
+      .badge-inactive {
+        background: #f0f4f8;
+        color: #6b8fad;
+        border: 1px solid var(--sky-mid);
+      }
+      .badge-blue {
+        background: var(--sky-soft);
+        color: var(--sky-royal);
+        border: 1px solid var(--sky-mid);
+      }
+      .badge-rose {
+        background: var(--lotus-pale);
+        color: var(--lotus-rose);
+        border: 1px solid var(--lotus-blush);
+      }
+      .badge-teal {
+        background: var(--teal-light);
+        color: var(--teal-deep);
+        border: 1px solid var(--teal-mid);
+      }
+
+      /* Cards sample */
+      .sample-card {
+        background: linear-gradient(135deg, var(--sky-dawn) 0%, white 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sample-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--sky-vivid),
+          var(--teal-mid),
+          var(--gold-warm)
+        );
+      }
+
+      .card-key {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--sky-royal);
+        margin-bottom: 4px;
+      }
+
+      .card-name {
+        font-size: 13px;
+        color: var(--text-mid);
+        margin-bottom: 14px;
+      }
+
+      .card-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid var(--sky-soft);
+      }
+
+      .devotee-avatars {
+        display: flex;
+        margin-left: 4px;
+      }
+
+      .avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sky-soft), var(--sky-mid));
+        border: 2px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--sky-royal);
+        margin-left: -6px;
+      }
+
+      .avatar:first-child {
+        margin-left: 0;
+      }
+
+      /* ════════════════════════════════
+     SCREEN MOCKUPS
+  ════════════════════════════════ */
+      .screens-section {
+        background: linear-gradient(180deg, var(--sky-dawn) 0%, #e8f4ff 100%);
+      }
+
+      .screen-tabs {
+        display: flex;
+        gap: 4px;
+        background: white;
+        border: 1px solid var(--sky-mid);
+        border-radius: 100px;
+        padding: 4px;
+        width: fit-content;
+        margin-bottom: 40px;
+      }
+
+      .screen-tab {
+        padding: 8px 20px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 0.04em;
+        border: none;
+        background: none;
+      }
+
+      .screen-tab.active {
+        background: linear-gradient(135deg, var(--sky-vivid), var(--sky-royal));
+        color: white;
+        box-shadow: 0 2px 10px rgba(33, 118, 174, 0.3);
+      }
+
+      /* App Frame */
+      .app-frame {
+        background: white;
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(33, 118, 174, 0.18);
+        border: 1px solid var(--sky-mid);
+      }
+
+      /* Sidebar */
+      .app-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        min-height: 600px;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #1a3a5c 0%, #0f2a3f 100%);
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-logo {
+        padding: 28px 24px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .sidebar-logo-icon {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, var(--sky-vivid), var(--teal-mid));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .sidebar-logo-title {
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+        letter-spacing: 0.08em;
+        line-height: 1.3;
+      }
+
+      .sidebar-logo-sub {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.1em;
+        margin-top: 2px;
+      }
+
+      .sidebar-nav {
+        padding: 20px 12px;
+        flex: 1;
+      }
+
+      .nav-section-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.3);
+        padding: 0 12px;
+        margin-bottom: 8px;
+        margin-top: 20px;
+      }
+
+      .nav-section-label:first-child {
+        margin-top: 0;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        transition: all 0.18s;
+        margin-bottom: 2px;
+      }
+
+      .nav-item .nav-icon {
+        font-size: 15px;
+        opacity: 0.7;
+        width: 20px;
+        text-align: center;
+      }
+      .nav-item .nav-text {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .nav-item.active {
+        background: rgba(74, 156, 232, 0.18);
+        border: 1px solid rgba(74, 156, 232, 0.25);
+      }
+
+      .nav-item.active .nav-icon {
+        opacity: 1;
+      }
+      .nav-item.active .nav-text {
+        color: #90c8f8;
+        font-weight: 600;
+      }
+
+      .nav-item:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .nav-item:hover:not(.active) .nav-text {
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sky-vivid), var(--teal-mid));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .user-info-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .user-info-role {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.35);
+      }
+
+      /* Main Content */
+      .main-content {
+        background: var(--sky-dawn);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        background: white;
+        border-bottom: 1px solid var(--sky-soft);
+        padding: 14px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .topbar-title {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-dark);
+        letter-spacing: 0.04em;
+      }
+
+      .topbar-right {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--sky-dawn);
+        border: 1px solid var(--sky-mid);
+        border-radius: 100px;
+        padding: 7px 16px;
+        font-size: 12px;
+        color: var(--text-muted);
+        width: 200px;
+      }
+
+      .page-content {
+        padding: 28px;
+        flex: 1;
+      }
+
+      /* Stat Cards */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .stat-card {
+        background: white;
+        border-radius: var(--r-md);
+        padding: 20px;
+        border: 1px solid var(--sky-soft);
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        transform: translate(20px, 20px);
+        opacity: 0.12;
+      }
+
+      .stat-card:nth-child(1)::after {
+        background: var(--sky-vivid);
+      }
+      .stat-card:nth-child(2)::after {
+        background: var(--teal-mid);
+      }
+      .stat-card:nth-child(3)::after {
+        background: var(--gold-warm);
+      }
+      .stat-card:nth-child(4)::after {
+        background: var(--lotus-rose);
+      }
+
+      .stat-icon {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+      .stat-value {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 2px;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+      .stat-trend {
+        font-size: 10px;
+        color: #0e8a5a;
+        font-weight: 600;
+        margin-top: 4px;
+      }
+
+      /* Program Cards Grid */
+      .cards-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .prog-card {
+        background: white;
+        border-radius: var(--r-md);
+        border: 1px solid var(--sky-soft);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .prog-card-bar {
+        height: 4px;
+      }
+
+      .prog-card-body {
+        padding: 16px;
+      }
+      .prog-key {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--sky-royal);
+      }
+      .prog-area {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      .prog-pills {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .pill {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        padding: 2px 8px;
+        border-radius: 100px;
+        background: var(--sky-soft);
+        color: var(--sky-royal);
+        border: 1px solid var(--sky-mid);
+      }
+
+      .pill.teal {
+        background: var(--teal-light);
+        color: var(--teal-deep);
+        border-color: var(--teal-mid);
+      }
+      .pill.gold {
+        background: var(--gold-pale);
+        color: var(--gold-deep);
+        border-color: var(--gold-soft);
+      }
+
+      .prog-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 10px;
+        border-top: 1px solid var(--sky-soft);
+      }
+
+      .prog-devs {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+      .prog-date {
+        font-size: 10px;
+        color: var(--text-light);
+      }
+
+      /* ════════════════════════════════
+     FORM MOCKUP
+  ════════════════════════════════ */
+      .form-mockup {
+        background: white;
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(33, 118, 174, 0.18);
+        border: 1px solid var(--sky-mid);
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .form-header {
+        background: linear-gradient(
+          135deg,
+          var(--sky-royal) 0%,
+          var(--teal-deep) 100%
+        );
+        padding: 36px 40px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .form-header::before {
+        content: "✦";
+        position: absolute;
+        right: 36px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 80px;
+        opacity: 0.08;
+        color: white;
+      }
+
+      .form-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 100px;
+        padding: 4px 14px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 12px;
+      }
+
+      .form-header-title {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 600;
+        color: white;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+      }
+
+      .form-header-sub {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .form-body {
+        padding: 40px;
+      }
+
+      .form-section-title {
+        font-family: var(--font-serif);
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--sky-soft);
+      }
+
+      .form-section-num {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sky-vivid), var(--sky-royal));
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+      .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .form-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-mid);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        letter-spacing: 0.04em;
+      }
+
+      .form-required {
+        color: var(--lotus-rose);
+        font-size: 12px;
+      }
+
+      .form-input,
+      .form-select {
+        width: 100%;
+        background: var(--sky-dawn);
+        border: 1.5px solid var(--sky-mid);
+        border-radius: var(--r-sm);
+        padding: 10px 14px;
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-dark);
+        outline: none;
+        appearance: none;
+      }
+
+      .form-input.has-val {
+        border-color: var(--sky-vivid);
+        background: white;
+      }
+
+      .form-footer {
+        background: var(--sky-dawn);
+        padding: 24px 40px;
+        border-top: 1px solid var(--sky-soft);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .step-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--sky-mid);
+      }
+      .step-dot.active {
+        background: var(--sky-vivid);
+        width: 24px;
+        border-radius: 100px;
+      }
+
+      /* ════════════════════════════════
+     ICON LEGEND / NAVIGATION MAP
+  ════════════════════════════════ */
+      .nav-map-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+      }
+
+      .nav-node {
+        background: white;
+        border: 1px solid var(--sky-mid);
+        border-radius: var(--r-lg);
+        padding: 28px 20px;
+        text-align: center;
+        box-shadow: var(--shadow-soft);
+        transition: transform 0.2s;
+      }
+
+      .nav-node-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .nav-node-title {
+        font-family: var(--font-serif);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 6px;
+      }
+
+      .nav-node-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ════════════════════════════════
+     SPACING & BORDER RADIUS
+  ════════════════════════════════ */
+      .tokens-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+
+      .token-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .token-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .token-swatch {
+        background: var(--sky-vivid);
+        border-radius: 6px;
+        height: 36px;
+        flex-shrink: 0;
+      }
+
+      .token-info {
+        flex: 1;
+      }
+      .token-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .token-val {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: monospace;
+      }
+
+      .radius-swatch {
+        width: 60px;
+        height: 36px;
+        background: var(--sky-soft);
+        border: 2px solid var(--sky-vivid);
+        flex-shrink: 0;
+      }
+
+      /* ════════════════════════════════
+     DEVOTEE SECTION MOCKUP
+  ════════════════════════════════ */
+      .devotee-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--sky-soft);
+        border: 1px solid var(--sky-mid);
+        border-radius: 100px;
+        padding: 5px 12px 5px 6px;
+        font-size: 12px;
+        color: var(--text-mid);
+        font-weight: 500;
+      }
+
+      .devotee-tag-av {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sky-vivid), var(--sky-royal));
+        color: white;
+        font-size: 9px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ════════════════════════════════
+     SECTION SEPARATOR
+  ════════════════════════════════ */
+      .sep {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--sky-mid),
+          transparent
+        );
+      }
+
+      /* ════════════════════════════════
+     FOOTER
+  ════════════════════════════════ */
+      .plan-footer {
+        background: var(--text-dark);
+        padding: 48px 24px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+      }
+
+      .plan-footer-title {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+        color: white;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      @media (max-width: 768px) {
+        .type-grid,
+        .comp-grid,
+        .nav-map-grid,
+        .tokens-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-row {
+          grid-template-columns: 1fr 1fr;
+        }
+        .cards-row {
+          grid-template-columns: 1fr;
+        }
+        .app-layout {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          display: none;
+        }
+        .form-grid-2,
+        .form-grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════════ -->
+    <section class="cover">
+      <div class="mandala-ring"></div>
+      <div class="mandala-ring"></div>
+      <div class="mandala-ring"></div>
+
+      <div class="cover-badge">✦ UI/UX Design Blueprint</div>
+      <h1 class="cover-title">Program &amp; Devotee<br />Management System</h1>
+      <p class="cover-subtitle">Spiritual · Serene · Scalable</p>
+      <p class="cover-desc">
+        A complete design system built on sacred geometry, tranquil blues, and
+        warm gold accents — crafted for clarity, reverence, and modern
+        usability.
+      </p>
+
+      <div class="cover-tags">
+        <span class="tag">🎨 Full Colour Palette</span>
+        <span class="tag">✦ Typography System</span>
+        <span class="tag">⬡ Component Library</span>
+        <span class="tag">🖥 Screen Mockups</span>
+        <span class="tag">🗺 Navigation Map</span>
+        <span class="tag">📐 Design Tokens</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+     1. COLOUR PALETTE
+════════════════════════════════════════════ -->
+    <div class="palette-section">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-label">01 — Colour System</div>
+          <h2 class="section-title">Sacred Sky Palette</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="palette-grid">
+          <div class="palette-group">
+            <div class="palette-group-label">Primary — Sky Blue</div>
+            <div
+              class="swatch light"
+              style="background: #eff8ff; border: 1px solid #dbeeff"
+            >
+              <span class="swatch-label" style="color: #b8daff">Sky Dawn</span>
+            </div>
+            <div
+              class="swatch light"
+              style="background: #dbeeff; border: 1px solid #b8daff"
+            >
+              <span class="swatch-label" style="color: #7fb9f5">Sky Soft</span>
+            </div>
+            <div class="swatch light" style="background: #b8daff">
+              <span class="swatch-label" style="color: #4a9ce8">Sky Mid</span>
+            </div>
+            <div class="swatch" style="background: #7fb9f5">
+              <span class="swatch-label">Sky Deep</span>
+            </div>
+            <div class="swatch" style="background: #4a9ce8">
+              <span class="swatch-label">Sky Vivid</span>
+            </div>
+            <div class="swatch" style="background: #2176ae">
+              <span class="swatch-label">Sky Royal ★ Primary</span>
+            </div>
+          </div>
+
+          <div class="palette-group">
+            <div class="palette-group-label">Secondary — Sacred Teal</div>
+            <div
+              class="swatch light"
+              style="background: #d4f1f4; border: 1px solid #75c6cf"
+            >
+              <span class="swatch-label" style="color: #1a8fa1"
+                >Teal Light</span
+              >
+            </div>
+            <div class="swatch" style="background: #75c6cf">
+              <span class="swatch-label">Teal Mid</span>
+            </div>
+            <div class="swatch" style="background: #1a8fa1">
+              <span class="swatch-label">Teal Deep ★ Accent</span>
+            </div>
+          </div>
+
+          <div class="palette-group">
+            <div class="palette-group-label">Accent — Divya Gold</div>
+            <div
+              class="swatch light"
+              style="background: #fff9ed; border: 1px solid #f5d88a"
+            >
+              <span class="swatch-label" style="color: #a0760d">Gold Pale</span>
+            </div>
+            <div class="swatch light" style="background: #f5d88a">
+              <span class="swatch-label" style="color: #a0760d">Gold Soft</span>
+            </div>
+            <div class="swatch" style="background: #d4a017">
+              <span class="swatch-label">Gold Warm ★ CTA</span>
+            </div>
+            <div class="swatch" style="background: #a0760d">
+              <span class="swatch-label">Gold Deep</span>
+            </div>
+          </div>
+
+          <div class="palette-group">
+            <div class="palette-group-label">Highlight — Lotus Rose</div>
+            <div
+              class="swatch light"
+              style="background: #fff0f6; border: 1px solid #f9c4dc"
+            >
+              <span class="swatch-label" style="color: #e07ba8"
+                >Lotus Pale</span
+              >
+            </div>
+            <div class="swatch light" style="background: #f9c4dc">
+              <span class="swatch-label" style="color: #e07ba8"
+                >Lotus Blush</span
+              >
+            </div>
+            <div class="swatch" style="background: #e07ba8">
+              <span class="swatch-label">Lotus Rose ★ Alert</span>
+            </div>
+          </div>
+
+          <div class="palette-group">
+            <div class="palette-group-label">Neutrals — Text & Depth</div>
+            <div
+              class="swatch light"
+              style="background: #a8c4d8; border: 1px solid #6b8fad"
+            >
+              <span class="swatch-label" style="color: #2d5474"
+                >Text Light</span
+              >
+            </div>
+            <div class="swatch" style="background: #6b8fad">
+              <span class="swatch-label">Text Muted</span>
+            </div>
+            <div class="swatch" style="background: #2d5474">
+              <span class="swatch-label">Text Mid</span>
+            </div>
+            <div class="swatch" style="background: #0f2a3f">
+              <span class="swatch-label">Text Dark ★ Body</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     2. TYPOGRAPHY
+════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">02 — Typography</div>
+        <h2 class="section-title">Sacred Letterforms</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="type-grid">
+        <div class="type-card">
+          <div class="type-meta">Display Font — Cinzel</div>
+          <div
+            style="
+              font-family: 'Cinzel';
+              font-size: 36px;
+              font-weight: 600;
+              color: var(--text-dark);
+              line-height: 1.1;
+              margin-bottom: 12px;
+              letter-spacing: 0.06em;
+            "
+          >
+            Program Keys<br />& Headings
+          </div>
+          <div
+            style="
+              font-family: 'Cinzel';
+              font-size: 20px;
+              font-weight: 500;
+              color: var(--sky-royal);
+              margin-bottom: 8px;
+              letter-spacing: 0.08em;
+            "
+          >
+            TOP · 001 · MAIN
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted)">
+            Used for: Page titles, Program keys, Section headers, Stats
+            values<br />Classic serif with ancient authority — perfect for a
+            spiritual system.
+          </div>
+        </div>
+
+        <div class="type-card">
+          <div class="type-meta">Serif Body — Cormorant Garamond</div>
+          <div
+            style="
+              font-family: 'Cormorant Garamond';
+              font-size: 28px;
+              font-weight: 400;
+              color: var(--text-dark);
+              line-height: 1.3;
+              margin-bottom: 12px;
+              font-style: italic;
+            "
+          >
+            "Each devotee carries<br />a light within."
+          </div>
+          <div
+            style="
+              font-family: 'Cormorant Garamond';
+              font-size: 16px;
+              color: var(--text-mid);
+              margin-bottom: 8px;
+            "
+          >
+            Form subtitles · Card names · Descriptions
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted)">
+            Elegant, literary serif for secondary text. Adds warmth and
+            reverence to the interface.
+          </div>
+        </div>
+
+        <div class="type-card">
+          <div class="type-meta">UI Font — DM Sans</div>
+          <div
+            style="
+              font-family: 'DM Sans';
+              font-size: 24px;
+              font-weight: 600;
+              color: var(--text-dark);
+              margin-bottom: 8px;
+            "
+          >
+            Buttons · Labels · Nav
+          </div>
+          <div
+            style="
+              font-family: 'DM Sans';
+              font-size: 14px;
+              font-weight: 400;
+              color: var(--text-mid);
+              margin-bottom: 8px;
+              line-height: 1.6;
+            "
+          >
+            Body copy, form inputs, metadata, table text, helper descriptions.
+            Clean and highly readable at all sizes.
+          </div>
+          <div
+            style="
+              font-family: 'DM Sans';
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.14em;
+              text-transform: uppercase;
+              color: var(--sky-vivid);
+            "
+          >
+            LABELS · TAGS · TIMESTAMPS
+          </div>
+        </div>
+
+        <div class="type-card" style="grid-column: span 1">
+          <div class="type-meta">Type Scale</div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div>
+              <span
+                style="
+                  font-family: 'Cinzel';
+                  font-size: 32px;
+                  font-weight: 600;
+                  color: var(--text-dark);
+                "
+                >Display — 32px</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'Cinzel';
+                  font-size: 24px;
+                  font-weight: 500;
+                  color: var(--text-dark);
+                "
+                >H1 — 24px Cinzel</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'Cormorant Garamond';
+                  font-size: 20px;
+                  color: var(--text-dark);
+                "
+                >H2 — 20px Cormorant</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'DM Sans';
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: var(--text-dark);
+                "
+                >H3 — 15px DM Sans 600</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'DM Sans';
+                  font-size: 13px;
+                  color: var(--text-mid);
+                "
+                >Body — 13px DM Sans 400</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'DM Sans';
+                  font-size: 11px;
+                  color: var(--text-muted);
+                "
+                >Caption / Label — 11px</span
+              >
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: 'DM Sans';
+                  font-size: 10px;
+                  font-weight: 700;
+                  letter-spacing: 0.14em;
+                  text-transform: uppercase;
+                  color: var(--sky-vivid);
+                "
+                >MICRO LABEL — 10px 700</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     3. COMPONENT LIBRARY
+════════════════════════════════════════════ -->
+    <div class="palette-section">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-label">03 — Components</div>
+          <h2 class="section-title">Design System Components</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="comp-grid">
+          <!-- Buttons -->
+          <div class="comp-card">
+            <div class="comp-label">Buttons</div>
+            <div class="btns-col">
+              <button class="btn btn-primary">✦ Create Program</button>
+              <button class="btn btn-secondary">↗ View Details</button>
+              <button class="btn btn-gold">★ Add Devotee</button>
+              <button class="btn btn-ghost">← Back to List</button>
+              <button class="btn btn-danger">✕ Remove</button>
+            </div>
+          </div>
+
+          <!-- Inputs -->
+          <div class="comp-card">
+            <div class="comp-label">Form Fields</div>
+            <div class="field-group">
+              <div class="field-wrap">
+                <div class="field-label">Program Owner</div>
+                <input
+                  class="field-input active"
+                  value="TOP — Temple Owner"
+                  readonly
+                />
+              </div>
+              <div class="field-wrap">
+                <div class="field-label">Area</div>
+                <input
+                  class="field-input"
+                  placeholder="Select area…"
+                  readonly
+                />
+              </div>
+              <div class="field-wrap">
+                <div class="field-label">Devotees</div>
+                <input
+                  class="field-input"
+                  placeholder="Arjun, Sita, Raju…"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Badges -->
+          <div class="comp-card">
+            <div class="comp-label">Status Badges</div>
+            <div class="badges-wrap" style="margin-bottom: 16px">
+              <span class="badge badge-active">● Active</span>
+              <span class="badge badge-pending">◐ Pending</span>
+              <span class="badge badge-inactive">○ Inactive</span>
+            </div>
+            <div class="comp-label" style="margin-top: 16px">Category Tags</div>
+            <div class="badges-wrap">
+              <span class="badge badge-blue">Weekly</span>
+              <span class="badge badge-teal">Virtual</span>
+              <span class="badge badge-rose">Hindi</span>
+              <span class="badge badge-blue">Morning</span>
+              <span class="badge badge-teal">Sanskrit</span>
+            </div>
+          </div>
+
+          <!-- Program Card -->
+          <div class="comp-card" style="grid-column: span 2">
+            <div class="comp-label">Program Card</div>
+            <div class="sample-card">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  margin-bottom: 10px;
+                "
+              >
+                <div>
+                  <div class="card-key">TOP · 004</div>
+                  <div class="card-name">Temple Owner Program — North Zone</div>
+                </div>
+                <span class="badge badge-active">● Active</span>
+              </div>
+              <div class="card-meta">
+                <span class="badge badge-blue">Weekly</span>
+                <span class="badge badge-teal">Virtual</span>
+                <span class="badge badge-rose">Hindi</span>
+                <span class="badge badge-blue">Sunday 9:00 AM</span>
+              </div>
+              <div class="card-footer">
+                <div class="devotee-avatars">
+                  <div class="avatar">A</div>
+                  <div class="avatar">S</div>
+                  <div class="avatar">R</div>
+                  <div
+                    class="avatar"
+                    style="
+                      background: var(--sky-mid);
+                      color: var(--sky-royal);
+                      font-size: 8px;
+                    "
+                  >
+                    +7
+                  </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted)">
+                  10 devotees · since Jan 2024
+                </div>
+                <button
+                  class="btn btn-secondary"
+                  style="padding: 6px 14px; font-size: 11px"
+                >
+                  View →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Devotee Tags -->
+          <div class="comp-card">
+            <div class="comp-label">Devotee Tags</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">A</div>
+                Arjun
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">S</div>
+                Sita
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">R</div>
+                Raju
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">P</div>
+                Priya
+              </div>
+              <div class="devotee-tag">
+                <div
+                  class="devotee-tag-av"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      var(--teal-mid),
+                      var(--teal-deep)
+                    );
+                  "
+                >
+                  M
+                </div>
+                Mohan
+              </div>
+              <div class="devotee-tag">
+                <div
+                  class="devotee-tag-av"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      var(--gold-soft),
+                      var(--gold-warm)
+                    );
+                  "
+                >
+                  K
+                </div>
+                Kamala
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     4. NAVIGATION MAP
+════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">04 — Information Architecture</div>
+        <h2 class="section-title">Application Pages</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="nav-map-grid">
+        <div class="nav-node">
+          <span class="nav-node-icon">🏠</span>
+          <div class="nav-node-title">Dashboard</div>
+          <div class="nav-node-desc">
+            Stats overview, recent programs, quick actions, activity feed
+          </div>
+        </div>
+        <div class="nav-node">
+          <span class="nav-node-icon">✦</span>
+          <div class="nav-node-title">Create Program</div>
+          <div class="nav-node-desc">
+            Multi-step form with auto key generation and devotee input
+          </div>
+        </div>
+        <div class="nav-node">
+          <span class="nav-node-icon">📋</span>
+          <div class="nav-node-title">Program List</div>
+          <div class="nav-node-desc">
+            Searchable, filterable grid of all programs with quick view
+          </div>
+        </div>
+        <div class="nav-node">
+          <span class="nav-node-icon">🙏</span>
+          <div class="nav-node-title">Program Detail</div>
+          <div class="nav-node-desc">
+            Full info view, devotee list management, edit & status toggle
+          </div>
+        </div>
+        <div class="nav-node">
+          <span class="nav-node-icon">⚙️</span>
+          <div class="nav-node-title">Config Admin</div>
+          <div class="nav-node-desc">
+            Manage dropdown values for areas, languages, frequency etc.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     5. DASHBOARD MOCKUP
+════════════════════════════════════════════ -->
+    <div class="screens-section">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-label">05 — Screen Designs</div>
+          <h2 class="section-title">Dashboard — Program List View</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="app-frame">
+          <div class="app-layout">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+              <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🪷</div>
+                <div class="sidebar-logo-title">Seva Kendra</div>
+                <div class="sidebar-logo-sub">Management System</div>
+              </div>
+
+              <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <div class="nav-item active">
+                  <span class="nav-icon">🏠</span
+                  ><span class="nav-text">Dashboard</span>
+                </div>
+                <div class="nav-item">
+                  <span class="nav-icon">✦</span
+                  ><span class="nav-text">Create Program</span>
+                </div>
+                <div class="nav-item">
+                  <span class="nav-icon">📋</span
+                  ><span class="nav-text">All Programs</span>
+                </div>
+                <div class="nav-item">
+                  <span class="nav-icon">🙏</span
+                  ><span class="nav-text">Devotees</span>
+                </div>
+
+                <div class="nav-section-label">Settings</div>
+                <div class="nav-item">
+                  <span class="nav-icon">⚙️</span
+                  ><span class="nav-text">Configuration</span>
+                </div>
+                <div class="nav-item">
+                  <span class="nav-icon">📊</span
+                  ><span class="nav-text">Analytics</span>
+                </div>
+              </nav>
+
+              <div class="sidebar-footer">
+                <div class="user-avatar">A</div>
+                <div>
+                  <div class="user-info-name">Admin</div>
+                  <div class="user-info-role">Super Admin</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MAIN -->
+            <div class="main-content">
+              <div class="topbar">
+                <div class="topbar-title">Dashboard</div>
+                <div class="topbar-right">
+                  <div class="search-bar">🔍 Search programs…</div>
+                  <button
+                    class="btn btn-primary"
+                    style="padding: 8px 18px; font-size: 12px"
+                  >
+                    + New Program
+                  </button>
+                </div>
+              </div>
+
+              <div class="page-content">
+                <!-- Stats -->
+                <div class="stats-row">
+                  <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value">142</div>
+                    <div class="stat-label">Total Programs</div>
+                    <div class="stat-trend">↑ +8 this month</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">🙏</div>
+                    <div class="stat-value">1,284</div>
+                    <div class="stat-label">Total Devotees</div>
+                    <div class="stat-trend">↑ +47 this month</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">✦</div>
+                    <div class="stat-value">38</div>
+                    <div class="stat-label">Active Owners</div>
+                    <div class="stat-trend" style="color: var(--gold-warm)">
+                      ★ 5 new
+                    </div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon">🌐</div>
+                    <div class="stat-value">29</div>
+                    <div class="stat-label">Virtual Programs</div>
+                    <div class="stat-trend" style="color: var(--lotus-rose)">
+                      ↑ Growing
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Program Cards -->
+                <div
+                  style="
+                    font-family: 'Cinzel';
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: var(--text-dark);
+                    letter-spacing: 0.06em;
+                    margin-bottom: 14px;
+                  "
+                >
+                  Recent Programs
+                </div>
+                <div class="cards-row">
+                  <div class="prog-card">
+                    <div
+                      class="prog-card-bar"
+                      style="
+                        background: linear-gradient(
+                          90deg,
+                          var(--sky-vivid),
+                          var(--teal-mid)
+                        );
+                      "
+                    ></div>
+                    <div class="prog-card-body">
+                      <div class="prog-key">TOP · 004</div>
+                      <div class="prog-area">Temple · North Zone</div>
+                      <div class="prog-pills">
+                        <span class="pill">Weekly</span>
+                        <span class="pill teal">Virtual</span>
+                        <span class="pill gold">Hindi</span>
+                      </div>
+                      <div class="prog-footer">
+                        <span
+                          class="badge badge-active"
+                          style="font-size: 9px; padding: 2px 8px"
+                          >● Active</span
+                        >
+                        <span class="prog-date">Sun 9 AM</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="prog-card">
+                    <div
+                      class="prog-card-bar"
+                      style="
+                        background: linear-gradient(
+                          90deg,
+                          var(--gold-warm),
+                          var(--gold-soft)
+                        );
+                      "
+                    ></div>
+                    <div class="prog-card-body">
+                      <div class="prog-key">MAN · 011</div>
+                      <div class="prog-area">Mandir · South Zone</div>
+                      <div class="prog-pills">
+                        <span class="pill">Monthly</span>
+                        <span class="pill gold">Sanskrit</span>
+                      </div>
+                      <div class="prog-footer">
+                        <span
+                          class="badge badge-active"
+                          style="font-size: 9px; padding: 2px 8px"
+                          >● Active</span
+                        >
+                        <span class="prog-date">Sat 6 AM</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="prog-card">
+                    <div
+                      class="prog-card-bar"
+                      style="
+                        background: linear-gradient(
+                          90deg,
+                          var(--lotus-rose),
+                          var(--lotus-blush)
+                        );
+                      "
+                    ></div>
+                    <div class="prog-card-body">
+                      <div class="prog-key">DEV · 007</div>
+                      <div class="prog-area">Seva · East Zone</div>
+                      <div class="prog-pills">
+                        <span class="pill teal">Virtual</span>
+                        <span class="pill">Daily</span>
+                      </div>
+                      <div class="prog-footer">
+                        <span
+                          class="badge badge-pending"
+                          style="font-size: 9px; padding: 2px 8px"
+                          >◐ Pending</span
+                        >
+                        <span class="prog-date">Daily 7 AM</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     6. FORM MOCKUP
+════════════════════════════════════════════ -->
+    <div class="palette-section">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-label">06 — Create Program Form</div>
+          <h2 class="section-title">Multi-Step Form Design</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="form-mockup">
+          <div class="form-header">
+            <div class="form-header-badge">✦ AUTO KEY GENERATION ENABLED</div>
+            <div class="form-header-title">Create New Program</div>
+            <div class="form-header-sub">
+              Fill in the details below. Program Key will be auto-generated upon
+              submission.
+            </div>
+          </div>
+
+          <div class="form-body">
+            <!-- Step 1 -->
+            <div class="form-section-title">
+              <div class="form-section-num">1</div>
+              Program Identity
+            </div>
+            <div class="form-grid-2">
+              <div>
+                <div class="form-label">
+                  Program Owner <span class="form-required">*</span>
+                </div>
+                <select class="form-select">
+                  <option>TOP — Temple Owner</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">Auto-Generated Key</div>
+                <input
+                  class="form-input"
+                  value="TOP · 005"
+                  readonly
+                  style="
+                    background: var(--sky-soft);
+                    color: var(--sky-royal);
+                    font-family: 'Cinzel';
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                  "
+                />
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="form-section-title">
+              <div class="form-section-num">2</div>
+              Location & Category
+            </div>
+            <div class="form-grid-3">
+              <div>
+                <div class="form-label">
+                  Area <span class="form-required">*</span>
+                </div>
+                <select class="form-select">
+                  <option>North Zone</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">Sub Area</div>
+                <select class="form-select">
+                  <option>Sector 12</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">
+                  Frequency <span class="form-required">*</span>
+                </div>
+                <select class="form-select">
+                  <option>Weekly</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-grid-3">
+              <div>
+                <div class="form-label">Type of Program</div>
+                <select class="form-select">
+                  <option>Satsang</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">Language</div>
+                <select class="form-select">
+                  <option>Hindi</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">
+                  Virtual? <span class="form-required">*</span>
+                </div>
+                <select class="form-select">
+                  <option>Yes — Online</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="form-section-title">
+              <div class="form-section-num">3</div>
+              Schedule
+            </div>
+            <div class="form-grid-3">
+              <div>
+                <div class="form-label">
+                  Start Date <span class="form-required">*</span>
+                </div>
+                <input
+                  class="form-input has-val"
+                  value="2024-03-15"
+                  type="text"
+                  readonly
+                />
+              </div>
+              <div>
+                <div class="form-label">Day</div>
+                <select class="form-select">
+                  <option>Sunday</option>
+                </select>
+              </div>
+              <div>
+                <div class="form-label">Time</div>
+                <input class="form-input has-val" value="09:00 AM" readonly />
+              </div>
+            </div>
+
+            <!-- Step 4 — Devotees -->
+            <div class="form-section-title">
+              <div class="form-section-num">4</div>
+              Devotees
+            </div>
+            <div>
+              <div class="form-label">
+                Devotee Names (comma-separated)
+                <span class="form-required">*</span>
+              </div>
+              <textarea
+                class="form-input"
+                rows="3"
+                style="resize: none"
+                readonly
+              >
+Arjun, Sita, Raju, Priya, Mohan</textarea
+              >
+              <div
+                style="
+                  font-size: 11px;
+                  color: var(--text-muted);
+                  margin-top: 6px;
+                "
+              >
+                Each name will be saved as a separate devotee record linked to
+                this program.
+              </div>
+            </div>
+
+            <!-- Preview Tags -->
+            <div
+              style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px"
+            >
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">A</div>
+                Arjun
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">S</div>
+                Sita
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">R</div>
+                Raju
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">P</div>
+                Priya
+              </div>
+              <div class="devotee-tag">
+                <div class="devotee-tag-av">M</div>
+                Mohan
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <div class="step-dots">
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-primary">✦ Create Program</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- ═══════════════════════════════════════════
+     7. DESIGN TOKENS
+════════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">07 — Design Tokens</div>
+        <h2 class="section-title">Spacing & Radius Scale</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="tokens-grid">
+        <div>
+          <div
+            style="
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.12em;
+              text-transform: uppercase;
+              color: var(--sky-vivid);
+              margin-bottom: 20px;
+            "
+          >
+            Spacing Scale
+          </div>
+          <div class="token-list">
+            <div class="token-row">
+              <div class="token-swatch" style="width: 4px"></div>
+              <div class="token-info">
+                <div class="token-name">xs — 4px</div>
+                <div class="token-val">Icon gaps, tight stacks</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div class="token-swatch" style="width: 8px"></div>
+              <div class="token-info">
+                <div class="token-name">sm — 8px</div>
+                <div class="token-val">Component padding, badge gaps</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div class="token-swatch" style="width: 16px"></div>
+              <div class="token-info">
+                <div class="token-name">md — 16px</div>
+                <div class="token-val">Card inner padding, form row gaps</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div class="token-swatch" style="width: 24px"></div>
+              <div class="token-info">
+                <div class="token-name">lg — 24px</div>
+                <div class="token-val">Section gaps, grid gutters</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div class="token-swatch" style="width: 40px"></div>
+              <div class="token-info">
+                <div class="token-name">xl — 40px</div>
+                <div class="token-val">Page padding, major sections</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div class="token-swatch" style="width: 64px"></div>
+              <div class="token-info">
+                <div class="token-name">2xl — 64px</div>
+                <div class="token-val">Section separators, hero padding</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div
+            style="
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.12em;
+              text-transform: uppercase;
+              color: var(--sky-vivid);
+              margin-bottom: 20px;
+            "
+          >
+            Border Radius
+          </div>
+          <div class="token-list">
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 4px; width: 48px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">r-xs — 4px</div>
+                <div class="token-val">Pills, micro-badges</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 8px; width: 56px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">r-sm — 8px</div>
+                <div class="token-val">Inputs, dropdowns, small cards</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 14px; width: 60px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">r-md — 14px</div>
+                <div class="token-val">Stat cards, program cards</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 22px; width: 64px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">r-lg — 22px</div>
+                <div class="token-val">Comp cards, modals</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 32px; width: 68px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">r-xl — 32px</div>
+                <div class="token-val">Main frame, form wrapper</div>
+              </div>
+            </div>
+            <div class="token-row">
+              <div
+                class="radius-swatch"
+                style="border-radius: 100px; width: 72px"
+              ></div>
+              <div class="token-info">
+                <div class="token-name">pill — 100px</div>
+                <div class="token-val">Buttons, search bar, nav tabs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+    <div class="plan-footer">
+      <div class="plan-footer-title">✦ Seva Kendra — Design System v1.0</div>
+      <p>
+        Ready to build. Every token, component, and screen defined. Let's code
+        it up.
+      </p>
+      <div
+        style="
+          margin-top: 20px;
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.3);
+        "
+      >
+        <span>3 Fonts · Cinzel · Cormorant · DM Sans</span>
+        <span>·</span>
+        <span>5 Colour Groups · 20 Tokens</span>
+        <span>·</span>
+        <span>5 Pages · 1 Design System</span>
+      </div>
+    </div>
+  </body>
+</html>

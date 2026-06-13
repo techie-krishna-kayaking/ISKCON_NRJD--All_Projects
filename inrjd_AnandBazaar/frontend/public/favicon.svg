@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#FFF5E6" stroke="#E86B1A" stroke-width="3"/>
+  <text x="50" y="38" text-anchor="middle" font-family="serif" font-size="28" fill="#E86B1A">🙏</text>
+  <text x="50" y="62" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="700" font-size="14" fill="#C05621">AB</text>
+  <text x="50" y="78" text-anchor="middle" font-family="Poppins,sans-serif" font-size="8" fill="#8B6914">PRASADAM</text>
+</svg>

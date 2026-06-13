@@ -1,0 +1,17 @@
+Give me amazing prompt for github copilot to generate Google Apps Script (GAS). 
+I have 3 different GAS projects. I want to club them into a single project, will it be possible? 
+If yes, then give me all the code. 
+All the data is in Google sheets, this data I have provided in the attendance-db.xlsx
+
+CHANGE
+I also want all the attendance to be only in tab4. I want to eliminate the tab3. 
+I want all the tab3 data to be be transformed in tab4 format. basically each individual & their attendance. change it in the excel.
+
+NEW ENHANCEMENT
+1. Each member should have certify button in the attendance page which will take us to shiksha tool, bio data filling & shiksha for filling. 
+
+
+PROGRAM OWNER DASHBOARD
+1. each program owner when they login, they should see which all program are updated & what dates etc. 
+    - They should see all their programs, their members in different program type & membes in different level (shiksha). pie chart, bar chart what ever suits nice use that.
+2. there should be super user who should see amazing insights. screenshots for reference is in the screenshots. 

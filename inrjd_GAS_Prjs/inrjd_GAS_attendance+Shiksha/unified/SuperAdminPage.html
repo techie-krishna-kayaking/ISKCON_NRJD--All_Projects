@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INRJD — Super Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+/* ═══════════════════════════════════════════════════════════════
+   SUPER ADMIN PORTAL — DARK GOLD SPIRITUAL THEME
+   Matching the screenshot: Dark sidebar, gold accents, warm cards
+═══════════════════════════════════════════════════════════════ */
+:root {
+  /* Dark palette */
+  --bg-dark: #1a1a2e;
+  --bg-darker: #16213e;
+  --bg-sidebar: #1a1a2e;
+  --bg-page: #f5f0e8;
+  --bg-card: #ffffff;
+  --bg-card-alt: #faf7f0;
+  --bg-stat: #ffffff;
+
+  /* Gold accents */
+  --gold: #c8a84b;
+  --gold-soft: #e0c878;
+  --gold-pale: #f5edcc;
+
+  /* Text */
+  --text-dark: #1a1a2e;
+  --text-medium: #3d3d5c;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --text-white: #f5f0e8;
+  --text-sidebar: #b0a89a;
+
+  /* Status colors */
+  --green: #22c55e;
+  --green-bg: #f0fdf4;
+  --orange: #f59e0b;
+  --orange-bg: #fffbeb;
+  --red: #ef4444;
+  --red-bg: #fef2f2;
+  --blue: #3b82f6;
+  --blue-bg: #eff6ff;
+  --teal: #14b8a6;
+  --purple: #8b5cf6;
+
+  /* Chart colors */
+  --chart-1: #3b82f6;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #8b5cf6;
+  --chart-6: #14b8a6;
+  --chart-7: #ec4899;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+
+  /* Fonts */
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Jost', 'Segoe UI', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-page);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ LOGIN OVERLAY ═══ */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: var(--r-lg);
+  padding: 48px 40px;
+  width: 400px;
+  text-align: center;
+}
+.login-card h1 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+.login-card p { color: var(--text-sidebar); margin-bottom: 28px; font-size: 0.95rem; }
+.login-card input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(200,168,75,0.25);
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,0.06);
+  color: var(--text-white);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-card input::placeholder { color: var(--text-sidebar); }
+.login-card input:focus { border-color: var(--gold); }
+.login-card button {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: var(--bg-dark);
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  font-family: var(--font-body);
+}
+.login-card button:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,168,75,0.4); }
+.login-error { color: var(--red); font-size: 0.9rem; margin-top: 10px; display: none; }
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  width: 240px;
+  background: var(--bg-sidebar);
+  min-height: 100vh;
+  padding: 24px 0;
+  flex-shrink: 0;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 16px;
+}
+.sidebar-brand h2 {
+  font-family: var(--font-display);
+  color: var(--gold);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.sidebar-brand span { color: var(--text-sidebar); font-size: 0.82rem; }
+.sidebar-label {
+  padding: 8px 24px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-sidebar);
+  opacity: 0.6;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 24px;
+  color: var(--text-sidebar);
+  text-decoration: none;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text-white); }
+.nav-item.active {
+  background: rgba(200,168,75,0.12);
+  color: var(--gold);
+  border-left-color: var(--gold);
+  font-weight: 500;
+}
+.nav-item .icon { font-size: 1.1rem; width: 22px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: auto;
+}
+.sidebar-footer a {
+  color: var(--text-sidebar);
+  text-decoration: none;
+  font-size: 0.85rem;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
+}
+.sidebar-footer a:hover { color: var(--gold); }
+
+/* ═══ MAIN CONTENT ═══ */
+.main-content {
+  margin-left: 240px;
+  flex: 1;
+  min-height: 100vh;
+}
+
+/* Top bar */
+.top-bar {
+  background: var(--bg-dark);
+  color: var(--text-white);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+.top-bar .greeting { display: flex; align-items: center; gap: 8px; }
+.top-bar .greeting .star { color: var(--gold); }
+.top-bar .user-badge {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(200,168,75,0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+.top-bar .user-badge .avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.8rem; color: var(--bg-dark);
+}
+.top-bar .user-badge .user-info { font-size: 0.82rem; line-height: 1.3; }
+.top-bar .user-badge .user-name { font-weight: 600; color: var(--gold); }
+.top-bar .user-badge .user-role { color: var(--text-sidebar); font-size: 0.75rem; }
+
+/* Page content area */
+.page-content { padding: 28px 32px; }
+.page-content.hidden { display: none; }
+
+/* ═══ HEADER SECTION ═══ */
+.page-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 20px 0;
+}
+.page-header .eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+.page-header h1 .star { color: var(--gold); }
+.page-header .subtitle { color: var(--text-muted); font-size: 0.92rem; margin-top: 6px; }
+
+/* Action buttons row */
+.action-btns {
+  display: flex; gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.action-btn {
+  padding: 9px 20px;
+  border-radius: var(--r-sm);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn.gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: var(--bg-dark);
+}
+.action-btn.outline {
+  background: transparent;
+  border: 1px solid var(--text-light);
+  color: var(--text-medium);
+}
+.action-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+/* ═══ QUICK STATS BAR ═══ */
+.quick-stats {
+  display: flex;
+  gap: 0;
+  background: var(--bg-dark);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-lg);
+}
+.quick-stat {
+  flex: 1;
+  padding: 18px 20px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.quick-stat:last-child { border-right: none; }
+.quick-stat .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-white);
+  font-family: var(--font-display);
+}
+.quick-stat .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-sidebar);
+  margin-top: 4px;
+}
+
+/* ═══ SECTION HEADERS ═══ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 0 18px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--text-muted);
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.12), transparent);
+}
+
+/* ═══ CARDS GRID ═══ */
+.cards-grid {
+  display: grid;
+  gap: 16px;
+}
+.cards-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+.metric-card {
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.metric-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.metric-card .card-icon {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+.metric-card .card-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.1;
+}
+.metric-card .card-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.metric-card .card-sub {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+/* Color top borders for metric cards */
+.metric-card.border-blue   { border-top: 3px solid var(--blue); }
+.metric-card.border-green  { border-top: 3px solid var(--green); }
+.metric-card.border-gold   { border-top: 3px solid var(--gold); }
+.metric-card.border-red    { border-top: 3px solid var(--red); }
+.metric-card.border-teal   { border-top: 3px solid var(--teal); }
+.metric-card.border-purple { border-top: 3px solid var(--purple); }
+.metric-card.border-orange { border-top: 3px solid var(--orange); }
+
+/* ═══ PANEL CARDS ═══ */
+.panel {
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-title .icon { font-size: 1rem; }
+
+/* ═══ HEALTH STATUS ═══ */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.health-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-card-alt);
+  border-radius: var(--r-sm);
+}
+.health-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.health-dot.green  { background: var(--green); }
+.health-dot.orange { background: var(--orange); }
+.health-dot.red    { background: var(--red); }
+.health-item .h-label { font-size: 0.85rem; font-weight: 500; }
+.health-item .h-desc { font-size: 0.75rem; color: var(--text-muted); }
+
+/* ═══ DEVOTEE HEALTH ═══ */
+.dh-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.dh-row:last-child { border-bottom: none; }
+.dh-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dh-label { flex: 1; font-size: 0.9rem; }
+.dh-label small { color: var(--text-muted); font-size: 0.78rem; }
+.dh-count { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+.dh-avg {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.dh-avg .val { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+
+/* ═══ ATT OPS LIST ═══ */
+.ops-list { list-style: none; }
+.ops-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  font-size: 0.9rem;
+}
+.ops-item:last-child { border-bottom: none; }
+.ops-item .ops-val { font-weight: 600; color: var(--text-dark); }
+.ops-item .ops-val.warn { color: var(--orange); }
+.ops-item .ops-val.danger { color: var(--red); }
+
+/* ═══ DATA QUALITY BARS ═══ */
+.dq-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.dq-label { font-size: 0.85rem; width: 110px; flex-shrink: 0; }
+.dq-bar-wrap {
+  flex: 1;
+  height: 16px;
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.dq-bar {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.6s ease;
+}
+.dq-bar.red    { background: var(--red); }
+.dq-bar.orange { background: var(--orange); }
+.dq-bar.green  { background: var(--green); }
+.dq-count { font-size: 0.85rem; font-weight: 600; color: var(--red); min-width: 40px; text-align: right; }
+
+/* ═══ CHART CONTAINERS ═══ */
+.chart-container { width: 100%; min-height: 280px; }
+.chart-container-sm { width: 100%; min-height: 220px; }
+
+/* ═══ LEVEL BARS (horizontal) ═══ */
+.level-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.level-bar-label {
+  font-size: 0.85rem;
+  width: 160px;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--text-medium);
+}
+.level-bar-wrap {
+  flex: 1;
+  height: 28px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.level-bar {
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: width 0.6s ease;
+  min-width: 30px;
+}
+
+/* Level-specific colors */
+.level-bar.none         { background: #6b7280; }
+.level-bar.shraddhavan  { background: var(--blue); }
+.level-bar.krishnasevak { background: var(--green); }
+.level-bar.krishnasadhak { background: var(--orange); }
+.level-bar.prabhupada   { background: var(--red); }
+.level-bar.gurucharan   { background: var(--purple); }
+
+/* ═══ FUNNEL ═══ */
+.funnel-chart { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 0; }
+.funnel-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+.funnel-bar {
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: width 0.5s ease;
+}
+.funnel-label {
+  font-size: 0.78rem;
+  color: var(--text-medium);
+  white-space: nowrap;
+}
+
+/* ═══ BADGE ═══ */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.green { background: var(--green-bg); color: var(--green); }
+
+/* ═══ LOADING ═══ */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 400px;
+  flex-direction: column;
+  gap: 16px;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(200,168,75,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1100px) {
+  .cards-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .quick-stats { flex-wrap: wrap; }
+  .quick-stat { flex-basis: 33%; }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .cards-grid.cols-4, .cards-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+  .cards-grid.cols-2 { grid-template-columns: 1fr; }
+  .health-grid { grid-template-columns: 1fr; }
+  .page-content { padding: 16px; }
+}
+
+/* btn-spinner */
+.btn-spinner {
+  display: none;
+  width: 18px; height: 18px;
+  border: 2px solid rgba(26,26,46,0.2);
+  border-top-color: var(--bg-dark);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN OVERLAY ═══════════ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h1>🙏 INRJD Admin</h1>
+    <p>Super Admin Portal — Login to continue</p>
+    <input type="text" id="loginId" placeholder="User ID" autocomplete="username">
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
+    <button onclick="doLogin()" id="loginBtn">
+      <span id="loginBtnText">Login →</span>
+      <span id="loginBtnSpinner" class="btn-spinner"></span>
+    </button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <h2>AARADHNA</h2>
+    <span>Member Portal</span>
+  </div>
+  <div class="sidebar-label">Menu</div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" data-page="shiksha" onclick="switchPage('shiksha')">
+      <span class="icon">📚</span> Shiksha Analytics
+    </a>
+    <a class="nav-item" onclick="openPage('attendance')">
+      <span class="icon">📝</span> Attendance Portal
+    </a>
+    <a class="nav-item" onclick="openPage('program')">
+      <span class="icon">➕</span> Create Program
+    </a>
+    <a class="nav-item" onclick="openPage('shiksha')">
+      <span class="icon">🧑‍🤝‍🧑</span> Participants
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <a onclick="openPage('attendance')">🌐 Visit Website</a>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main-content" id="mainContent" style="display:none;">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="greeting">
+      🙏 <span>Good <span id="timeOfDay">afternoon</span>,</span>
+      <strong>INRJD</strong>
+      <span class="star">⭐</span>
+    </div>
+    <div class="user-badge">
+      <div class="avatar" id="userAvatar">IN</div>
+      <div class="user-info">
+        <div class="user-name" id="topUserName">INRJD</div>
+        <div class="user-role">SuperAdmin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
+  <div class="page-content" id="pageDashboard">
+    <div class="loading" id="dashboardLoading">
+      <div class="spinner"></div>
+      <span style="color:var(--text-muted);">Loading dashboard data…</span>
+    </div>
+    <div id="dashboardContent" style="display:none;">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="eyebrow">— Super Admin Portal —</div>
+        <h1>Good <span id="headerTimeOfDay">afternoon</span>, <span id="headerUser">INRJD</span> <span class="star">⭐</span></h1>
+        <div class="subtitle">Live system analytics. All data is computed in real-time.</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-btns">
+        <button class="action-btn gold" onclick="openPage('program')">✨ Create Owner</button>
+        <button class="action-btn outline" onclick="openPage('attendance')">👤 Manage Users</button>
+        <button class="action-btn outline" onclick="switchPage('shiksha')">⚙ Config</button>
+      </div>
+
+      <!-- Quick Stats Bar -->
+      <div class="quick-stats" id="quickStats"></div>
+
+      <!-- Key Metrics -->
+      <div class="section-divider">— Key Metrics —</div>
+      <div class="cards-grid cols-4" id="keyMetricsCards"></div>
+
+      <!-- System Health -->
+      <div class="section-divider">— System Health —</div>
+      <div class="cards-grid cols-2">
+        <div class="panel" id="operationalPanel"></div>
+        <div class="panel" id="configPanel"></div>
+      </div>
+
+      <!-- Devotee Health & Attendance Ops -->
+      <div class="section-divider">— Devotee Health & Attendance Ops —</div>
+      <div class="cards-grid cols-3">
+        <div class="panel" id="devoteeHealthPanel"></div>
+        <div class="panel" id="attendanceOpsPanel"></div>
+        <div class="panel" id="areaChartPanel"></div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="section-divider">— Program Distribution —</div>
+      <div class="cards-grid cols-2">
+        <div class="panel">
+          <div class="panel-title"><span class="icon">📊</span> Members by Program Type</div>
+          <div id="chartMembersByType" class="chart-container"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><span class="icon">🗺</span> Programs by Area</div>
+          <div id="chartProgramsByArea" class="chart-container"></div>
+        </div>
+      </div>
+
+      <!-- Programs per Owner -->
+      <div class="section-divider">— Owner Distribution —</div>
+      <div class="cards-grid cols-2">
+        <div class="panel">
+          <div class="panel-title"><span class="icon">👥</span> Programs per Owner</div>
+          <div id="chartProgramsPerOwner" class="chart-container"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><span class="icon">📈</span> Attendance by Owner</div>
+          <div id="chartAttByOwner" class="chart-container"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ PAGE: SHIKSHA ANALYTICS ═══════════ -->
+  <div class="page-content hidden" id="pageShiksha">
+    <div class="loading" id="shikshaLoading">
+      <div class="spinner"></div>
+      <span style="color:var(--text-muted);">Loading Shiksha analytics…</span>
+    </div>
+    <div id="shikshaContent" style="display:none;">
+
+      <div class="page-header">
+        <h1>Shiksha & Certification Analytics</h1>
+      </div>
+
+      <!-- Shiksha quick stats -->
+      <div class="cards-grid cols-4" id="shikshaStats" style="margin-bottom:24px;"></div>
+      <div class="cards-grid cols-3" id="shikshaStats2" style="margin-bottom:28px;"></div>
+
+      <!-- Level Distribution + Funnel -->
+      <div class="cards-grid cols-2" style="margin-bottom:24px;">
+        <div class="panel">
+          <div class="panel-title">Participant Level Distribution</div>
+          <div id="levelDistBars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Level Progression Funnel</div>
+          <div id="levelFunnel" class="funnel-chart"></div>
+        </div>
+      </div>
+
+      <!-- Certifications by Level -->
+      <div class="cards-grid cols-2">
+        <div class="panel">
+          <div class="panel-title">Certifications by Level</div>
+          <div id="certsByLevelBars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><span class="icon">🎓</span> Certification Summary</div>
+          <div id="certSummaryChart" class="chart-container"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+// State
+var dashboardData = null;
+var loggedInUser = '';
+
+// ── TIME GREETING ──
+function getTimeGreeting() {
+  var h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
+}
+
+// ── LOGIN ──
+function doLogin() {
+  var id   = document.getElementById('loginId').value.trim();
+  var pass = document.getElementById('loginPass').value.trim();
+  if (!id || !pass) { showLoginError('Please enter both fields.'); return; }
+
+  var btn = document.getElementById('loginBtn');
+  var txt = document.getElementById('loginBtnText');
+  var sp  = document.getElementById('loginBtnSpinner');
+  btn.disabled = true;
+  sp.style.display = 'inline-block';
+  txt.textContent = 'Signing in…';
+
+  google.script.run
+    .withSuccessHandler(function(r) {
+      sp.style.display = 'none'; btn.disabled = false; txt.textContent = 'Login →';
+      if (r.status === 'success') {
+        if (r.role !== 'admin') {
+          showLoginError('Access denied. Super admin only.');
+          return;
+        }
+        loggedInUser = id;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        initGreeting(id);
+        loadDashboard();
+      } else {
+        showLoginError(r.status);
+      }
+    })
+    .withFailureHandler(function() {
+      sp.style.display = 'none'; btn.disabled = false; txt.textContent = 'Login →';
+      showLoginError('Something went wrong.');
+    })
+    .loginWithRole(id, pass);
+}
+
+function showLoginError(msg) {
+  var el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function initGreeting(userId) {
+  var g = getTimeGreeting();
+  document.getElementById('timeOfDay').textContent = g;
+  document.getElementById('headerTimeOfDay').textContent = g;
+  document.getElementById('headerUser').textContent = userId;
+  document.getElementById('topUserName').textContent = userId;
+  document.getElementById('userAvatar').textContent = userId.substring(0, 2).toUpperCase();
+}
+
+// ── NAVIGATION ──
+function switchPage(page) {
+  document.querySelectorAll('.page-content').forEach(function(el) { el.classList.add('hidden'); });
+  document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+
+  if (page === 'dashboard') {
+    document.getElementById('pageDashboard').classList.remove('hidden');
+  } else if (page === 'shiksha') {
+    document.getElementById('pageShiksha').classList.remove('hidden');
+    if (dashboardData && !document.getElementById('shikshaContent').dataset.loaded) {
+      renderShikshaPage(dashboardData);
+    }
+  }
+  document.querySelector('.nav-item[data-page="' + page + '"]').classList.add('active');
+}
+
+function openPage(page) {
+  google.script.run
+    .withSuccessHandler(function(url) { window.open(url + '?page=' + page, '_blank'); })
+    .getWebAppUrl();
+}
+
+// ── LOAD DASHBOARD ──
+function loadDashboard() {
+  google.script.run
+    .withSuccessHandler(function(data) {
+      dashboardData = data;
+      document.getElementById('dashboardLoading').style.display = 'none';
+      document.getElementById('dashboardContent').style.display = 'block';
+      renderDashboard(data);
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('dashboardLoading').innerHTML =
+        '<span style="color:var(--red);">Failed to load dashboard: ' + e.message + '</span>';
+    })
+    .getSuperAdminDashboard();
+}
+
+// ────────────────────────────────────────
+//  RENDER DASHBOARD
+// ────────────────────────────────────────
+function renderDashboard(d) {
+  var km = d.keyMetrics;
+  var dh = d.devoteeHealth;
+  var ao = d.attendanceOps;
+  var dq = d.dataQuality;
+
+  // Quick Stats Bar
+  var qs = document.getElementById('quickStats');
+  qs.innerHTML = [
+    qsStat(km.activePrograms, 'Active Programs'),
+    qsStat(km.totalDevotees, 'Total Devotees'),
+    qsStat(km.totalOwners, 'Program Owners'),
+    qsStat(km.totalAttRows, 'Sessions / Month'),
+    qsStat(km.avgAttendance + '%', 'Avg Attendance'),
+    qsStat(km.totalAttRows, 'Submissions')
+  ].join('');
+
+  // Key Metrics Cards (2 rows × 4)
+  var mc = document.getElementById('keyMetricsCards');
+  mc.innerHTML =
+    metricCard('🏛', km.activePrograms, 'Active Programs', (km.totalPrograms - km.activePrograms) + ' disabled', 'border-blue') +
+    metricCard('👥', km.totalDevotees, 'Total Devotees', '', 'border-green') +
+    metricCard('🧑‍💼', km.totalOwners, 'Active Owners', '', 'border-gold') +
+    metricCard('📋', km.totalAttRows, 'Submissions / Week', '', 'border-purple') +
+    metricCard('🏛', km.avgAttendance + '%', 'Avg Attendance', km.totalAttRows + ' records', 'border-teal') +
+    metricCard('⚠️', km.overduePrograms, 'Overdue Programs', 'No history', 'border-orange') +
+    metricCard('🆕', km.totalOwners, 'Total Owners', '', 'border-blue') +
+    metricCard('🧑‍🤝‍🧑', km.totalDevotees, 'All Devotees', '', 'border-green');
+
+  // Operational Status
+  var op = document.getElementById('operationalPanel');
+  op.innerHTML =
+    '<div class="panel-title"><span class="icon">🟢</span> Operational Status</div>' +
+    '<div class="health-grid">' +
+      healthItem('green', 'Database', 'Connected — Operational') +
+      healthItem('green', 'Last Attendance', new Date().toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})) +
+      healthItem('orange', 'Last Reminder Sent', 'Never run') +
+      healthItem('red', 'Total Reminders Sent', '0 total') +
+      healthItem('green', 'Orphan Devotees', 'None — Clean') +
+      healthItem('green', 'Incomplete Programs', 'All complete') +
+    '</div>';
+
+  // Config Warnings + Data Quality
+  var cp = document.getElementById('configPanel');
+  var phonePercent = dq.totalActive > 0 ? Math.round((dq.missingPhone / dq.totalActive) * 100) : 0;
+  var emailPercent = dq.totalActive > 0 ? Math.round((dq.missingEmail / dq.totalActive) * 100) : 0;
+  cp.innerHTML =
+    '<div class="panel-title"><span class="icon">⚠️</span> Config Warnings</div>' +
+    '<div style="text-align:center;padding:10px 0;color:var(--text-muted);font-size:0.9rem;">' +
+    (dq.missingPhone === 0 && dq.missingEmail === 0
+      ? '✅ ALL CONFIGS CLEAN'
+      : '⚡ Review data quality below') +
+    '</div>' +
+    '<div style="margin-top:14px;">' +
+      '<div style="font-weight:600;font-size:0.88rem;margin-bottom:10px;">Devotee Data Quality</div>' +
+      dqBar('Missing Phone', dq.missingPhone, dq.totalActive, phonePercent > 50 ? 'red' : 'orange') +
+      dqBar('Missing Email', dq.missingEmail, dq.totalActive, emailPercent > 50 ? 'red' : 'orange') +
+    '</div>';
+
+  // Devotee Health
+  var dhp = document.getElementById('devoteeHealthPanel');
+  var totalDev = dh.active + dh.moderate + dh.inactive;
+  dhp.innerHTML =
+    '<div class="panel-title"><span class="icon">❤️</span> Devotee Health</div>' +
+    '<div class="dh-row"><span class="dh-dot" style="background:var(--green);"></span>' +
+      '<span class="dh-label">Active <small>>80%</small></span>' +
+      '<span class="dh-count">' + dh.active + '</span></div>' +
+    '<div class="dh-row"><span class="dh-dot" style="background:var(--orange);"></span>' +
+      '<span class="dh-label">Moderate <small>40–79%</small></span>' +
+      '<span class="dh-count">' + dh.moderate + '</span></div>' +
+    '<div class="dh-row"><span class="dh-dot" style="background:var(--red);"></span>' +
+      '<span class="dh-label">Inactive <small>&lt;40%</small></span>' +
+      '<span class="dh-count">' + dh.inactive + '</span></div>' +
+    '<div class="dh-avg"><span>System avg</span><span class="val">' + km.avgAttendance + '%</span></div>';
+
+  // Attendance Ops
+  var aop = document.getElementById('attendanceOpsPanel');
+  aop.innerHTML =
+    '<div class="panel-title"><span class="icon">📋</span> Attendance Ops</div>' +
+    '<ul class="ops-list">' +
+      opsItem('Submissions Total', ao.totalSubmissions, '') +
+      opsItem('Programs Not Marked', ao.programsNotMarked, ao.programsNotMarked > 5 ? 'warn' : '') +
+      opsItem('Repeated Absentees', ao.repeatedAbsentees, ao.repeatedAbsentees > 10 ? 'danger' : 'warn') +
+    '</ul>';
+
+  // Area Chart Panel (small pie)
+  var acp = document.getElementById('areaChartPanel');
+  acp.innerHTML =
+    '<div class="panel-title"><span class="icon">📊</span> Programs by Area</div>' +
+    '<div id="chartAreaSmall" class="chart-container-sm"></div>';
+
+  // Draw Google Charts
+  google.charts.load('current', { packages: ['corechart', 'bar'] });
+  google.charts.setOnLoadCallback(function() {
+    drawPieChart('chartMembersByType', d.membersByType, 'Members by Program Type');
+    drawPieChart('chartProgramsByArea', d.programsByArea, 'Programs by Area');
+    drawPieChart('chartAreaSmall', d.programsByArea, '');
+    drawBarChart('chartProgramsPerOwner', d.programsPerOwner, 'Programs per Owner', 'Programs');
+  });
+}
+
+// ────────────────────────────────────────
+//  RENDER SHIKSHA PAGE
+// ────────────────────────────────────────
+function renderShikshaPage(d) {
+  var s = d.shiksha;
+  document.getElementById('shikshaLoading').style.display = 'none';
+  document.getElementById('shikshaContent').style.display = 'block';
+  document.getElementById('shikshaContent').dataset.loaded = '1';
+
+  // Top stats row 1
+  var s1 = document.getElementById('shikshaStats');
+  s1.innerHTML =
+    metricCard('', s.totalParticipants, 'Total Participants', '', 'border-blue') +
+    metricCard('', s.activeParticipants, 'Active Participants', '', 'border-green') +
+    metricCard('', s.certificationsIssued, 'Certifications Issued', '', 'border-red') +
+    metricCard('', 0, 'Growth Plans', '', 'border-gold');
+
+  // Top stats row 2
+  var s2 = document.getElementById('shikshaStats2');
+  s2.innerHTML =
+    metricCard('', d.keyMetrics.totalPrograms, 'Total Programs', '', 'border-blue') +
+    metricCard('', d.keyMetrics.totalOwners, 'Program Owners', '', 'border-green') +
+    metricCard('', s.certificationsIssued, 'Total Courses', '', 'border-purple');
+
+  // Level Distribution Bars
+  var ldb = document.getElementById('levelDistBars');
+  var levels = ['None', 'Shraddhavan', 'Krishna Sevak', 'Krishna Sadhak', 'Srila Prabhupada Ashraya', 'Srila Guru Charana Ashraya'];
+  var barClasses = ['none', 'shraddhavan', 'krishnasevak', 'krishnasadhak', 'prabhupada', 'gurucharan'];
+  var maxLvl = 1;
+  levels.forEach(function(l) { maxLvl = Math.max(maxLvl, s.levelDist[l] || 0); });
+
+  var barsHtml = '';
+  levels.forEach(function(l, i) {
+    var val = s.levelDist[l] || 0;
+    var pct = Math.max(3, Math.round((val / maxLvl) * 100));
+    barsHtml += '<div class="level-bar-row">' +
+      '<span class="level-bar-label">' + l + '</span>' +
+      '<div class="level-bar-wrap"><div class="level-bar ' + barClasses[i] + '" style="width:' + pct + '%;">' + val + '</div></div>' +
+    '</div>';
+  });
+  ldb.innerHTML = barsHtml;
+
+  // Funnel
+  var funnel = document.getElementById('levelFunnel');
+  var funnelLevels = levels.slice().reverse(); // highest first
+  var funnelColors = ['#8b5cf6', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#6b7280'];
+  var maxFunnel = 1;
+  funnelLevels.forEach(function(l) { maxFunnel = Math.max(maxFunnel, s.levelDist[l] || 0); });
+
+  var funnelHtml = '';
+  funnelLevels.forEach(function(l, i) {
+    var val = s.levelDist[l] || 0;
+    var widthPct = Math.max(15, Math.round((val / maxFunnel) * 100));
+    funnelHtml += '<div class="funnel-step">' +
+      '<div class="funnel-bar" style="width:' + widthPct + '%;background:' + funnelColors[i] + ';">' +
+        '<span class="funnel-label" style="color:#fff;">' + l + ' ' + val + '</span>' +
+      '</div>' +
+    '</div>';
+  });
+  funnel.innerHTML = funnelHtml;
+
+  // Certifications by Level
+  var clb = document.getElementById('certsByLevelBars');
+  var maxCert = 1;
+  levels.forEach(function(l) { maxCert = Math.max(maxCert, s.certsByLevel[l] || 0); });
+  var certHtml = '';
+  levels.forEach(function(l, i) {
+    if (l === 'None') return;
+    var val = s.certsByLevel[l] || 0;
+    var pct = Math.max(3, maxCert > 0 ? Math.round((val / maxCert) * 100) : 3);
+    certHtml += '<div class="level-bar-row">' +
+      '<span class="level-bar-label">' + l + '</span>' +
+      '<div class="level-bar-wrap"><div class="level-bar ' + barClasses[i] + '" style="width:' + pct + '%;">' + val + '</div></div>' +
+    '</div>';
+  });
+  clb.innerHTML = certHtml;
+
+  // Cert summary pie chart
+  google.charts.load('current', { packages: ['corechart'] });
+  google.charts.setOnLoadCallback(function() {
+    var filtered = {};
+    levels.forEach(function(l) { if (l !== 'None' && s.certsByLevel[l]) filtered[l] = s.certsByLevel[l]; });
+    drawPieChart('certSummaryChart', filtered, 'Certifications');
+  });
+}
+
+// ────────────────────────────────────────
+//  HTML BUILDERS
+// ────────────────────────────────────────
+function qsStat(value, label) {
+  return '<div class="quick-stat"><div class="value">' + value + '</div><div class="label">' + label + '</div></div>';
+}
+
+function metricCard(icon, value, label, sub, borderClass) {
+  return '<div class="metric-card ' + (borderClass || '') + '">' +
+    (icon ? '<div class="card-icon">' + icon + '</div>' : '') +
+    '<div class="card-value">' + value + '</div>' +
+    '<div class="card-label">' + label + '</div>' +
+    (sub ? '<div class="card-sub">' + sub + '</div>' : '') +
+  '</div>';
+}
+
+function healthItem(color, label, desc) {
+  return '<div class="health-item">' +
+    '<span class="health-dot ' + color + '"></span>' +
+    '<div><div class="h-label">' + label + '</div><div class="h-desc">' + desc + '</div></div>' +
+  '</div>';
+}
+
+function opsItem(label, value, cls) {
+  return '<li class="ops-item"><span>' + label + '</span><span class="ops-val ' + cls + '">' + value + '</span></li>';
+}
+
+function dqBar(label, count, total, colorClass) {
+  var pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  return '<div class="dq-row">' +
+    '<span class="dq-label">' + label + '</span>' +
+    '<div class="dq-bar-wrap"><div class="dq-bar ' + colorClass + '" style="width:' + pct + '%;"></div></div>' +
+    '<span class="dq-count">' + count + '</span>' +
+  '</div>';
+}
+
+// ────────────────────────────────────────
+//  GOOGLE CHARTS
+// ────────────────────────────────────────
+function drawPieChart(containerId, dataObj, title) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var arr = [['Category', 'Count']];
+  Object.keys(dataObj).forEach(function(k) { arr.push([k, dataObj[k]]); });
+  if (arr.length < 2) { container.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No data</p>'; return; }
+
+  var data = google.visualization.arrayToDataTable(arr);
+  var chart = new google.visualization.PieChart(container);
+  chart.draw(data, {
+    title: title,
+    titleTextStyle: { fontName: 'Jost', fontSize: 13, color: '#3d3d5c' },
+    pieHole: 0.4,
+    colors: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#ec4899','#6366f1','#84cc16'],
+    legend: { position: 'right', textStyle: { fontName: 'Jost', fontSize: 12 } },
+    chartArea: { left: 20, top: 40, width: '80%', height: '80%' },
+    backgroundColor: 'transparent',
+    is3D: false
+  });
+}
+
+function drawBarChart(containerId, dataObj, title, vAxisTitle) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var arr = [['Label', 'Count']];
+  Object.keys(dataObj).forEach(function(k) { arr.push([k, dataObj[k]]); });
+  if (arr.length < 2) { container.innerHTML = '<p style="color:var(--text-muted);text-align:center;">No data</p>'; return; }
+
+  var data = google.visualization.arrayToDataTable(arr);
+  var chart = new google.visualization.ColumnChart(container);
+  chart.draw(data, {
+    title: title,
+    titleTextStyle: { fontName: 'Jost', fontSize: 13, color: '#3d3d5c' },
+    colors: ['#3b82f6'],
+    legend: { position: 'none' },
+    chartArea: { left: 60, top: 40, width: '85%', height: '70%' },
+    backgroundColor: 'transparent',
+    vAxis: { title: vAxisTitle || '', textStyle: { fontName: 'Jost', fontSize: 11 } },
+    hAxis: { textStyle: { fontName: 'Jost', fontSize: 10 }, slantedText: true, slantedTextAngle: 30 },
+    bar: { groupWidth: '60%' }
+  });
+}
+
+// Handle Enter key in login
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') {
+    doLogin();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+name: Build & Release APK
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  JAVA_VERSION: "21"
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # 3. Setup Java
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # 4. Setup Android SDK
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 5. Install Dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 6. Generate image-list.json
+      - name: Generate image-list.json
+        run: node gen.js
+
+      # 7. Capacitor Sync
+      - name: Capacitor sync
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      # 8. Build Debug APK
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      # 9. Rename APK
+      - name: Locate APK
+        run: |
+          APK=$(find android -name "*.apk" | head -1)
+          echo "Found APK: $APK"
+
+          SHA=$(echo "${{ github.sha }}" | head -c 7)
+          DEST="japa-session-${SHA}.apk"
+
+          cp "$APK" "$DEST"
+
+          echo "APK_PATH=$DEST" >> $GITHUB_ENV
+
+      # 10. Upload APK
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: JapaSession-APK
+          path: ${{ env.APK_PATH }}
+          retention-days: 30
