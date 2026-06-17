@@ -83,6 +83,7 @@ function renderSchools(data) {
 
   html += '</tbody></table></div>';
   container.innerHTML = html;
+  updatePrelimsDateHighlights();
 }
 
 function buildTableRow(s) {
@@ -139,7 +140,7 @@ function buildTableRow(s) {
   row += '</td>';
 
   // Prelims Date (editable)
-  row += '<td><input type="date" class="tbl-input" id="prelims-' + s.rowIndex + '" value="' + escapeHtml(s.prelimsDate) + '"></td>';
+  row += '<td><input type="date" class="tbl-input prelims-date-input" id="prelims-' + s.rowIndex + '" value="' + escapeHtml(s.prelimsDate) + '" onchange="handlePrelimsDateChange(' + s.rowIndex + ')"></td>';
 
   // Volunteers (editable)
   row += '<td><input type="text" class="tbl-input" id="volunteers-' + s.rowIndex + '" value="' + escapeHtml(s.volunteers) + '" placeholder="Names..."></td>';
@@ -237,9 +238,11 @@ function saveRecord(rowIndex) {
 
   google.script.run
     .withSuccessHandler(function() {
+      syncPrelimsDateLocally(rowIndex);
       if (newComment && newComment.trim()) {
         applyCommentUpdateLocally(rowIndex, newComment);
       }
+      updatePrelimsDateHighlights();
       btn.disabled = false;
       btn.textContent = '💾';
       showToast('✅ Saved successfully!');
@@ -250,6 +253,48 @@ function saveRecord(rowIndex) {
       showToast('❌ Error: ' + err.message);
     })
     .updateSchoolRecord(rowIndex, updates);
+}
+
+function handlePrelimsDateChange(rowIndex) {
+  syncPrelimsDateLocally(rowIndex);
+  updatePrelimsDateHighlights();
+}
+
+function syncPrelimsDateLocally(rowIndex) {
+  var prelimsInput = document.getElementById('prelims-' + rowIndex);
+  if (!prelimsInput) return;
+
+  var rowData = allSchoolData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+
+  if (rowData) {
+    rowData.prelimsDate = prelimsInput.value || '';
+  }
+}
+
+function updatePrelimsDateHighlights() {
+  var dateInputs = document.querySelectorAll('.prelims-date-input');
+  if (!dateInputs || !dateInputs.length) return;
+
+  var counts = {};
+  dateInputs.forEach(function(input) {
+    var value = (input.value || '').trim();
+    if (!value) return;
+    counts[value] = (counts[value] || 0) + 1;
+  });
+
+  dateInputs.forEach(function(input) {
+    var value = (input.value || '').trim();
+    input.classList.remove('prelims-duplicate-amber', 'prelims-duplicate-red');
+    if (!value) return;
+
+    if (counts[value] >= 3) {
+      input.classList.add('prelims-duplicate-red');
+    } else if (counts[value] === 2) {
+      input.classList.add('prelims-duplicate-amber');
+    }
+  });
 }
 
 // ─── TOAST ──────────────────────────────────────────────────────────────────
