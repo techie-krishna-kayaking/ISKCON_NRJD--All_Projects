@@ -8,7 +8,7 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 - Create new programs with metadata (area, sub-area, frequency, type, language, day/time, virtual flag).
 - Auto-generates unique program keys from owner prefix + incrementing number.
 - Populates form dropdowns from the Config sheet.
-- Saves program to tab1 and devotees to tab2.
+- Saves program to tab1 and devotees to tab2 using row format: ProgramKey, ShikshaCode, Name.
 
 ### 2. Attendance Portal (`?page=attendance`)
 - **Login** — authenticates program owners against the `cred` sheet. Super users are redirected to the Admin dashboard.
@@ -70,7 +70,7 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 | `Config` | Dropdown values for forms | One column per dropdown |
 | `cred` | Login credentials | A=id, B=password |
 | `tab1` | Program master data | PROGRAM_KEY, AREA, SUB_AREA, FREQUENCY, TYPE_OF_PROGRAM, LANGUAGE, PROGRAM_OWNER, VIRTUAL, PROGRAM_START_DATE, DAY, TIME, ACT_FLG, PROMOTED, COMMENT |
-| `tab2` | Devotee ↔ Program mapping (wide format) | Row 1 = program keys, rows 2+ = devotee names per column |
+| `tab2` | Devotee ↔ Program mapping (row format) | ProgramKey, ShikshaCode, Name |
 | `attendance` | Per-devotee attendance (upsert) | PROGRAM_KEY, AREA, SUB_AREA, FREQUENCY, TYPE_OF_PROGRAM, LANGUAGE, PROGRAM_OWNER, DEVOTEE, TOTAL_SESSIONS, ATTENDED, PERCENTAGE, LAST_ATT_DATE, HOST_NAME, BV_CHAPTER, LAST_UPDATED |
 | `tab5` | Shiksha participant biodata (SCD2) | SHIKSHA_CODE, AADHAR, NAME, PROGRAM_KEY, SIKSHA_STATUS, ACTIVE_FLG, … |
 | `tab6` | Certifications | Level, dates, etc. |
@@ -88,7 +88,7 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 - **Header-agnostic lookups** — `findHeaderIndex_()` tries multiple candidate column names (case-insensitive), making the code resilient to minor header naming differences.
 - **Batch reads** — `getAllData_()` reads the entire sheet once; `getHeaderMap_()` caches header positions. No cell-by-cell reads.
 - **Logging** — `logInfo_()`, `logWarn_()`, `logError_()` write to both `Logger` and a `Logs` sheet for audit.
-- **Cross-page data passing** — `prepareCertifyUrl()` consolidates lookup + cache storage + URL building into a single server call. It uses `CacheService.getUserCache()` with a UUID token (5-min expiry). The Shiksha page retrieves the prefill data via `getCertifyPrefill(token)` on load, enabling seamless Certify → Shiksha/Biodata transitions without URL param limitations.
+- **Cross-page data passing** — `prepareCertifyUrl()` consolidates lookup + cache storage + URL building into a single server call. It uses `CacheService.getScriptCache()` with a UUID token (5-min expiry). The Shiksha page retrieves the prefill data via `getCertifyPrefill(token)` on load, enabling seamless Certify → Shiksha/Biodata transitions without URL param limitations.
 
 ## File Structure
 
@@ -135,7 +135,7 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 
 - **Unified codebase** — three separate GAS projects consolidated into one with shared utilities and constants.
 - **tab3 eliminated** — attendance is recorded directly into the `attendance` sheet using upsert logic. Each (PROGRAM KEY, DEVOTEE) pair has exactly one row with running totals.
-- **Smart Certify button** — each devotee's 📜 Certify button now checks tab5 first: if the devotee exists, opens the Shiksha form with all data pre-filled and next level auto-selected; if not, opens the Bio-data form with name/program key/BV leader pre-filled.
+- **Smart Certify button** — each devotee's 📜 Certify button now tries tab2 shiksha code first, then tab5 lookup by name: if the devotee exists, opens the Shiksha form with all data pre-filled and next level auto-selected; if not, opens the Bio-data form with name/program key/BV leader pre-filled.
 - **Add Program from dashboard** — owners can create new programs directly from their dashboard without switching pages. The owner is auto-assigned.
 - **Owner Dashboard** — program owners see charts and metrics immediately after login, before the programs table. The shiksha level bar chart is filtered by BV Leader from tab5 (matching the logged-in owner, active rows only) rather than by program key.
 - **Unified theme** — all pages (Attendance, Shiksha, Add Program, Super Admin) share a consistent celestial blue visual identity: Cinzel + Jost fonts, sky-blue/teal/gold palette, light `#F0F7FC` background, glass-card containers, and matching input/button/fieldset styles.

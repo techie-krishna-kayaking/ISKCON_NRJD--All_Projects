@@ -123,7 +123,7 @@ function submitForm(formData) {
 }
 
 /**
- * Saves devotees list to tab2 as a new column under the program key.
+ * Saves devotees list to tab2 row schema: ProgramKey, ShikshaCode, Name.
  * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} ss
  * @param {string} key - Program key.
  * @param {string} devotees - Comma-separated devotee names.
@@ -131,17 +131,20 @@ function submitForm(formData) {
  */
 function saveDevoteesToSheet2_(ss, key, devotees) {
   var sheet2 = ss.getSheetByName(SHEET_NAMES.DEVOTEES);
-  var newCol = sheet2.getLastColumn() + 1;
+  if (!sheet2) return;
 
-  // Write program key in row 1
-  sheet2.getRange(1, newCol).setValue(key);
+  ensureTab2RowSchema_(sheet2);
 
-  // Write each devotee starting from row 2
-  if (devotees && devotees.trim() !== '') {
-    var devList = devotees.split(',').map(function(n) { return n.trim(); }).filter(function(n) { return n !== ''; });
-    for (var i = 0; i < devList.length; i++) {
-      sheet2.getRange(i + 2, newCol).setValue(devList[i]);
-    }
+  if (!devotees || devotees.trim() === '') return;
+
+  var devList = devotees
+    .split(',')
+    .map(function(n) { return parseTab2DevoteeCell_(n).name; })
+    .filter(function(n) { return n !== ''; });
+
+  for (var i = 0; i < devList.length; i++) {
+    var tempCode = generateTempShikshaCode_(sheet2, key);
+    sheet2.appendRow([key, tempCode, devList[i]]);
   }
 }
 

@@ -50,29 +50,17 @@ function getOwnerDashboard(ownerId) {
   var ownerKeys = {};
   ownerPrograms.forEach(function(p) { ownerKeys[p[TAB1_COLS.PROGRAM_KEY]] = true; });
 
-  // Count devotees per program from tab2
-  var devSheet = getSheet_(SHEET_NAMES.DEVOTEES);
-  var devData = devSheet ? getAllData_(devSheet) : [];
+  // Count devotees per program from tab2 (row schema)
   var devCountByProgram = {};
   var totalDevotees = 0;
   var uniqueDevotees = {};
-  if (devData.length > 0) {
-    var headers = devData[0];
-    for (var c = 0; c < headers.length; c++) {
-      var pk = (headers[c] || '').toString().trim();
-      if (!ownerKeys[pk]) continue;
-      var cnt = 0;
-      for (var r = 1; r < devData.length; r++) {
-        var name = (devData[r][c] || '').toString().trim();
-        if (name) {
-          cnt++;
-          uniqueDevotees[name.toUpperCase()] = true;
-        }
-      }
-      devCountByProgram[pk] = cnt;
-      totalDevotees += cnt;
-    }
-  }
+  ownerPrograms.forEach(function(p) {
+    var pk = p[TAB1_COLS.PROGRAM_KEY];
+    var rows = getTab2RowsForProgram(pk);
+    devCountByProgram[pk] = rows.length;
+    totalDevotees += rows.length;
+    rows.forEach(function(r) { uniqueDevotees[r.name.toUpperCase()] = true; });
+  });
 
   // Attendance stats for owner's programs
   var attByProgram = {};
@@ -186,26 +174,16 @@ function getSuperAdminDashboard() {
   });
   var totalOwners = Object.keys(ownerSet).length;
 
-  // ── DEVOTEES STATS from tab2 ──
-  var devSheet = getSheet_(SHEET_NAMES.DEVOTEES);
-  var devData = devSheet ? getAllData_(devSheet) : [];
+  // ── DEVOTEES STATS from tab2 (row schema) ──
   var allDevoteeNames = {};
   var devCountByProgram = {};
-  if (devData.length > 0) {
-    for (var c = 0; c < devData[0].length; c++) {
-      var pk = (devData[0][c] || '').toString().trim();
-      if (!pk) continue;
-      var cnt = 0;
-      for (var r = 1; r < devData.length; r++) {
-        var name = (devData[r][c] || '').toString().trim();
-        if (name) {
-          cnt++;
-          allDevoteeNames[name.toUpperCase()] = true;
-        }
-      }
-      devCountByProgram[pk] = cnt;
-    }
-  }
+  programs.forEach(function(p) {
+    var pk = (p[TAB1_COLS.PROGRAM_KEY] || '').toString().trim();
+    if (!pk) return;
+    var rows = getTab2RowsForProgram(pk);
+    devCountByProgram[pk] = rows.length;
+    rows.forEach(function(r) { allDevoteeNames[r.name.toUpperCase()] = true; });
+  });
   var totalDevotees = Object.keys(allDevoteeNames).length;
 
   // ── ATTENDANCE STATS ──
