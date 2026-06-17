@@ -664,6 +664,9 @@ body {
     <a class="nav-item" data-page="shiksha" onclick="switchPage('shiksha')">
       <span class="icon">📚</span> Shiksha Analytics
     </a>
+    <a class="nav-item" data-page="recommendations" onclick="switchPage('recommendations')">
+      <span class="icon">🎓</span> Recommendations
+    </a>
     <a class="nav-item" onclick="openPage('attendance')">
       <span class="icon">📝</span> Attendance Portal
     </a>
@@ -814,6 +817,27 @@ body {
     </div>
   </div>
 
+  <!-- ═══════════ PAGE: RECOMMENDATIONS ═══════════ -->
+  <div class="page-content hidden" id="pageRecommendations">
+    <div class="loading" id="recommendationsLoading">
+      <div class="spinner"></div>
+      <span style="color:var(--text-muted);">Loading recommendations…</span>
+    </div>
+    <div id="recommendationsContent" style="display:none;">
+      <div class="page-header">
+        <h1>Shiksha Recommendation Workflow</h1>
+        <div class="subtitle">Create shiksha campaigns, review owner submissions, evaluate and prepare certificates.</div>
+      </div>
+
+      <div class="cards-grid cols-2" style="margin-bottom:18px;">
+        <div class="panel" id="campaignCreatePanel"></div>
+        <div class="panel" id="recommendationStatsPanel"></div>
+      </div>
+
+      <div class="panel" id="recommendationTablePanel"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════════════════════════════════════════
@@ -896,8 +920,15 @@ function switchPage(page) {
     if (dashboardData && !document.getElementById('shikshaContent').dataset.loaded) {
       renderShikshaPage(dashboardData);
     }
+  } else if (page === 'recommendations') {
+    document.getElementById('pageRecommendations').classList.remove('hidden');
+    if (!document.getElementById('recommendationsContent').dataset.loaded) {
+      loadRecommendationsPage();
+    }
   }
-  document.querySelector('.nav-item[data-page="' + page + '"]').classList.add('active');
+
+  var nav = document.querySelector('.nav-item[data-page="' + page + '"]');
+  if (nav) nav.classList.add('active');
 }
 
 function openPage(page) {
@@ -920,6 +951,27 @@ function loadDashboard() {
         '<span style="color:var(--red);">Failed to load dashboard: ' + e.message + '</span>';
     })
     .getSuperAdminDashboard();
+}
+
+function loadRecommendationsPage() {
+  document.getElementById('recommendationsLoading').style.display = 'flex';
+  document.getElementById('recommendationsContent').style.display = 'none';
+
+  google.script.run
+    .withSuccessHandler(function(campaigns) {
+      google.script.run
+        .withSuccessHandler(function(snapshot) {
+          renderRecommendationsPage(campaigns || [], snapshot || { rows: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0 } });
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('recommendationsLoading').innerHTML = '<span style="color:var(--red);">Failed to load recommendation data: ' + (err.message || err) + '</span>';
+        })
+        .getRecommendations({});
+    })
+    .withFailureHandler(function(err) {
+      document.getElementById('recommendationsLoading').innerHTML = '<span style="color:var(--red);">Failed to load campaigns: ' + (err.message || err) + '</span>';
+    })
+    .getCampaigns();
 }
 
 // ────────────────────────────────────────
@@ -1110,6 +1162,188 @@ function renderShikshaPage(d) {
     levels.forEach(function(l) { if (l !== 'None' && s.certsByLevel[l]) filtered[l] = s.certsByLevel[l]; });
     drawPieChart('certSummaryChart', filtered, 'Certifications');
   });
+}
+
+function renderRecommendationsPage(campaigns, snapshot) {
+  document.getElementById('recommendationsLoading').style.display = 'none';
+  document.getElementById('recommendationsContent').style.display = 'block';
+  document.getElementById('recommendationsContent').dataset.loaded = '1';
+
+  var stats = snapshot.stats || { total: 0, pending: 0, approved: 0, rejected: 0 };
+  var rows = snapshot.rows || [];
+
+  var campaignPanel = document.getElementById('campaignCreatePanel');
+  campaignPanel.innerHTML =
+    '<div class="panel-title">Push New Shiksha Campaign</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div><label style="font-size:12px;font-weight:600;">Shiksha Date</label><input id="cmpDate" type="date" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;"></div>' +
+      '<div><label style="font-size:12px;font-weight:600;">Target Level</label><select id="cmpLevel" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;"><option value="">Select</option><option>Shraddhavan</option><option>Krishna Sevak</option><option>Krishna Sadhak</option><option>Srila Prabhupada Ashraya</option><option>Srila Guru Charana Ashraya</option></select></div>' +
+    '</div>' +
+    '<div style="margin-top:10px;"><label style="font-size:12px;font-weight:600;">Message to Program Owners</label><textarea id="cmpMsg" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;" placeholder="Please submit recommendations before deadline."></textarea></div>' +
+    '<div style="margin-top:10px;"><button class="action-btn gold" onclick="createCampaign()">Create Campaign</button></div>';
+
+  var statsPanel = document.getElementById('recommendationStatsPanel');
+  statsPanel.innerHTML =
+    '<div class="panel-title">Recommendation Stats</div>' +
+    '<div class="cards-grid cols-2">' +
+      metricCard('', stats.total, 'Total', '', 'border-blue') +
+      metricCard('', stats.pending, 'Pending', '', 'border-orange') +
+      metricCard('', stats.approved, 'Approved', '', 'border-green') +
+      metricCard('', stats.rejected, 'Rejected', '', 'border-red') +
+    '</div>';
+
+  var tablePanel = document.getElementById('recommendationTablePanel');
+  var campaignOptions = '<option value="">All Campaigns</option>';
+  (campaigns || []).forEach(function(c) {
+    campaignOptions += '<option value="' + c.campaignId + '">' + c.campaignId + ' | ' + c.shikshaDate + ' | ' + c.status + '</option>';
+  });
+
+  tablePanel.innerHTML =
+    '<div class="panel-title">Recommendation List</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px;">' +
+      '<select id="rfCampaign" style="padding:9px;border:1px solid #ddd;border-radius:8px;">' + campaignOptions + '</select>' +
+      '<input id="rfOwner" placeholder="Filter owner" style="padding:9px;border:1px solid #ddd;border-radius:8px;" />' +
+      '<select id="rfLevel" style="padding:9px;border:1px solid #ddd;border-radius:8px;"><option value="">All Levels</option><option>Shraddhavan</option><option>Krishna Sevak</option><option>Krishna Sadhak</option><option>Srila Prabhupada Ashraya</option><option>Srila Guru Charana Ashraya</option></select>' +
+      '<select id="rfStatus" style="padding:9px;border:1px solid #ddd;border-radius:8px;"><option value="">All Status</option><option>PENDING</option><option>APPROVED</option><option>REJECTED</option></select>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
+      '<button class="action-btn outline" onclick="reloadRecommendationsWithFilters()">Apply Filters</button>' +
+      '<button class="action-btn outline" onclick="clearRecommendationFilters()">Clear</button>' +
+    '</div>' +
+    '<div style="overflow:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.86rem;" id="recTable"><thead><tr style="background:#f5f5f5;">' +
+      '<th style="padding:8px;border:1px solid #eee;">Campaign</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Owner</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Program</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Member</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Current</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Recommended</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Status</th>' +
+      '<th style="padding:8px;border:1px solid #eee;">Action</th>' +
+    '</tr></thead><tbody>' + buildRecommendationRowsHtml(rows) + '</tbody></table></div>';
+}
+
+function buildRecommendationRowsHtml(rows) {
+  if (!rows || !rows.length) {
+    return '<tr><td colspan="8" style="padding:10px;border:1px solid #eee;">No recommendations found.</td></tr>';
+  }
+
+  var html = '';
+  rows.forEach(function(r) {
+    html += '<tr>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.campaignId || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.ownerId || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.programKey || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.memberName || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.currentLevel || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.recommendedLevel || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;">' + (r.status || '') + '</td>' +
+      '<td style="padding:8px;border:1px solid #eee;display:flex;gap:6px;flex-wrap:wrap;">' +
+        '<button class="action-btn outline" style="padding:6px 10px;font-size:0.76rem;" onclick="evaluateRec(\'' + r.recId + '\', \'APPROVED\')">Approve</button>' +
+        '<button class="action-btn outline" style="padding:6px 10px;font-size:0.76rem;" onclick="evaluateRec(\'' + r.recId + '\', \'REJECTED\')">Reject</button>' +
+        '<button class="action-btn gold" style="padding:6px 10px;font-size:0.76rem;" onclick="printCertificateData(\'' + r.recId + '\')">Print Data</button>' +
+      '</td>' +
+    '</tr>';
+  });
+  return html;
+}
+
+function createCampaign() {
+  var shikshaDate = document.getElementById('cmpDate').value;
+  var targetLevel = document.getElementById('cmpLevel').value;
+  var message = document.getElementById('cmpMsg').value;
+
+  if (!shikshaDate || !targetLevel) {
+    alert('Please provide shiksha date and target level.');
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(resp) {
+      alert('Campaign created: ' + (resp.campaignId || 'success'));
+      document.getElementById('recommendationsContent').dataset.loaded = '';
+      loadRecommendationsPage();
+    })
+    .withFailureHandler(function(err) {
+      alert('Failed: ' + (err.message || err));
+    })
+    .createShikshaCampaign(loggedInUser, {
+      shikshaDate: shikshaDate,
+      targetLevel: targetLevel,
+      message: message
+    });
+}
+
+function reloadRecommendationsWithFilters() {
+  var filters = {
+    campaignId: document.getElementById('rfCampaign').value,
+    ownerId: document.getElementById('rfOwner').value,
+    recommendedLevel: document.getElementById('rfLevel').value,
+    status: document.getElementById('rfStatus').value
+  };
+
+  google.script.run
+    .withSuccessHandler(function(snapshot) {
+      var tbody = document.querySelector('#recTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = buildRecommendationRowsHtml((snapshot && snapshot.rows) || []);
+    })
+    .withFailureHandler(function(err) {
+      alert('Failed to filter: ' + (err.message || err));
+    })
+    .getRecommendations(filters);
+}
+
+function clearRecommendationFilters() {
+  document.getElementById('rfCampaign').value = '';
+  document.getElementById('rfOwner').value = '';
+  document.getElementById('rfLevel').value = '';
+  document.getElementById('rfStatus').value = '';
+  reloadRecommendationsWithFilters();
+}
+
+function evaluateRec(recId, status) {
+  var ceremonyDate = '';
+  var certificateNo = '';
+  if (status === 'APPROVED') {
+    ceremonyDate = prompt('Ceremony date (YYYY-MM-DD)', '') || '';
+    certificateNo = prompt('Certificate number (optional)', '') || '';
+  }
+  var adminNotes = prompt('Admin notes (optional)', '') || '';
+
+  google.script.run
+    .withSuccessHandler(function(resp) {
+      alert(resp.message || 'Updated.');
+      reloadRecommendationsWithFilters();
+    })
+    .withFailureHandler(function(err) {
+      alert('Failed: ' + (err.message || err));
+    })
+    .evaluateRecommendation(loggedInUser, recId, {
+      status: status,
+      ceremonyDate: ceremonyDate,
+      certificateNo: certificateNo,
+      adminNotes: adminNotes
+    });
+}
+
+function printCertificateData(recId) {
+  google.script.run
+    .withSuccessHandler(function(payload) {
+      alert(
+        'Certificate Print Data\n\n' +
+        'Name: ' + (payload.memberName || '') + '\n' +
+        'Shiksha Code: ' + (payload.shikshaCode || '') + '\n' +
+        'Program Owner: ' + (payload.programOwner || '') + '\n' +
+        'Program Key: ' + (payload.programKey || '') + '\n' +
+        'Level: ' + (payload.level || '') + '\n' +
+        'Ceremony Date: ' + (payload.ceremonyDate || '') + '\n' +
+        'Certificate No: ' + (payload.certificateNo || '')
+      );
+    })
+    .withFailureHandler(function(err) {
+      alert('Cannot build certificate data: ' + (err.message || err));
+    })
+    .buildCertificatePrintData(recId);
 }
 
 // ────────────────────────────────────────

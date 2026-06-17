@@ -8,7 +8,7 @@
  * Add column C = 'admin' in cred sheet as alternative.
  * @const {string[]}
  */
-var SUPER_USERS = ['INRJD'];
+var SUPER_USERS = ['VNP','LRM'];
 
 /**
  * Shiksha level hierarchy (lowest → highest) used for funnel chart ordering.
@@ -36,6 +36,8 @@ function getOwnerDashboard(ownerId) {
   var programs = _getAllPrograms();
   var attData  = _getAllAttendance();
   var partData = _getAllParticipants();
+  var attention = getOwnerAttention(ownerId);
+  var ownerRecommendations = getOwnerRecommendations(ownerId);
 
   // Filter owner's programs
   var ownerPrograms = programs.filter(function(p) { return p[TAB1_COLS.PROGRAM_OWNER] === ownerId; });
@@ -149,7 +151,9 @@ function getOwnerDashboard(ownerId) {
     },
     membersByType:  membersByType,
     levelDist:      levelDist,
-    programs:       programList
+    programs:       programList,
+    attention:      attention,
+    recommendations: ownerRecommendations
   };
 }
 
@@ -166,6 +170,7 @@ function getSuperAdminDashboard() {
   var attData  = _getAllAttendance();
   var partData = _getAllParticipants();
   var certData = _getAllCertifications();
+  var recommendationSnapshot = getRecommendations({});
 
   // ── PROGRAMS STATS ──
   var activePrograms = programs.filter(function(p) {
@@ -358,6 +363,12 @@ function getSuperAdminDashboard() {
       missingPhone:  missingPhone,
       missingEmail:  missingEmail,
       totalActive:   activeParticipants
+    },
+    recommendations: {
+      total: recommendationSnapshot.stats.total,
+      pending: recommendationSnapshot.stats.pending,
+      approved: recommendationSnapshot.stats.approved,
+      rejected: recommendationSnapshot.stats.rejected
     }
   };
 }

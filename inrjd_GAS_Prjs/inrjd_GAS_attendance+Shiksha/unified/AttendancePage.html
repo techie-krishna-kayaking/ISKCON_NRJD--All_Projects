@@ -1608,6 +1608,8 @@
        JAVASCRIPT — ALL ORIGINAL LOGIC INTACT
   ════════════════════════════════════════ -->
   <script>
+    var currentOwnerId = '';
+
     /* ─── Helpers: build standardised wrappers for GAS inputs ─── */
     function makeFormField(labelText, inputEl, wrapperClass) {
       var field = document.createElement('div');
@@ -1633,35 +1635,63 @@
       var id   = document.getElementById('id').value;
       var pass = document.getElementById('pass').value;
 
-      google.script.run
-        .withSuccessHandler(function(result) {
-          spinner.style.display = 'none';
-          loginBtn.disabled     = false;
-          btnText.textContent   = "Login →";
+      function resetLoginButton() {
+        spinner.style.display = 'none';
+        loginBtn.disabled = false;
+        btnText.textContent = 'Login →';
+      }
 
-          if (result.status === 'success') {
-            // If super user, redirect to admin dashboard
-            if (result.role === 'admin') {
-              google.script.run
-                .withSuccessHandler(function(url) {
-                  window.open(url + '?page=admin', '_self');
-                })
-                .getWebAppUrl();
-              return;
+      function runLegacyLoginFallback() {
+        google.script.run
+          .withSuccessHandler(function(status) {
+            resetLoginButton();
+
+            if (status === 'success') {
+              currentOwnerId = id;
+              document.getElementById('loginSection').style.display = 'none';
+              loadOwnerDashboard();
+            } else {
+              alert(status);
             }
-            document.getElementById('loginSection').style.display = 'none';
-            loadOwnerDashboard();
-          } else {
-            alert(result.status);
-          }
-        })
-        .withFailureHandler(function() {
-          spinner.style.display = 'none';
-          loginBtn.disabled     = false;
-          btnText.textContent   = "Login →";
-          alert("Something went wrong.");
-        })
-        .loginWithRole(id, pass);
+          })
+          .withFailureHandler(function() {
+            resetLoginButton();
+            alert('Login failed. Please redeploy the latest web app version.');
+          })
+          .checkCredentials(id, pass);
+      }
+
+      try {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            resetLoginButton();
+
+            if (result && result.status === 'success') {
+              // If super user, redirect to admin dashboard
+              if (result.role === 'admin') {
+                google.script.run
+                  .withSuccessHandler(function(url) {
+                    window.open(url + '?page=admin', '_self');
+                  })
+                  .getWebAppUrl();
+                return;
+              }
+              currentOwnerId = id;
+              document.getElementById('loginSection').style.display = 'none';
+              loadOwnerDashboard();
+            } else if (result && result.status) {
+              alert(result.status);
+            } else {
+              runLegacyLoginFallback();
+            }
+          })
+          .withFailureHandler(function() {
+            runLegacyLoginFallback();
+          })
+          .loginWithRole(id, pass);
+      } catch (err) {
+        runLegacyLoginFallback();
+      }
     }
 
     /* ─── OWNER DASHBOARD ─── */
@@ -1690,7 +1720,12 @@
       header.className = 'section-header';
       header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
       header.innerHTML = '<div><p class="section-eyebrow">Owner Dashboard</p><h2 class="section-title">Welcome, ' + ownerId + ' 🙏</h2></div>' +
-        '<button class="btn-action" style="background:linear-gradient(135deg,var(--gold),var(--gold-light,#e0c878));color:#1a1a2e;font-weight:600;padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:0.9rem;" onclick="showAddProgramForm(\'' + ownerId + '\')">➕ Add Program</button>';
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">' +
+          '<button class="btn-action" style="background:linear-gradient(135deg,var(--gold),var(--gold-light,#e0c878));color:#1a1a2e;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:0.86rem;" onclick="showAddProgramForm(\'' + ownerId + '\')">➕ Add Program</button>' +
+          '<button class="btn-action" style="background:linear-gradient(135deg,var(--teal),var(--teal-soft));color:#fff;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:0.86rem;" onclick="openIntegratedShiksha()">🧘 Shiksha Hub</button>' +
+          '<button class="btn-action" style="background:linear-gradient(135deg,var(--periwinkle),var(--periwinkle-soft));color:#fff;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:0.86rem;" onclick="showMemberProfiles(\'' + ownerId + '\')">👤 Member Profiles</button>' +
+          '<button class="btn-action" style="background:linear-gradient(135deg,var(--sky),var(--sky-bright));color:#fff;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:0.86rem;" onclick="showOwnerRecommendations(\'' + ownerId + '\')">🎓 Recommendations</button>' +
+        '</div>';
       container.appendChild(header);
 
       // Summary cards
@@ -1702,6 +1737,29 @@
         ownerCard('👥', s.totalDevotees, 'Total Members', 'var(--periwinkle)') +
         ownerCard('📊', s.avgAttendance + '%', 'Avg Attendance', 'var(--gold)');
       container.appendChild(cardsRow);
+
+      var attn = data.attention || { programsNeedingAttendance: [], stalePrograms: [] };
+      var recs = data.recommendations || [];
+      var pendingCount = 0;
+      for (var rc = 0; rc < recs.length; rc++) {
+        if ((recs[rc].status || '').toString().toUpperCase() !== 'APPROVED' &&
+            (recs[rc].status || '').toString().toUpperCase() !== 'REJECTED') {
+          pendingCount++;
+        }
+      }
+
+      var attentionPanel = document.createElement('div');
+      attentionPanel.style.cssText = 'background:var(--bg-card);border-radius:var(--r-sm);padding:16px 18px;box-shadow:var(--shadow-soft);margin-bottom:20px;border:1px solid var(--border-card);';
+      attentionPanel.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">' +
+          '<div style="font-family:var(--font-display);font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-dark);">Needs Attention</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<span style="padding:4px 10px;border-radius:999px;background:var(--coral-pale);color:var(--coral);font-size:0.78rem;font-weight:600;">No Attendance: ' + (attn.programsNeedingAttendance || []).length + '</span>' +
+            '<span style="padding:4px 10px;border-radius:999px;background:var(--gold-pale);color:var(--gold);font-size:0.78rem;font-weight:600;">Stale > 10 days: ' + (attn.stalePrograms || []).length + '</span>' +
+            '<span style="padding:4px 10px;border-radius:999px;background:var(--sky-pale);color:var(--sky-deep);font-size:0.78rem;font-weight:600;">Pending Recommendations: ' + pendingCount + '</span>' +
+          '</div>' +
+        '</div>';
+      container.appendChild(attentionPanel);
 
       // Charts row
       var chartsRow = document.createElement('div');
@@ -2257,16 +2315,311 @@
       // Single server call: lookup + cache + build URL
       google.script.run
         .withSuccessHandler(function(result) {
-          window.open(result.url, '_blank');
+          openIntegratedShiksha(result.url);
         })
         .withFailureHandler(function() {
           google.script.run
             .withSuccessHandler(function(baseUrl) {
-              window.open(baseUrl + '?page=shiksha', '_blank');
+              openIntegratedShiksha(baseUrl + '?page=shiksha');
             })
             .getWebAppUrl();
         })
         .prepareCertifyUrl(devoteeName, programKey);
+    }
+
+    function openIntegratedShiksha(url) {
+      function render(urlToLoad) {
+        var container = document.getElementById('programDetails');
+        container.innerHTML = '';
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'attendance-wrapper';
+        wrapper.style.padding = '18px';
+
+        var topBar = document.createElement('div');
+        topBar.className = 'attendance-top-bar';
+        topBar.innerHTML = '<div><p class="section-eyebrow">Integrated Module</p><h2 class="attendance-title">Shiksha Portal</h2></div>';
+
+        var backBtn = document.createElement('button');
+        backBtn.className = 'btn-secondary';
+        backBtn.innerHTML = '&#8592; Back to Dashboard';
+        backBtn.onclick = function() { loadOwnerDashboard(); };
+        topBar.appendChild(backBtn);
+
+        var frameWrap = document.createElement('div');
+        frameWrap.style.cssText = 'margin-top:14px;border:1px solid var(--border-card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-soft);';
+        frameWrap.innerHTML = '<iframe src="' + urlToLoad + '" style="width:100%;height:78vh;border:none;background:#fff;" title="Integrated Shiksha"></iframe>';
+
+        wrapper.appendChild(topBar);
+        wrapper.appendChild(frameWrap);
+        container.appendChild(wrapper);
+      }
+
+      if (url) {
+        render(url);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(baseUrl) { render(baseUrl + '?page=shiksha'); })
+          .withFailureHandler(function() { alert('Unable to open shiksha module.'); })
+          .getWebAppUrl();
+      }
+    }
+
+    function showMemberProfiles(ownerId) {
+      google.script.run
+        .withSuccessHandler(function(rows) {
+          var container = document.getElementById('programDetails');
+          container.innerHTML = '';
+
+          var wrapper = document.createElement('div');
+          wrapper.className = 'attendance-wrapper';
+
+          var topBar = document.createElement('div');
+          topBar.className = 'attendance-top-bar';
+          topBar.innerHTML = '<div><p class="section-eyebrow">Tab5 Profiles</p><h2 class="attendance-title">Member Profile Details</h2></div>';
+          var backBtn = document.createElement('button');
+          backBtn.className = 'btn-secondary';
+          backBtn.innerHTML = '&#8592; Back to Dashboard';
+          backBtn.onclick = function() { loadOwnerDashboard(); };
+          topBar.appendChild(backBtn);
+          wrapper.appendChild(topBar);
+
+          var tableContainer = document.createElement('div');
+          tableContainer.className = 'table-container';
+          var scrollWrapper = document.createElement('div');
+          scrollWrapper.className = 'table-scroll-wrapper';
+          var table = document.createElement('table');
+          table.className = 'programs-table';
+
+          var thead = document.createElement('thead');
+          var hr = document.createElement('tr');
+          ['Program','Member','Shiksha Code','Current Level','Phone','Email','City','Action'].forEach(function(h) {
+            var th = document.createElement('th'); th.textContent = h; hr.appendChild(th);
+          });
+          thead.appendChild(hr);
+          table.appendChild(thead);
+
+          var tbody = document.createElement('tbody');
+          if (!rows || !rows.length) {
+            var er = tbody.insertRow();
+            var ec = er.insertCell();
+            ec.colSpan = 8;
+            ec.textContent = 'No active profiles found for your programs.';
+          } else {
+            rows.forEach(function(r) {
+              var row = tbody.insertRow();
+              [r.programKey, r.memberName, r.shikshaCode, r.currentLevel, r.contactNumber, r.email, r.city].forEach(function(v) {
+                var td = row.insertCell(); td.textContent = v || '';
+              });
+              var act = row.insertCell();
+              var btn = document.createElement('button');
+              btn.className = 'btn-action';
+              btn.textContent = 'Update';
+              btn.onclick = function() {
+                var contactNumber = prompt('Contact Number', r.contactNumber || '');
+                if (contactNumber === null) return;
+                var email = prompt('Email', r.email || '');
+                if (email === null) return;
+                var city = prompt('City', r.city || '');
+                if (city === null) return;
+                var contactAddress = prompt('Contact Address', (r.raw && (r.raw['CONTACT ADDRESS'] || r.raw['contact address'])) || '');
+                if (contactAddress === null) return;
+                var language = prompt('Preferred Language', (r.raw && (r.raw['PREFERRED LANGUAGE OF COMM'] || r.raw['preferred language of comm'])) || '');
+                if (language === null) return;
+
+                google.script.run
+                  .withSuccessHandler(function(resp) {
+                    alert(resp.message || 'Updated successfully.');
+                    showMemberProfiles(ownerId);
+                  })
+                  .withFailureHandler(function(err) {
+                    alert('Update failed: ' + (err.message || err));
+                  })
+                  .updateOwnerMemberProfile(ownerId, {
+                    rowIndex: r.rowIndex,
+                    contactNumber: contactNumber,
+                    email: email,
+                    city: city,
+                    contactAddress: contactAddress,
+                    language: language
+                  });
+              };
+              act.appendChild(btn);
+            });
+          }
+
+          table.appendChild(tbody);
+          scrollWrapper.appendChild(table);
+          tableContainer.appendChild(scrollWrapper);
+          wrapper.appendChild(tableContainer);
+          container.appendChild(wrapper);
+        })
+        .withFailureHandler(function() {
+          alert('Failed to load member profiles.');
+        })
+        .getOwnerMemberProfiles(ownerId);
+    }
+
+    function showOwnerRecommendations(ownerId) {
+      var container = document.getElementById('programDetails');
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Loading recommendations…</div>';
+
+      google.script.run
+        .withSuccessHandler(function(campaigns) {
+          google.script.run
+            .withSuccessHandler(function(memberRows) {
+              google.script.run
+                .withSuccessHandler(function(existingRows) {
+                  renderOwnerRecommendationUI(ownerId, campaigns || [], memberRows || [], existingRows || []);
+                })
+                .withFailureHandler(function() { renderOwnerRecommendationUI(ownerId, campaigns || [], memberRows || [], []); })
+                .getOwnerRecommendations(ownerId);
+            })
+            .withFailureHandler(function() { renderOwnerRecommendationUI(ownerId, campaigns || [], [], []); })
+            .getOwnerMemberProfiles(ownerId);
+        })
+        .withFailureHandler(function() {
+          alert('Failed to load recommendation data.');
+          loadOwnerDashboard();
+        })
+        .getCampaigns('OPEN');
+    }
+
+    function renderOwnerRecommendationUI(ownerId, campaigns, memberRows, existingRows) {
+      var container = document.getElementById('programDetails');
+      container.innerHTML = '';
+
+      var wrapper = document.createElement('div');
+      wrapper.className = 'attendance-wrapper';
+
+      var topBar = document.createElement('div');
+      topBar.className = 'attendance-top-bar';
+      topBar.innerHTML = '<div><p class="section-eyebrow">Shiksha Workflow</p><h2 class="attendance-title">Owner Recommendations</h2></div>';
+      var backBtn = document.createElement('button');
+      backBtn.className = 'btn-secondary';
+      backBtn.innerHTML = '&#8592; Back to Dashboard';
+      backBtn.onclick = function() { loadOwnerDashboard(); };
+      topBar.appendChild(backBtn);
+      wrapper.appendChild(topBar);
+
+      if (!campaigns.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'padding:20px;margin-top:14px;border:1px solid var(--border-card);border-radius:12px;background:var(--bg-card);';
+        empty.textContent = 'No open campaign from super admin right now.';
+        wrapper.appendChild(empty);
+      } else {
+        var memberMap = {};
+        memberRows.forEach(function(m) {
+          var pk = m.programKey || '';
+          if (!memberMap[pk]) memberMap[pk] = [];
+          memberMap[pk].push(m);
+        });
+
+        var form = document.createElement('div');
+        form.style.cssText = 'margin-top:14px;padding:16px;border:1px solid var(--border-card);border-radius:12px;background:var(--bg-card);';
+
+        var campaignOptions = campaigns.map(function(c) {
+          return '<option value="' + c.campaignId + '">' + c.campaignId + ' | ' + c.shikshaDate + ' | ' + c.targetLevel + '</option>';
+        }).join('');
+
+        form.innerHTML =
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+            '<div><label style="font-size:12px;font-weight:600;">Campaign</label><select id="rec_campaign" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select campaign</option>' + campaignOptions + '</select></div>' +
+            '<div><label style="font-size:12px;font-weight:600;">Program</label><select id="rec_program" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select program</option></select></div>' +
+            '<div><label style="font-size:12px;font-weight:600;">Member</label><select id="rec_member" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select member</option></select></div>' +
+            '<div><label style="font-size:12px;font-weight:600;">Recommended Level</label><select id="rec_level" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select level</option><option>Shraddhavan</option><option>Krishna Sevak</option><option>Krishna Sadhak</option><option>Srila Prabhupada Ashraya</option><option>Srila Guru Charana Ashraya</option></select></div>' +
+          '</div>' +
+          '<div style="margin-top:10px;"><label style="font-size:12px;font-weight:600;">Remarks</label><textarea id="rec_remarks" rows="2" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"></textarea></div>' +
+          '<div style="margin-top:10px;display:flex;gap:8px;">' +
+            '<button id="rec_submit" class="btn-submit" style="max-width:240px;" type="button">Submit Recommendation</button>' +
+          '</div>';
+
+        wrapper.appendChild(form);
+
+        var programSelect = form.querySelector('#rec_program');
+        var memberSelect = form.querySelector('#rec_member');
+        var programKeys = Object.keys(memberMap).sort();
+        programKeys.forEach(function(pk) {
+          var op = document.createElement('option');
+          op.value = pk;
+          op.textContent = pk;
+          programSelect.appendChild(op);
+        });
+
+        programSelect.onchange = function() {
+          var pk = programSelect.value;
+          memberSelect.innerHTML = '<option value="">Select member</option>';
+          (memberMap[pk] || []).forEach(function(m) {
+            var op = document.createElement('option');
+            op.value = m.memberName;
+            op.textContent = m.memberName + ' (' + (m.currentLevel || 'None') + ')';
+            memberSelect.appendChild(op);
+          });
+        };
+
+        form.querySelector('#rec_submit').onclick = function() {
+          var campaignId = form.querySelector('#rec_campaign').value;
+          var programKey = form.querySelector('#rec_program').value;
+          var memberName = form.querySelector('#rec_member').value;
+          var recommendedLevel = form.querySelector('#rec_level').value;
+          var remarks = form.querySelector('#rec_remarks').value;
+
+          if (!campaignId || !programKey || !memberName || !recommendedLevel) {
+            alert('Please complete all required fields.');
+            return;
+          }
+
+          google.script.run
+            .withSuccessHandler(function(resp) {
+              alert(resp.message || 'Recommendation submitted.');
+              showOwnerRecommendations(ownerId);
+            })
+            .withFailureHandler(function(err) {
+              alert('Failed: ' + (err.message || err));
+            })
+            .submitOwnerRecommendation(ownerId, {
+              campaignId: campaignId,
+              programKey: programKey,
+              memberName: memberName,
+              recommendedLevel: recommendedLevel,
+              remarks: remarks
+            });
+        };
+      }
+
+      var listCard = document.createElement('div');
+      listCard.style.cssText = 'margin-top:14px;padding:16px;border:1px solid var(--border-card);border-radius:12px;background:var(--bg-card);';
+      listCard.innerHTML = '<h3 style="font-size:0.95rem;margin-bottom:10px;color:var(--text-dark);">Submitted Recommendations</h3>';
+
+      var table = document.createElement('table');
+      table.className = 'programs-table';
+      var thead = document.createElement('thead');
+      var hr = document.createElement('tr');
+      ['Campaign','Program','Member','Current','Recommended','Status','Updated'].forEach(function(h) {
+        var th = document.createElement('th'); th.textContent = h; hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+      table.appendChild(thead);
+
+      var tbody = document.createElement('tbody');
+      if (!existingRows.length) {
+        var row = tbody.insertRow();
+        var cell = row.insertCell();
+        cell.colSpan = 7;
+        cell.textContent = 'No recommendations submitted yet.';
+      } else {
+        existingRows.forEach(function(r) {
+          var row = tbody.insertRow();
+          [r.campaignId, r.programKey, r.memberName, r.currentLevel, r.recommendedLevel, r.status, r.updatedAt || r.createdAt].forEach(function(v) {
+            var td = row.insertCell(); td.textContent = v || '';
+          });
+        });
+      }
+      table.appendChild(tbody);
+      listCard.appendChild(table);
+      wrapper.appendChild(listCard);
+
+      container.appendChild(wrapper);
     }
 
     /* ─── ADD PROGRAM (inline form for owner) ─── */

@@ -13,12 +13,16 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 ### 2. Attendance Portal (`?page=attendance`)
 - **Login** — authenticates program owners against the `cred` sheet. Super users are redirected to the Admin dashboard.
 - **Owner Dashboard** — after login, owners see summary cards (total programs, active count, total members, avg attendance %), a pie chart of members by program type, a horizontal bar chart of members by shiksha level (filtered by BV Leader from tab5 matching the logged-in owner, with `ACTIVE_FLG='Y'`), and a programs table with per-program member count and attendance stats.
+- **Needs Attention Center** — owner dashboard now shows programs with no attendance history, stale attendance (>10 days), and pending recommendation counts.
 - **Add Program** — owners can add new programs directly from their dashboard via the ➕ Add Program button. The inline form uses the same celestial blue theme (Cinzel/Jost fonts, sky-blue inputs, grouped sections for Location, Program Details, Schedule, Participants). The program owner is auto-set to the logged-in user; all config dropdowns (area, frequency, type, language, etc.) are loaded from the Config sheet.
 - **Attendance Recording** — select a program → see devotee table with Present/Absent radios → enter date + host name → submit. Uses upsert: one row per (PROGRAM KEY, DEVOTEE) with running TOTAL_SESSIONS, ATTENDED, PERCENTAGE, LAST_ATT_DATE, HOST_NAME, BV_CHAPTER, LAST_UPDATED.
 - **Smart Certify Button** — each devotee row has a 📜 Certify button. A single server call (`prepareCertifyUrl`) performs the lookup, caches prefill data, and returns the full URL — eliminating the previous 3-nested-call chain:
   - **If found in tab5** → opens the Shiksha form with all fields pre-filled (shiksha code, name, current level, etc.) and auto-selects the next certification level.
   - **If not found** → opens the Bio-data form with name, program key, and BV leader pre-filled so the user only needs to complete the remaining fields.
+- **Integrated Shiksha Hub** — certify and shiksha are now opened inside the same owner portal via embedded module view (no separate app hopping for the main flow).
 - **Add Devotee** — for eligible program types, dynamically add new devotees.
+- **Tab5 Member Profile Management** — owners can open member profiles (active tab5 rows for their programs), review details, and submit profile updates (phone, email, city, address, language). Updates follow SCD2 behavior (`ACTIVE_FLG` previous row → `N`, new row inserted as `Y`).
+- **Owner Recommendation Submission** — owners can see open super-admin campaigns and submit/modify recommendations per member.
 
 ### 3. Shiksha Portal (`?page=shiksha`)
 - Search participants by shiksha code, Aadhar, or program key.
@@ -44,6 +48,12 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
   - Level progression funnel (highest → lowest).
   - Certifications by level (horizontal bars).
   - Certification summary (donut chart).
+- **Recommendations page** with:
+  - Campaign creation (push shiksha date + target level + message to all owners).
+  - Recommendation stats (total/pending/approved/rejected).
+  - Filterable recommendation list (by campaign, owner, level, status).
+  - Evaluation actions (approve/reject/pending), ceremony date + certificate number capture, admin notes.
+  - Certificate print payload generation for approved recommendations.
 - Sidebar navigation between Dashboard and Shiksha Analytics, plus links to other portals.
 
 ## How It Is Implemented
@@ -64,6 +74,8 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 | `attendance` | Per-devotee attendance (upsert) | PROGRAM_KEY, AREA, SUB_AREA, FREQUENCY, TYPE_OF_PROGRAM, LANGUAGE, PROGRAM_OWNER, DEVOTEE, TOTAL_SESSIONS, ATTENDED, PERCENTAGE, LAST_ATT_DATE, HOST_NAME, BV_CHAPTER, LAST_UPDATED |
 | `tab5` | Shiksha participant biodata (SCD2) | SHIKSHA_CODE, AADHAR, NAME, PROGRAM_KEY, SIKSHA_STATUS, ACTIVE_FLG, … |
 | `tab6` | Certifications | Level, dates, etc. |
+| `shiksha_campaigns` | Super-admin push campaigns | CAMPAIGN_ID, SHIKSHA_DATE, TARGET_LEVEL, STATUS, REQUESTED_BY, ... |
+| `shiksha_recommendations` | Owner recommendations and admin evaluation | REC_ID, CAMPAIGN_ID, PROGRAM_OWNER, MEMBER_NAME, RECOMMENDED_LEVEL, STATUS, CEREMONY_DATE, CERTIFICATE_NO, ... |
 | `Logs` | Auto-created logging | Timestamp, Module, Level, Message |
 
 ### Key Patterns
@@ -90,6 +102,7 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 | `Auth.gs` | Credential checking + role-based login (`loginWithRole`) |
 | `Shiksha.gs` | Shiksha biodata (tab5) — search, validate, SCD2 submissions, `prepareCertifyUrl()` (consolidated lookup + cache + URL), certify prefill cache |
 | `Dashboard.gs` | Owner & Super Admin dashboard data aggregation, `SUPER_USERS` config |
+| `Workflow.gs` | Owner attention, tab5 member profile updates, campaign push, recommendations, admin evaluation, certificate print payload |
 | `Menu.gs` | Custom spreadsheet menu (`NRJD Attendance`) |
 | `WebApp.gs` | `doGet()` router — serves HTML templates by `?page=` parameter, passes URL params to templates |
 | `AttendancePage.html` | Attendance portal UI — login, owner dashboard with charts, inline Add Program form, attendance recording, smart Certify button |
@@ -128,3 +141,4 @@ Unified Google Apps Script project combining Program Management, Attendance Trac
 - **Unified theme** — all pages (Attendance, Shiksha, Add Program, Super Admin) share a consistent celestial blue visual identity: Cinzel + Jost fonts, sky-blue/teal/gold palette, light `#F0F7FC` background, glass-card containers, and matching input/button/fieldset styles.
 - **Super Admin Dashboard** — full analytics portal with key metrics, system health, devotee health breakdown, attendance ops, shiksha level distribution, and interactive Google Charts.
 - **Role-based auth** — `loginWithRole()` detects super users and routes them to the admin portal automatically.
+- **Recommendation lifecycle** — super admin can push campaigns, owners submit recommendations, super admin evaluates, and approved records can be used for certificate printing.
