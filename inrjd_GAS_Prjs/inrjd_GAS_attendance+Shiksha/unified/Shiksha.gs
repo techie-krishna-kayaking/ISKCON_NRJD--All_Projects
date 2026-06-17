@@ -13,7 +13,6 @@ function findShikshaByQuery(query) {
   query = (query || '').toString().trim();
   if (!query) return { matches: [], queryType: 'none' };
 
-  var ss = getSpreadsheet_();
   var bioMeta = getHeaderMap_(getSheet_(SHEET_NAMES.PARTICIPANTS));
   var bioSheet = getSheet_(SHEET_NAMES.PARTICIPANTS);
   if (!bioSheet) return { matches: [], queryType: 'none' };
@@ -34,26 +33,7 @@ function findShikshaByQuery(query) {
   var data = bioSheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
   var qUpper = query.toUpperCase();
 
-  // Tab2 program key validation
-  var tab2Sheet = ss.getSheetByName(SHEET_NAMES.DEVOTEES);
-  var validNames = [];
-  if (tab2Sheet && idxProgram >= 0) {
-    var tab2Headers = tab2Sheet.getRange(1, 1, 1, tab2Sheet.getLastColumn()).getValues()[0];
-    var programColIndex = -1;
-    for (var h = 0; h < tab2Headers.length; h++) {
-      if ((tab2Headers[h] || '').toString().trim().toUpperCase() === qUpper) {
-        programColIndex = h;
-        break;
-      }
-    }
-    if (programColIndex >= 0) {
-      var colValues = tab2Sheet.getRange(2, programColIndex + 1, tab2Sheet.getLastRow() - 1).getValues();
-      colValues.forEach(function(row) {
-        var n = (row[0] || '').toString().trim();
-        if (n) validNames.push(n.toUpperCase());
-      });
-    }
-  }
+  var validNames = getProgramDevoteeNames(qUpper).map(function(n) { return n.toUpperCase(); });
 
   // 1) Search by Shiksha Code (bottom-up; prefer active 'Y')
   if (idxShiksha >= 0) {
@@ -134,11 +114,7 @@ function getRecordForRowIndex(rowIndex) {
  * @return {boolean}
  */
 function validateProgramKey(programKey) {
-  if (!programKey) return false;
-  var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
-  if (!sheet) return false;
-  var firstRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  return firstRow.indexOf(programKey) !== -1;
+  return isValidProgramKey((programKey || '').toString().trim());
 }
 
 /**
@@ -282,6 +258,7 @@ function submitBioForm(bioformData) {
   if (idxActive >= 0) newRow[idxActive] = 'Y';
 
   sheet.appendRow(newRow);
+  updateTab2ShikshaCode(bioformData.programKey || '', bioformData.fname || '', newShikshaCode);
   logInfo_('Shiksha.submitBioForm', 'Bio-data submitted for ' + (bioformData.fname || 'unknown'));
   return 'Form submitted successfully! Generated Shiksha Code: ' + newShikshaCode;
 }
@@ -426,7 +403,7 @@ function prepareCertifyUrl(devoteeName, programKey) {
   } else {
     mode = 'biodata';
     prefillData = {
-      name: devoteeName,
+      name: lookup.devoteeName || devoteeName,
       programKey: programKey,
       programOwner: lookup.programOwner || '',
       subArea: ''
@@ -446,10 +423,18 @@ function prepareCertifyUrl(devoteeName, programKey) {
  * Used by the Certify button to decide: open Shiksha form (exists) or Biodata form (new).
  * @param {string} devoteeName
  * @param {string} programKey
- * @return {{found: boolean, mapped: Object|null, programOwner: string}}
+ * @return {{found: boolean, mapped: Object|null, programOwner: string, devoteeName: string, shikshaCode: string}}
  */
 function lookupDevoteeForCertify(devoteeName, programKey) {
-  var result = { found: false, mapped: null, programOwner: '' };
+  var parsedInput = parseDevoteeRef_(devoteeName);
+  var normalizedName = parsedInput.name || (devoteeName || '').toString().trim();
+  var result = {
+    found: false,
+    mapped: null,
+    programOwner: '',
+    devoteeName: normalizedName,
+    shikshaCode: parsedInput.shikshaCode || ''
+  };
 
   // Get program owner from tab1
   var prog = getProgramByKey(programKey);
@@ -457,7 +442,24 @@ function lookupDevoteeForCertify(devoteeName, programKey) {
     result.programOwner = (prog[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
   }
 
-  if (!devoteeName) return result;
+  // Resolve best shiksha code hint from input string / tab2 and try direct tab5 lookup.
+  var hintFromTab2 = extractShikshaCodeFromTab2_(programKey, normalizedName);
+  var candidateCodes = [];
+  if (parsedInput.shikshaCode) candidateCodes.push(parsedInput.shikshaCode);
+  if (hintFromTab2 && candidateCodes.indexOf(hintFromTab2) === -1) candidateCodes.push(hintFromTab2);
+
+  for (var c = 0; c < candidateCodes.length; c++) {
+    var code = candidateCodes[c];
+    var hit = findShikshaByQuery(code);
+    if (hit && hit.matches && hit.matches.length) {
+      result.found = true;
+      result.mapped = hit.matches[0].mapped || null;
+      result.shikshaCode = code;
+      return result;
+    }
+  }
+
+  if (!normalizedName) return result;
 
   var sheet = getSheet_(SHEET_NAMES.PARTICIPANTS);
   if (!sheet) return result;
@@ -473,7 +475,7 @@ function lookupDevoteeForCertify(devoteeName, programKey) {
   var idxActive = findHeaderIndex_(headersLower, ['active_flg', 'active_flag', 'active', 'active flag']);
 
   var data = sheet.getRange(2, 1, lastRow - 1, headers.length).getValues();
-  var nameUpper = devoteeName.toString().trim().toUpperCase();
+  var nameUpper = normalizedName.toString().trim().toUpperCase();
 
   // Search bottom-up for most recent active row
   for (var r = data.length - 1; r >= 0; r--) {
@@ -511,13 +513,92 @@ function lookupDevoteeForCertify(devoteeName, programKey) {
 }
 
 /**
+ * Parses a devotee reference string and tries to extract a shiksha code hint.
+ * Supports values like: "Name", "Name | CODE", "Name (CODE)", "CODE - Name".
+ * @param {string} raw
+ * @return {{name: string, shikshaCode: string}}
+ * @private
+ */
+function parseDevoteeRef_(raw) {
+  var text = (raw || '').toString().trim();
+  if (!text) return { name: '', shikshaCode: '' };
+
+  var extractedCode = '';
+  var mPipe = text.match(/\|\s*([A-Za-z0-9_-]{8,20})\s*$/);
+  var mParen = text.match(/\(([A-Za-z0-9_-]{8,20})\)\s*$/);
+  var mDash = text.match(/[-–]\s*([A-Za-z0-9_-]{8,20})\s*$/);
+
+  if (mPipe && isLikelyShikshaCode_(mPipe[1])) extractedCode = mPipe[1];
+  else if (mParen && isLikelyShikshaCode_(mParen[1])) extractedCode = mParen[1];
+  else if (mDash && isLikelyShikshaCode_(mDash[1])) extractedCode = mDash[1];
+  else {
+    var allTokens = text.match(/[A-Za-z0-9_-]{8,20}/g) || [];
+    for (var i = allTokens.length - 1; i >= 0; i--) {
+      if (isLikelyShikshaCode_(allTokens[i])) {
+        extractedCode = allTokens[i];
+        break;
+      }
+    }
+  }
+
+  var nameOnly = text;
+  if (extractedCode) {
+    nameOnly = nameOnly.replace(extractedCode, '');
+    nameOnly = nameOnly.replace(/[|()\[\]{}]/g, ' ');
+    nameOnly = nameOnly.replace(/[-–]\s*$/, '');
+    nameOnly = nameOnly.replace(/\s{2,}/g, ' ').trim();
+  }
+
+  return { name: nameOnly || text, shikshaCode: extractedCode || '' };
+}
+
+/**
+ * Reads tab2 program column and tries to extract shiksha code for a devotee.
+ * @param {string} programKey
+ * @param {string} devoteeName
+ * @return {string}
+ * @private
+ */
+function extractShikshaCodeFromTab2_(programKey, devoteeName) {
+  programKey = (programKey || '').toString().trim();
+  devoteeName = (devoteeName || '').toString().trim().toUpperCase();
+  if (!programKey || !devoteeName) return '';
+
+  var rows = getTab2RowsForProgram(programKey);
+  for (var r = 0; r < rows.length; r++) {
+    var row = rows[r];
+    var nameUpper = (row.name || '').toString().trim().toUpperCase();
+    if (!nameUpper) continue;
+    if (nameUpper === devoteeName || nameUpper.indexOf(devoteeName) !== -1 || devoteeName.indexOf(nameUpper) !== -1) {
+      if (row.shikshaCode) return row.shikshaCode;
+    }
+  }
+  return '';
+}
+
+/**
+ * Basic heuristic for shiksha code-like tokens.
+ * @param {string} token
+ * @return {boolean}
+ * @private
+ */
+function isLikelyShikshaCode_(token) {
+  token = (token || '').toString().trim();
+  if (!/^[A-Za-z0-9_-]{8,20}$/.test(token)) return false;
+  if (!/\d/.test(token)) return false;
+  // Prevent common phone-like tokens from being mistaken as code.
+  if (/^\d{10}$/.test(token)) return false;
+  return true;
+}
+
+/**
  * Stores certify prefill data in CacheService so ShikshaPage can retrieve it on load.
  * @param {Object} prefillData - Data to prefill (mapped row or biodata defaults).
  * @return {string} A unique token to pass via URL.
  */
 function storeCertifyPrefill(prefillData) {
   var token = Utilities.getUuid();
-  var cache = CacheService.getUserCache();
+  var cache = CacheService.getScriptCache();
   cache.put('certify_' + token, JSON.stringify(prefillData), 300); // 5 min expiry
   return token;
 }
@@ -529,7 +610,7 @@ function storeCertifyPrefill(prefillData) {
  */
 function getCertifyPrefill(token) {
   if (!token) return null;
-  var cache = CacheService.getUserCache();
+  var cache = CacheService.getScriptCache();
   var json = cache.get('certify_' + token);
   if (!json) return null;
   cache.remove('certify_' + token);

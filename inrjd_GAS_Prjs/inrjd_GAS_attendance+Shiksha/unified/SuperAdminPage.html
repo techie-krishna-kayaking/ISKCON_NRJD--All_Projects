@@ -899,6 +899,29 @@ function showLoginError(msg) {
   el.style.display = 'block';
 }
 
+function doAutoAdminLogin(userId) {
+  if (!userId) return;
+  loggedInUser = userId;
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  initGreeting(userId);
+  loadDashboard();
+}
+
+function tryTokenAutoLogin() {
+  var params = new URLSearchParams(window.location.search || '');
+  var token = (params.get('token') || '').trim();
+  if (!token) return;
+
+  google.script.run
+    .withSuccessHandler(function(resp) {
+      if (resp && resp.ok && resp.userId) {
+        doAutoAdminLogin(resp.userId);
+      }
+    })
+    .consumeAdminLaunchToken(token);
+}
+
 function initGreeting(userId) {
   var g = getTimeGreeting();
   document.getElementById('timeOfDay').textContent = g;
@@ -1434,6 +1457,9 @@ document.addEventListener('keydown', function(e) {
     doLogin();
   }
 });
+
+// If attendance login redirected with a valid token, bypass manual admin login.
+tryTokenAutoLogin();
 </script>
 
 </body>

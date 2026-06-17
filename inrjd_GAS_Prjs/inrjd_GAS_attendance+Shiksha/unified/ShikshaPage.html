@@ -1412,7 +1412,14 @@ function submitShikshaForm() {
       if (certifyToken) {
         google.script.run
           .withSuccessHandler(function(prefill) {
-            if (!prefill) return;
+            if (!prefill) {
+              if (certifyMode === 'biodata') {
+                showForm('biodata');
+              } else {
+                showForm('shiksha');
+              }
+              return;
+            }
             if (certifyMode === 'biodata') {
               // Open biodata form and prefill
               showForm('biodata');
