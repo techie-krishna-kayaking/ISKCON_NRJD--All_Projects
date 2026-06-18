@@ -2,8 +2,6 @@
 // Responsibility: Devotee and program-participation lookups from tab2,
 //                 adding new devotees to programs.
 
-var TAB2_HEADERS = ['ProgramKey', 'ShikshaCode', 'Name'];
-
 /**
  * Fetches all devotee names for a given program key from tab2.
  * Tab2 is wide format: row 1 = program keys, rows 2+ = devotee names per column.
@@ -40,6 +38,7 @@ function isValidDevotee(programKey, devoteeName) {
  * @return {string|null} The added name, or null if program not found.
  */
 function addDevotee(programKey, devoteeName) {
+  var ownerId = arguments.length > 2 ? (arguments[2] || '').toString().trim() : '';
   var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
   if (!sheet) return null;
   ensureTab2RowSchema_(sheet);
@@ -48,8 +47,27 @@ function addDevotee(programKey, devoteeName) {
   var cleanName = parseTab2DevoteeCell_(devoteeName).name;
   if (!cleanProgramKey || !cleanName) return null;
 
+  if (ownerId) {
+    var program = getProgramByKey(cleanProgramKey);
+    if (!program) throw new Error('Program not found.');
+    var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
+    if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+      throw new Error('You are not allowed to add members to this program.');
+    }
+  }
+
   var tempCode = generateTempShikshaCode_(sheet, cleanProgramKey);
-  sheet.appendRow([cleanProgramKey, tempCode, cleanName]);
+  sheet.appendRow([
+    cleanProgramKey,
+    tempCode,
+    cleanName,
+    0,
+    0,
+    '0%',
+    '',
+    '',
+    _nowIsoForTab2_()
+  ]);
 
   logInfo_('Devotees.addDevotee', 'Added "' + cleanName + '" to program ' + cleanProgramKey + ' with temp code ' + tempCode);
   return cleanName;
@@ -73,10 +91,10 @@ function getProgramsForDevotee(devoteeName) {
   var programKeys = {};
 
   for (var row = 1; row < data.length; row++) {
-    var name = (data[row][2] || '').toString().trim().toUpperCase();
+    var name = (data[row][TAB2_COLS.NAME] || '').toString().trim().toUpperCase();
     if (!name) continue;
     if (name === searchName) {
-      var pk = (data[row][0] || '').toString().trim();
+      var pk = (data[row][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
       if (pk) programKeys[pk] = true;
     }
   }
@@ -86,7 +104,7 @@ function getProgramsForDevotee(devoteeName) {
 /**
  * Returns normalized tab2 rows for a program.
  * @param {string} programKey
- * @return {Array<{programKey:string, shikshaCode:string, name:string, rowNumber:number}>}
+ * @return {Array<{programKey:string, shikshaCode:string, name:string, totalSessions:number, attended:number, attendancePct:string, lastAttDate:string, lastStatus:string, updatedAt:string, rowNumber:number}>}
  */
 function getTab2RowsForProgram(programKey) {
   var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
@@ -99,12 +117,23 @@ function getTab2RowsForProgram(programKey) {
   var out = [];
   var keyUpper = (programKey || '').toString().trim().toUpperCase();
   for (var r = 1; r < data.length; r++) {
-    var pk = (data[r][0] || '').toString().trim();
-    var sc = (data[r][1] || '').toString().trim();
-    var parsed = parseTab2DevoteeCell_(data[r][2]);
+    var pk = (data[r][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var sc = (data[r][TAB2_COLS.SHIKSHA_CODE] || '').toString().trim();
+    var parsed = parseTab2DevoteeCell_(data[r][TAB2_COLS.NAME]);
     if (!pk || !parsed.name) continue;
     if (pk.toUpperCase() !== keyUpper) continue;
-    out.push({ programKey: pk, shikshaCode: sc, name: parsed.name, rowNumber: r + 1 });
+    out.push({
+      programKey: pk,
+      shikshaCode: sc,
+      name: parsed.name,
+      totalSessions: Number(data[r][TAB2_COLS.TOTAL_SESSIONS]) || 0,
+      attended: Number(data[r][TAB2_COLS.ATTENDED]) || 0,
+      attendancePct: (data[r][TAB2_COLS.PERCENTAGE] || '').toString().trim(),
+      lastAttDate: (data[r][TAB2_COLS.LAST_ATT_DATE] || '').toString().trim(),
+      lastStatus: (data[r][TAB2_COLS.LAST_STATUS] || '').toString().trim(),
+      updatedAt: (data[r][TAB2_COLS.UPDATED_AT] || '').toString().trim(),
+      rowNumber: r + 1
+    });
   }
   return out;
 }
@@ -143,15 +172,16 @@ function updateTab2ShikshaCode(programKey, devoteeName, shikshaCode) {
   // Prefer latest row where code is temp or blank.
   var fallbackRow = -1;
   for (var r = data.length - 1; r >= 1; r--) {
-    var pk = (data[r][0] || '').toString().trim();
-    var sc = (data[r][1] || '').toString().trim();
-    var nm = parseTab2DevoteeCell_(data[r][2]).name;
+    var pk = (data[r][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var sc = (data[r][TAB2_COLS.SHIKSHA_CODE] || '').toString().trim();
+    var nm = parseTab2DevoteeCell_(data[r][TAB2_COLS.NAME]).name;
     if (!pk || !nm) continue;
     if (pk.toUpperCase() !== keyUpper) continue;
     if (nm.toUpperCase() !== nameUpper) continue;
 
     if (!sc || isTempTab2Code_(sc, key)) {
       sheet.getRange(r + 1, 2).setValue(code);
+      sheet.getRange(r + 1, TAB2_COLS.UPDATED_AT + 1).setValue(_nowIsoForTab2_());
       return true;
     }
     if (fallbackRow === -1) fallbackRow = r + 1;
@@ -159,10 +189,11 @@ function updateTab2ShikshaCode(programKey, devoteeName, shikshaCode) {
 
   if (fallbackRow !== -1) {
     sheet.getRange(fallbackRow, 2).setValue(code);
+    sheet.getRange(fallbackRow, TAB2_COLS.UPDATED_AT + 1).setValue(_nowIsoForTab2_());
     return true;
   }
 
-  sheet.appendRow([key, code, name]);
+  sheet.appendRow([key, code, name, 0, 0, '0%', '', '', _nowIsoForTab2_()]);
   return true;
 }
 
@@ -180,7 +211,13 @@ function ensureTab2RowSchema_(sheet) {
 
   var header = data[0].map(function(h) { return (h || '').toString().trim().toLowerCase(); });
   var isRowSchema = header[0] === 'programkey' && header[1] === 'shikshacode' && header[2] === 'name';
-  if (isRowSchema) return;
+  if (isRowSchema) {
+    // Ensure attendance snapshot columns exist.
+    for (var i = 0; i < TAB2_HEADERS.length; i++) {
+      sheet.getRange(1, i + 1).setValue(TAB2_HEADERS[i]);
+    }
+    return;
+  }
 
   migrateTab2WideToRows_(sheet, data);
 }
@@ -207,13 +244,13 @@ function migrateTab2WideToRows_(sheet, existingData) {
         if (!parsed.name) continue;
         sequenceByProgram[programKey]++;
         var tempCode = buildTempTab2Code_(programKey, sequenceByProgram[programKey]);
-        rows.push([programKey, tempCode, parsed.name]);
+        rows.push([programKey, tempCode, parsed.name, 0, 0, '0%', '', '', _nowIsoForTab2_()]);
       }
     }
   }
 
   sheet.clearContents();
-  sheet.getRange(1, 1, rows.length, 3).setValues(rows);
+  sheet.getRange(1, 1, rows.length, TAB2_HEADERS.length).setValues(rows);
   logInfo_('Devotees.migrateTab2', 'Migrated tab2 to row schema with ' + (rows.length - 1) + ' rows.');
 }
 
@@ -287,4 +324,109 @@ function parseTab2DevoteeCell_(raw) {
     name = name.replace(/\s{2,}/g, ' ').trim();
   }
   return { name: name || text, shikshaCode: code || '' };
+}
+
+function _nowIsoForTab2_() {
+  return new Date().toISOString();
+}
+
+/**
+ * Renames a member for a program (owner-scoped).
+ * Updates tab2 Name and active tab3 rows for the same program.
+ * Primary keys (ProgramKey, ShikshaCode) are never changed.
+ * @param {string} ownerId
+ * @param {string} programKey
+ * @param {string} oldName
+ * @param {string} newName
+ * @return {{updatedTab2:number, updatedTab3:number}}
+ */
+function renameMemberForOwner(ownerId, programKey, oldName, newName) {
+  ownerId = (ownerId || '').toString().trim();
+  programKey = (programKey || '').toString().trim();
+  oldName = parseTab2DevoteeCell_(oldName).name;
+  newName = parseTab2DevoteeCell_(newName).name;
+
+  if (!ownerId || !programKey || !oldName || !newName) {
+    throw new Error('Missing required fields.');
+  }
+  if (oldName.toUpperCase() === newName.toUpperCase()) {
+    return { updatedTab2: 0, updatedTab3: 0 };
+  }
+
+  var program = getProgramByKey(programKey);
+  if (!program) throw new Error('Program not found.');
+  if ((program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim().toUpperCase() !== ownerId.toUpperCase()) {
+    throw new Error('You are not allowed to edit this program members.');
+  }
+
+  var updatedTab2 = 0;
+  var tab2 = getSheet_(SHEET_NAMES.DEVOTEES);
+  if (!tab2) throw new Error('tab2 not found.');
+  ensureTab2RowSchema_(tab2);
+
+  var data2 = getAllData_(tab2);
+  for (var r = 1; r < data2.length; r++) {
+    var pk = (data2[r][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var nm = parseTab2DevoteeCell_(data2[r][TAB2_COLS.NAME]).name;
+    if (!pk || !nm) continue;
+    if (pk.toUpperCase() !== programKey.toUpperCase()) continue;
+    if (nm.toUpperCase() !== oldName.toUpperCase()) continue;
+
+    tab2.getRange(r + 1, TAB2_COLS.NAME + 1).setValue(newName);
+    tab2.getRange(r + 1, TAB2_COLS.UPDATED_AT + 1).setValue(_nowIsoForTab2_());
+    updatedTab2++;
+  }
+
+  var updatedTab3 = 0;
+  var tab3 = getSheet_(SHEET_NAMES.PARTICIPANTS);
+  if (tab3) {
+    var meta = getHeaderMap_(tab3);
+    var h = meta.headersLower;
+    var idxProgram = findHeaderIndex_(h, ['program key', 'program_key', 'program']);
+    var idxName = findHeaderIndex_(h, ['name', 'fname', 'devotee_name', 'full_name']);
+    var idxActive = findHeaderIndex_(h, ['active_flg', 'active_flag', 'active']);
+
+    var data3 = getAllData_(tab3);
+    for (var i = 1; i < data3.length; i++) {
+      var row = data3[i];
+      var pk3 = idxProgram >= 0 ? (row[idxProgram] || '').toString().trim() : '';
+      var nm3 = idxName >= 0 ? (row[idxName] || '').toString().trim() : '';
+      if (!pk3 || !nm3) continue;
+      if (pk3.toUpperCase() !== programKey.toUpperCase()) continue;
+      if (nm3.toUpperCase() !== oldName.toUpperCase()) continue;
+      if (idxActive >= 0 && (row[idxActive] || '').toString().trim().toUpperCase() !== 'Y') continue;
+
+      tab3.getRange(i + 1, idxName + 1).setValue(newName);
+      updatedTab3++;
+    }
+  }
+
+  if (!updatedTab2) throw new Error('Member not found in this program.');
+
+  logInfo_('Devotees.renameMemberForOwner',
+    'owner=' + ownerId + ', program=' + programKey + ', old=' + oldName + ', new=' + newName +
+    ', tab2=' + updatedTab2 + ', tab3=' + updatedTab3);
+
+  return { updatedTab2: updatedTab2, updatedTab3: updatedTab3 };
+}
+
+/**
+ * Owner-scoped member list for a program.
+ * @param {string} ownerId
+ * @param {string} programKey
+ * @return {Array<{programKey:string, shikshaCode:string, name:string, totalSessions:number, attended:number, attendancePct:string, lastAttDate:string, lastStatus:string, updatedAt:string, rowNumber:number}>}
+ */
+function getOwnerProgramMembers(ownerId, programKey) {
+  ownerId = (ownerId || '').toString().trim();
+  programKey = (programKey || '').toString().trim();
+  if (!ownerId || !programKey) return [];
+
+  var program = getProgramByKey(programKey);
+  if (!program) throw new Error('Program not found.');
+  var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
+  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+    throw new Error('You are not allowed to view members for this program.');
+  }
+
+  return getTab2RowsForProgram(programKey);
 }

@@ -144,7 +144,7 @@ function saveDevoteesToSheet2_(ss, key, devotees) {
 
   for (var i = 0; i < devList.length; i++) {
     var tempCode = generateTempShikshaCode_(sheet2, key);
-    sheet2.appendRow([key, tempCode, devList[i]]);
+    sheet2.appendRow([key, tempCode, devList[i], 0, 0, '0%', '', '', new Date().toISOString()]);
   }
 }
 
@@ -185,4 +185,110 @@ function getAttendeesAndProgramType(programKey) {
     attendees: attendees,
     programType: programType
   };
+}
+
+/**
+ * Returns editable program details for a program owner.
+ * Program key is returned as read-only identifier.
+ * @param {string} ownerId
+ * @param {string} programKey
+ * @return {Object}
+ */
+function getOwnerProgramForEdit(ownerId, programKey) {
+  ownerId = (ownerId || '').toString().trim();
+  programKey = (programKey || '').toString().trim();
+
+  var program = getProgramByKey(programKey);
+  if (!program) throw new Error('Program not found.');
+
+  var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
+  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+    throw new Error('You are not allowed to edit this program.');
+  }
+
+  return {
+    programKey: program[TAB1_COLS.PROGRAM_KEY] || '',
+    area: program[TAB1_COLS.AREA] || '',
+    subArea: program[TAB1_COLS.SUB_AREA] || '',
+    frequency: program[TAB1_COLS.FREQUENCY] || '',
+    typeOfProgram: program[TAB1_COLS.TYPE_OF_PROGRAM] || '',
+    language: program[TAB1_COLS.LANGUAGE] || '',
+    owner: owner,
+    virtual: program[TAB1_COLS.VIRTUAL] || '',
+    programStartDate: formatDateISO_(parseDate_(program[TAB1_COLS.PROGRAM_START_DATE])),
+    day: program[TAB1_COLS.DAY] || '',
+    time: program[TAB1_COLS.TIME] || '',
+    actFlag: program[TAB1_COLS.ACT_FLG] || '',
+    promoted: program[TAB1_COLS.PROMOTED] || '',
+    comment: program[TAB1_COLS.COMMENT] || ''
+  };
+}
+
+/**
+ * Updates owner-editable fields of a program.
+ * Program key and shiksha/member keys are immutable primary keys.
+ * @param {string} ownerId
+ * @param {Object} payload
+ * @return {{updated:boolean, programKey:string}}
+ */
+function updateOwnerProgram(ownerId, payload) {
+  ownerId = (ownerId || '').toString().trim();
+  payload = payload || {};
+
+  var programKey = (payload.programKey || '').toString().trim();
+  if (!programKey) throw new Error('Program key is required.');
+
+  var sheet = getSheet_(SHEET_NAMES.PROGRAMS);
+  if (!sheet) throw new Error('Programs sheet not found.');
+  var data = getAllData_(sheet);
+  if (data.length < 2) throw new Error('No programs found.');
+
+  var targetRow = -1;
+  for (var i = 1; i < data.length; i++) {
+    var pk = (data[i][TAB1_COLS.PROGRAM_KEY] || '').toString().trim();
+    if (pk === programKey) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+  if (targetRow === -1) throw new Error('Program not found.');
+
+  var owner = (data[targetRow - 1][TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
+  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+    throw new Error('You are not allowed to edit this program.');
+  }
+
+  // Immutable / key fields are not edited.
+  // TAB1_COLS.PROGRAM_KEY remains unchanged.
+  // TAB1_COLS.PROGRAM_OWNER remains unchanged.
+
+  var updates = {
+    area: TAB1_COLS.AREA,
+    subArea: TAB1_COLS.SUB_AREA,
+    frequency: TAB1_COLS.FREQUENCY,
+    typeOfProgram: TAB1_COLS.TYPE_OF_PROGRAM,
+    language: TAB1_COLS.LANGUAGE,
+    virtual: TAB1_COLS.VIRTUAL,
+    programStartDate: TAB1_COLS.PROGRAM_START_DATE,
+    day: TAB1_COLS.DAY,
+    time: TAB1_COLS.TIME,
+    actFlag: TAB1_COLS.ACT_FLG,
+    promoted: TAB1_COLS.PROMOTED,
+    comment: TAB1_COLS.COMMENT
+  };
+
+  Object.keys(updates).forEach(function(k) {
+    if (!payload.hasOwnProperty(k)) return;
+    var val = payload[k];
+    if (k === 'programStartDate') {
+      val = formatDateISO_(parseDate_(val)) || '';
+    }
+    if (k === 'virtual' || k === 'actFlag' || k === 'promoted') {
+      val = (val || '').toString().trim();
+    }
+    sheet.getRange(targetRow, updates[k] + 1).setValue(val);
+  });
+
+  logInfo_('Programs.updateOwnerProgram', 'owner=' + ownerId + ', program=' + programKey + ' updated.');
+  return { updated: true, programKey: programKey };
 }

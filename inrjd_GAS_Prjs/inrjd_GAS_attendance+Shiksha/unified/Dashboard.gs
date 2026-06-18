@@ -1,7 +1,7 @@
 // ===== File: Dashboard.gs =====
 // Responsibility: Backend data aggregation for Owner Dashboard & Super Admin Dashboard.
-//                 Reads from tab1 (programs), tab2 (devotees), attendance sheet,
-//                 tab5 (participants/shiksha), and tab6 (certifications).
+//                 Reads from tab1 (programs), tab2 (member + attendance snapshot),
+//                 tab3 (participants/shiksha), and optional tab6 (certifications).
 
 /**
  * Super user IDs — owners in this list see the Super Admin dashboard.
@@ -374,10 +374,44 @@ function _getAllPrograms() {
 
 /** @return {Array<Array<*>>} All attendance rows (no header). */
 function _getAllAttendance() {
-  var sheet = getSheet_(SHEET_NAMES.ATTENDANCE);
+  var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
   if (!sheet) return [];
+  ensureTab2RowSchema_(sheet);
+
   var data = getAllData_(sheet);
-  return data.length > 1 ? data.slice(1) : [];
+  if (data.length < 2) return [];
+
+  var programs = _getAllPrograms();
+  var programMap = {};
+  for (var i = 0; i < programs.length; i++) {
+    var p = programs[i];
+    var pk = (p[TAB1_COLS.PROGRAM_KEY] || '').toString().trim();
+    if (pk) programMap[pk] = p;
+  }
+
+  var rows = [];
+  for (var r = 1; r < data.length; r++) {
+    var row = data[r];
+    var pk2 = (row[TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var devotee = (row[TAB2_COLS.NAME] || '').toString().trim();
+    if (!pk2 || !devotee) continue;
+
+    var meta = programMap[pk2] || [];
+    rows.push([
+      pk2,
+      meta[TAB1_COLS.AREA] || '',
+      meta[TAB1_COLS.SUB_AREA] || '',
+      meta[TAB1_COLS.FREQUENCY] || '',
+      meta[TAB1_COLS.TYPE_OF_PROGRAM] || '',
+      meta[TAB1_COLS.LANGUAGE] || '',
+      meta[TAB1_COLS.PROGRAM_OWNER] || '',
+      devotee,
+      Number(row[TAB2_COLS.TOTAL_SESSIONS]) || 0,
+      Number(row[TAB2_COLS.ATTENDED]) || 0,
+      (row[TAB2_COLS.PERCENTAGE] || '0%').toString()
+    ]);
+  }
+  return rows;
 }
 
 /**

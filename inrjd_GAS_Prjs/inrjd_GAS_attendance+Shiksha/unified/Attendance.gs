@@ -1,7 +1,6 @@
 // ===== File: Attendance.gs =====
 // Responsibility: All attendance logic — recording, upsert, and lookups.
-//                 Attendance is stored directly in the 'attendance' sheet (one row per
-//                 program-devotee pair with running totals). No raw event sheet (tab3) needed.
+//                 In 3-tab mode, attendance snapshot is stored directly in tab2.
 
 /**
  * Records attendance for all attendees of a program session.
@@ -22,105 +21,95 @@ function recordAttendance(programKey, attendees, attendanceStatus, date, hostNam
   logInfo_('Attendance.record',
     'Recording for ' + programKey + ', ' + attendees.length + ' attendees, date=' + date);
 
-  var sheet = getSheet_(SHEET_NAMES.ATTENDANCE);
+  var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
   if (!sheet) {
-    logError_('Attendance.record', 'attendance sheet not found');
+    logError_('Attendance.record', 'tab2 sheet not found');
     return;
   }
+  ensureTab2RowSchema_(sheet);
 
-  // Get program metadata from tab1
-  var programDetails = getProgramByKey(programKey);
-  if (!programDetails) {
-    logWarn_('Attendance.record', 'Program not found: ' + programKey);
-    return;
+  var allRows = getAllData_(sheet);
+  if (allRows.length < 1) {
+    sheet.appendRow(TAB2_HEADERS);
+    allRows = getAllData_(sheet);
   }
 
-  // Ensure header row exists
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 1) {
-    sheet.appendRow(ATTENDANCE_HEADERS);
-    lastRow = 1;
+  var byProgramName = {};
+  for (var r = 1; r < allRows.length; r++) {
+    var rowPk = (allRows[r][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var rowName = parseTab2DevoteeCell_(allRows[r][TAB2_COLS.NAME]).name;
+    if (!rowPk || !rowName) continue;
+    var lk = rowPk.toUpperCase() + '|' + rowName.toUpperCase();
+    byProgramName[lk] = { rowIndex: r + 1, row: allRows[r] };
   }
 
-  // Read all existing data once (batch read)
-  var existingData = [];
-  var numCols = ATTENDANCE_HEADERS.length;
-  if (lastRow > 1) {
-    existingData = sheet.getRange(2, 1, lastRow - 1, numCols).getValues();
+  var statusByName = {};
+  for (var i = 0; i < attendees.length; i++) {
+    var nm = parseTab2DevoteeCell_(attendees[i]).name;
+    if (!nm) continue;
+    statusByName[nm.toUpperCase()] = attendanceStatus[i] === 'present' ? 'present' : 'absent';
   }
 
-  // Build lookup index: "PROGRAM_KEY|DEVOTEE" → row index (0-based in existingData)
-  var lookup = {};
-  for (var r = 0; r < existingData.length; r++) {
-    var key = existingData[r][ATT_COLS.PROGRAM_KEY] + '|' + existingData[r][ATT_COLS.DEVOTEE];
-    lookup[key] = r;
+  var targetRows = getTab2RowsForProgram(programKey);
+  var updates = [];
+  var added = 0;
+
+  for (var j = 0; j < targetRows.length; j++) {
+    var entry = targetRows[j];
+    var keyUpper = entry.name.toUpperCase();
+    var status = statusByName.hasOwnProperty(keyUpper) ? statusByName[keyUpper] : 'absent';
+    var isPresent = status === 'present' ? 1 : 0;
+    var totalSessions = (Number(entry.totalSessions) || 0) + 1;
+    var attended = (Number(entry.attended) || 0) + isPresent;
+    var pct = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) + '%' : '0%';
+
+    updates.push({
+      rowIndex: entry.rowNumber,
+      totalSessions: totalSessions,
+      attended: attended,
+      pct: pct,
+      date: date,
+      status: status,
+      updatedAt: new Date().toISOString()
+    });
   }
 
-  // Track rows to update in-place and new rows to append
-  var updates = [];   // [{sheetRow: 1-based, values: [...]}]
-  var newRows = [];
+  // Add any attendee missing in tab2 program list (safety net).
+  for (var k = 0; k < attendees.length; k++) {
+    var cleanName = parseTab2DevoteeCell_(attendees[k]).name;
+    if (!cleanName) continue;
+    var mapKey = programKey.toUpperCase() + '|' + cleanName.toUpperCase();
+    if (byProgramName[mapKey]) continue;
 
-  for (var j = 0; j < attendees.length; j++) {
-    var devotee = attendees[j];
-    var isPresent = (attendanceStatus[j] === 'present') ? 1 : 0;
-    var compositeKey = programKey + '|' + devotee;
-
-    if (lookup.hasOwnProperty(compositeKey)) {
-      // UPDATE existing row
-      var idx = lookup[compositeKey];
-      var row = existingData[idx];
-      var totalSessions = (Number(row[ATT_COLS.TOTAL_SESSIONS]) || 0) + 1;
-      var attended      = (Number(row[ATT_COLS.ATTENDED]) || 0) + isPresent;
-      var percentage    = totalSessions === 0 ? 0 : Math.round((attended / totalSessions) * 100);
-
-      var updatedRow = [
-        programKey,
-        programDetails[TAB1_COLS.AREA],
-        programDetails[TAB1_COLS.SUB_AREA],
-        programDetails[TAB1_COLS.FREQUENCY],
-        programDetails[TAB1_COLS.TYPE_OF_PROGRAM],
-        programDetails[TAB1_COLS.LANGUAGE],
-        programDetails[TAB1_COLS.PROGRAM_OWNER],
-        devotee,
-        totalSessions,
-        attended,
-        percentage + '%'
-      ];
-
-      updates.push({ sheetRow: idx + 2, values: updatedRow }); // +2 = 1-based + header
-    } else {
-      // INSERT new row
-      var pct = isPresent ? '100%' : '0%';
-      newRows.push([
-        programKey,
-        programDetails[TAB1_COLS.AREA],
-        programDetails[TAB1_COLS.SUB_AREA],
-        programDetails[TAB1_COLS.FREQUENCY],
-        programDetails[TAB1_COLS.TYPE_OF_PROGRAM],
-        programDetails[TAB1_COLS.LANGUAGE],
-        programDetails[TAB1_COLS.PROGRAM_OWNER],
-        devotee,
-        1,
-        isPresent,
-        pct
-      ]);
-    }
+    var status2 = attendanceStatus[k] === 'present' ? 'present' : 'absent';
+    var attended2 = status2 === 'present' ? 1 : 0;
+    var tempCode = generateTempShikshaCode_(sheet, programKey);
+    sheet.appendRow([
+      programKey,
+      tempCode,
+      cleanName,
+      1,
+      attended2,
+      attended2 ? '100%' : '0%',
+      date,
+      status2,
+      new Date().toISOString()
+    ]);
+    added++;
   }
 
-  // Apply updates (batch per row — can't batch non-contiguous rows)
   updates.forEach(function(u) {
-    sheet.getRange(u.sheetRow, 1, 1, u.values.length).setValues([u.values]);
+    sheet.getRange(u.rowIndex, TAB2_COLS.TOTAL_SESSIONS + 1).setValue(u.totalSessions);
+    sheet.getRange(u.rowIndex, TAB2_COLS.ATTENDED + 1).setValue(u.attended);
+    sheet.getRange(u.rowIndex, TAB2_COLS.PERCENTAGE + 1).setValue(u.pct);
+    sheet.getRange(u.rowIndex, TAB2_COLS.LAST_ATT_DATE + 1).setValue(u.date);
+    sheet.getRange(u.rowIndex, TAB2_COLS.LAST_STATUS + 1).setValue(u.status);
+    sheet.getRange(u.rowIndex, TAB2_COLS.UPDATED_AT + 1).setValue(u.updatedAt);
   });
-
-  // Append new rows in one batch
-  if (newRows.length > 0) {
-    var appendStart = sheet.getLastRow() + 1;
-    sheet.getRange(appendStart, 1, newRows.length, newRows[0].length).setValues(newRows);
-  }
 
   var elapsed = ((new Date() - startTime) / 1000).toFixed(1);
   logInfo_('Attendance.record',
-    'Done. Updated ' + updates.length + ' rows, appended ' + newRows.length +
+    'Done. Updated ' + updates.length + ' rows, appended ' + added +
     ' new rows. Time: ' + elapsed + 's');
 }
 
@@ -130,21 +119,14 @@ function recordAttendance(programKey, attendees, attendanceStatus, date, hostNam
  * @return {Object[]} Array of {devotee, totalSessions, attended, percentage}.
  */
 function getAttendanceSummary(programKey) {
-  var sheet = getSheet_(SHEET_NAMES.ATTENDANCE);
-  if (!sheet) return [];
-  var data = getAllData_(sheet);
-  var results = [];
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][ATT_COLS.PROGRAM_KEY] === programKey) {
-      results.push({
-        devotee:       data[i][ATT_COLS.DEVOTEE],
-        totalSessions: data[i][ATT_COLS.TOTAL_SESSIONS],
-        attended:      data[i][ATT_COLS.ATTENDED],
-        percentage:    data[i][ATT_COLS.PERCENTAGE]
-      });
-    }
-  }
-  return results;
+  return getTab2RowsForProgram(programKey).map(function(r) {
+    return {
+      devotee: r.name,
+      totalSessions: r.totalSessions,
+      attended: r.attended,
+      percentage: r.attendancePct || '0%'
+    };
+  });
 }
 
 /**
@@ -153,18 +135,22 @@ function getAttendanceSummary(programKey) {
  * @return {Object[]} Array of {programKey, totalSessions, attended, percentage}.
  */
 function getDevoteeAttendance(devoteeName) {
-  var sheet = getSheet_(SHEET_NAMES.ATTENDANCE);
+  var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
   if (!sheet) return [];
+  ensureTab2RowSchema_(sheet);
+
   var data = getAllData_(sheet);
-  var upper = devoteeName.toString().trim().toUpperCase();
+  var upper = parseTab2DevoteeCell_(devoteeName).name.toString().trim().toUpperCase();
   var results = [];
+
   for (var i = 1; i < data.length; i++) {
-    if (data[i][ATT_COLS.DEVOTEE] && data[i][ATT_COLS.DEVOTEE].toString().trim().toUpperCase() === upper) {
+    var nm = parseTab2DevoteeCell_(data[i][TAB2_COLS.NAME]).name;
+    if (nm && nm.toString().trim().toUpperCase() === upper) {
       results.push({
-        programKey:    data[i][ATT_COLS.PROGRAM_KEY],
-        totalSessions: data[i][ATT_COLS.TOTAL_SESSIONS],
-        attended:      data[i][ATT_COLS.ATTENDED],
-        percentage:    data[i][ATT_COLS.PERCENTAGE]
+        programKey:    data[i][TAB2_COLS.PROGRAM_KEY],
+        totalSessions: Number(data[i][TAB2_COLS.TOTAL_SESSIONS]) || 0,
+        attended:      Number(data[i][TAB2_COLS.ATTENDED]) || 0,
+        percentage:    (data[i][TAB2_COLS.PERCENTAGE] || '0%').toString()
       });
     }
   }

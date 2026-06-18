@@ -17,11 +17,43 @@ var SHEET_NAMES = {
   CRED:           'cred',
   PROGRAMS:       'tab1',
   DEVOTEES:       'tab2',
-  ATTENDANCE:     'attendance',
-  PARTICIPANTS:   'tab5',
+  // 3-tab mode: tab2 holds member + attendance snapshot, tab3 holds shiksha SCD2.
+  PARTICIPANTS:   'tab3',
   CERTIFICATIONS: 'tab6',
   LOGS:           'Logs'
 };
+
+/**
+ * Column indices (0-based) for tab2 (member + attendance snapshot).
+ * @enum {number}
+ */
+var TAB2_COLS = {
+  PROGRAM_KEY:    0,
+  SHIKSHA_CODE:   1,
+  NAME:           2,
+  TOTAL_SESSIONS: 3,
+  ATTENDED:       4,
+  PERCENTAGE:     5,
+  LAST_ATT_DATE:  6,
+  LAST_STATUS:    7,
+  UPDATED_AT:     8
+};
+
+/**
+ * tab2 header row values.
+ * @const {string[]}
+ */
+var TAB2_HEADERS = [
+  'ProgramKey',
+  'ShikshaCode',
+  'Name',
+  'TotalSessions',
+  'Attended',
+  'AttendancePct',
+  'LastAttDate',
+  'LastStatus',
+  'UpdatedAt'
+];
 
 /**
  * Column indices (0-based) for tab1 (Programs).
