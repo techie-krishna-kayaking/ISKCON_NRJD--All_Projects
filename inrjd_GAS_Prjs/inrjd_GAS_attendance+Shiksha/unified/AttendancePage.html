@@ -1985,6 +1985,7 @@
       google.script.run.withSuccessHandler(function(attendeesAndProgramType) {
         var attendees   = attendeesAndProgramType.attendees;
         var programType = attendeesAndProgramType.programType;
+        var ownerId = (document.getElementById('id').value || '').trim();
 
         var container = document.getElementById('programDetails');
         container.innerHTML = '';
@@ -2014,6 +2015,35 @@
         topBar.appendChild(titleBlock);
         topBar.appendChild(backBtn);
         wrapper.appendChild(topBar);
+
+        // ── Program management actions
+        var manageRow = document.createElement('div');
+        manageRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px;';
+
+        var editProgramBtn = document.createElement('button');
+        editProgramBtn.className = 'btn-secondary';
+        editProgramBtn.textContent = '✏️ Edit Program';
+        editProgramBtn.onclick = function() { openProgramEditPanel(ownerId, programKey); };
+        manageRow.appendChild(editProgramBtn);
+
+        var manageMembersBtn = document.createElement('button');
+        manageMembersBtn.className = 'btn-secondary';
+        manageMembersBtn.textContent = '👥 Manage Members';
+        manageMembersBtn.onclick = function() { openMemberManagerPanel(ownerId, programKey); };
+        manageRow.appendChild(manageMembersBtn);
+
+        var addMemberBtn = document.createElement('button');
+        addMemberBtn.className = 'btn-secondary';
+        addMemberBtn.textContent = '+ Add Member';
+        addMemberBtn.onclick = function() { addDevotee(programKey, ownerId); };
+        manageRow.appendChild(addMemberBtn);
+
+        var keyNote = document.createElement('div');
+        keyNote.style.cssText = 'width:100%;font-size:0.82rem;color:var(--text-muted);margin-top:2px;';
+        keyNote.textContent = 'Program Key and Shiksha Code are primary keys and cannot be edited.';
+        manageRow.appendChild(keyNote);
+
+        wrapper.appendChild(manageRow);
 
         // ── Attendees table
         var tableWrap = document.createElement('div');
@@ -2070,16 +2100,6 @@
         table.appendChild(tbody);
         tableWrap.appendChild(table);
         wrapper.appendChild(tableWrap);
-
-        // ── Add Devotee button (conditional)
-        if (['Gita Manjari','Book Reading','Tulasi Manjari','Children Program','Gita Learning Program', 'Discover Bhagavad Gita'].includes(programType)) {
-          var addBtn = document.createElement('button');
-          addBtn.className = 'btn-secondary';
-          addBtn.innerHTML = '+ Add Devotee';
-          addBtn.style.marginBottom = '20px';
-          addBtn.onclick = function() { addDevotee(programKey); };
-          wrapper.appendChild(addBtn);
-        }
 
         // ── Form Fields (Date + Host)
         var formRow = document.createElement('div');
@@ -2227,8 +2247,243 @@
       }).getAttendeesAndProgramType(programKey);
     }
 
+    function openProgramEditPanel(ownerId, programKey) {
+      google.script.run
+        .withSuccessHandler(function(p) {
+          google.script.run
+            .withSuccessHandler(function(cfg) {
+              var container = document.getElementById('programDetails');
+              container.innerHTML = '';
+
+              var wrapper = document.createElement('div');
+              wrapper.className = 'attendance-wrapper';
+
+              var topBar = document.createElement('div');
+              topBar.className = 'attendance-top-bar';
+              topBar.innerHTML = '<div><p class="section-eyebrow">Program Management</p><h2 class="attendance-title">Edit Program: ' + programKey + '</h2></div>';
+              var backBtn = document.createElement('button');
+              backBtn.className = 'btn-secondary';
+              backBtn.innerHTML = '&#8592; Back to Program';
+              backBtn.onclick = function() { showProgramDetails(programKey); };
+              topBar.appendChild(backBtn);
+              wrapper.appendChild(topBar);
+
+              var form = document.createElement('div');
+              form.style.cssText = 'display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:12px;margin-top:12px;';
+
+              function mkInput(label, id, value, type, readOnly) {
+                var box = document.createElement('div');
+                var l = document.createElement('label');
+                l.textContent = label;
+                l.style.cssText = 'display:block;font-size:0.84rem;color:var(--text-muted);margin-bottom:5px;';
+                var input = document.createElement('input');
+                input.type = type || 'text';
+                input.id = id;
+                input.value = value || '';
+                input.readOnly = !!readOnly;
+                input.style.cssText = 'width:100%;padding:10px 12px;border:1px solid var(--border-blue);border-radius:8px;background:' + (readOnly ? '#f7fbff' : '#fff') + ';';
+                box.appendChild(l);
+                box.appendChild(input);
+                return box;
+              }
+
+              function mkSelect(label, id, value, options) {
+                var box = document.createElement('div');
+                var l = document.createElement('label');
+                l.textContent = label;
+                l.style.cssText = 'display:block;font-size:0.84rem;color:var(--text-muted);margin-bottom:5px;';
+                var sel = document.createElement('select');
+                sel.id = id;
+                sel.style.cssText = 'width:100%;padding:10px 12px;border:1px solid var(--border-blue);border-radius:8px;background:#fff;';
+                (options || []).forEach(function(o) {
+                  var opt = document.createElement('option');
+                  opt.value = o;
+                  opt.textContent = o;
+                  sel.appendChild(opt);
+                });
+                if (value) sel.value = value;
+                box.appendChild(l);
+                box.appendChild(sel);
+                return box;
+              }
+
+              var dayOptions = (cfg && cfg.DAY && cfg.DAY.length) ? cfg.DAY : ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+              var areaOptions = (cfg && cfg.AREA) || [p.area || ''];
+              var subAreaOptions = (cfg && cfg.SUB_AREA) || [p.subArea || ''];
+              var freqOptions = (cfg && cfg.FREQUENCY) || [p.frequency || ''];
+              var typeOptions = (cfg && cfg.TYPE_OF_PROGRAM) || [p.typeOfProgram || ''];
+              var langOptions = (cfg && cfg.LANGUAGE) || [p.language || ''];
+
+              form.appendChild(mkInput('Program Key (read-only)', 'editProgramKey', p.programKey, 'text', true));
+              form.appendChild(mkInput('Program Owner (read-only)', 'editProgramOwner', p.owner, 'text', true));
+              form.appendChild(mkSelect('Area', 'editArea', p.area, areaOptions));
+              form.appendChild(mkSelect('Sub Area', 'editSubArea', p.subArea, subAreaOptions));
+              form.appendChild(mkSelect('Frequency', 'editFrequency', p.frequency, freqOptions));
+              form.appendChild(mkSelect('Program Type', 'editType', p.typeOfProgram, typeOptions));
+              form.appendChild(mkSelect('Language', 'editLanguage', p.language, langOptions));
+              form.appendChild(mkSelect('Day (dropdown)', 'editDay', p.day, dayOptions));
+              form.appendChild(mkInput('Program Start Date', 'editStartDate', p.programStartDate, 'date', false));
+              form.appendChild(mkInput('Time', 'editTime', p.time, 'time', false));
+
+              var vr = mkSelect('Virtual', 'editVirtual', p.virtual || 'No', ['No','Yes']);
+              form.appendChild(vr);
+              form.appendChild(mkSelect('Active Flag', 'editActFlag', p.actFlag || 'YES', ['YES','NO']));
+
+              var commentBox = document.createElement('div');
+              commentBox.style.gridColumn = '1 / -1';
+              commentBox.innerHTML = '<label style="display:block;font-size:0.84rem;color:var(--text-muted);margin-bottom:5px;">Comment</label>' +
+                '<textarea id="editComment" rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--border-blue);border-radius:8px;">' + (p.comment || '') + '</textarea>';
+              form.appendChild(commentBox);
+
+              wrapper.appendChild(form);
+
+              var saveBtn = document.createElement('button');
+              saveBtn.className = 'btn-submit';
+              saveBtn.style.marginTop = '14px';
+              saveBtn.textContent = 'Save Program Changes';
+              saveBtn.onclick = function() {
+                var payload = {
+                  programKey: (document.getElementById('editProgramKey').value || '').trim(),
+                  area: (document.getElementById('editArea').value || '').trim(),
+                  subArea: (document.getElementById('editSubArea').value || '').trim(),
+                  frequency: (document.getElementById('editFrequency').value || '').trim(),
+                  typeOfProgram: (document.getElementById('editType').value || '').trim(),
+                  language: (document.getElementById('editLanguage').value || '').trim(),
+                  virtual: (document.getElementById('editVirtual').value || '').trim(),
+                  programStartDate: (document.getElementById('editStartDate').value || '').trim(),
+                  day: (document.getElementById('editDay').value || '').trim(),
+                  time: (document.getElementById('editTime').value || '').trim(),
+                  actFlag: (document.getElementById('editActFlag').value || '').trim(),
+                  comment: (document.getElementById('editComment').value || '').trim()
+                };
+
+                google.script.run
+                  .withSuccessHandler(function() {
+                    alert('Program updated successfully.');
+                    showProgramDetails(programKey);
+                  })
+                  .withFailureHandler(function(err) {
+                    alert('Update failed: ' + (err.message || err));
+                  })
+                  .updateOwnerProgram(ownerId, payload);
+              };
+
+              wrapper.appendChild(saveBtn);
+              container.appendChild(wrapper);
+            })
+            .withFailureHandler(function() {
+              // Config is optional for edit panel; continue with current values.
+              var container = document.getElementById('programDetails');
+              container.innerHTML = '';
+              alert('Could not load config dropdowns. Try again.');
+              showProgramDetails(programKey);
+            })
+            .getConfigValues();
+        })
+        .withFailureHandler(function(err) {
+          alert('Failed to load program details: ' + (err.message || err));
+        })
+        .getOwnerProgramForEdit(ownerId, programKey);
+    }
+
+    function openMemberManagerPanel(ownerId, programKey) {
+      google.script.run
+        .withSuccessHandler(function(rows) {
+          var container = document.getElementById('programDetails');
+          container.innerHTML = '';
+
+          var wrapper = document.createElement('div');
+          wrapper.className = 'attendance-wrapper';
+
+          var topBar = document.createElement('div');
+          topBar.className = 'attendance-top-bar';
+          topBar.innerHTML = '<div><p class="section-eyebrow">Member Management</p><h2 class="attendance-title">Program: ' + programKey + '</h2></div>';
+          var backBtn = document.createElement('button');
+          backBtn.className = 'btn-secondary';
+          backBtn.innerHTML = '&#8592; Back to Program';
+          backBtn.onclick = function() { showProgramDetails(programKey); };
+          topBar.appendChild(backBtn);
+          wrapper.appendChild(topBar);
+
+          var addRow = document.createElement('div');
+          addRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin:8px 0 14px;';
+          addRow.innerHTML = '<input id="newMemberNameInput" type="text" placeholder="Enter new member name" style="flex:1;padding:10px 12px;border:1px solid var(--border-blue);border-radius:8px;" />';
+          var addBtn = document.createElement('button');
+          addBtn.className = 'btn-secondary';
+          addBtn.textContent = '+ Add Member';
+          addBtn.onclick = function() {
+            var nm = (document.getElementById('newMemberNameInput').value || '').trim();
+            if (!nm) { alert('Please enter member name.'); return; }
+            google.script.run
+              .withSuccessHandler(function() {
+                alert('Member added.');
+                openMemberManagerPanel(ownerId, programKey);
+              })
+              .withFailureHandler(function(err) {
+                alert('Add failed: ' + (err.message || err));
+              })
+              .addDevotee(programKey, nm, ownerId);
+          };
+          addRow.appendChild(addBtn);
+          wrapper.appendChild(addRow);
+
+          var tableWrap = document.createElement('div');
+          tableWrap.className = 'attendance-table-wrap';
+          var table = document.createElement('table');
+          table.className = 'attendance-table';
+          table.innerHTML = '<thead><tr><th>Name</th><th>Shiksha Code</th><th>Total Sessions</th><th>Attended</th><th>Attendance %</th><th>Action</th></tr></thead>';
+          var tbody = document.createElement('tbody');
+
+          if (!rows || !rows.length) {
+            var er = tbody.insertRow();
+            var ec = er.insertCell();
+            ec.colSpan = 6;
+            ec.textContent = 'No members found for this program.';
+          } else {
+            rows.forEach(function(r) {
+              var tr = tbody.insertRow();
+              tr.insertCell().textContent = r.name || '';
+              tr.insertCell().textContent = r.shikshaCode || '';
+              tr.insertCell().textContent = r.totalSessions || 0;
+              tr.insertCell().textContent = r.attended || 0;
+              tr.insertCell().textContent = r.attendancePct || '0%';
+
+              var ac = tr.insertCell();
+              var renameBtn = document.createElement('button');
+              renameBtn.className = 'btn-action';
+              renameBtn.textContent = 'Rename';
+              renameBtn.onclick = function() {
+                var newName = prompt('Enter new name for ' + (r.name || ''), r.name || '');
+                if (newName === null) return;
+                newName = newName.trim();
+                if (!newName) { alert('Name cannot be empty.'); return; }
+                google.script.run
+                  .withSuccessHandler(function() {
+                    alert('Member name updated.');
+                    openMemberManagerPanel(ownerId, programKey);
+                  })
+                  .withFailureHandler(function(err) {
+                    alert('Rename failed: ' + (err.message || err));
+                  })
+                  .renameMemberForOwner(ownerId, programKey, r.name, newName);
+              };
+              ac.appendChild(renameBtn);
+            });
+          }
+
+          table.appendChild(tbody);
+          tableWrap.appendChild(table);
+          wrapper.appendChild(tableWrap);
+          container.appendChild(wrapper);
+        })
+        .withFailureHandler(function(err) {
+          alert('Failed to load members: ' + (err.message || err));
+        })
+        .getOwnerProgramMembers(ownerId, programKey);
+    }
+
     /* ─── ADD DEVOTEE ─── */
-    function addDevotee(programKey) {
+    function addDevotee(programKey, ownerId) {
       var devoteeName = prompt('Enter the name of the new devotee:');
       if (devoteeName) {
         google.script.run.withSuccessHandler(function(newDevotee) {
@@ -2238,7 +2493,7 @@
           } else {
             alert('Failed to add devotee.');
           }
-        }).addDevotee(programKey, devoteeName);
+        }).addDevotee(programKey, devoteeName, ownerId || '');
       }
     }
 

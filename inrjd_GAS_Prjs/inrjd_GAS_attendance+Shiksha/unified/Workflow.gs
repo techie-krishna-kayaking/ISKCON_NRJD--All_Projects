@@ -113,36 +113,16 @@ function getOwnerAttention(ownerId) {
     };
   }
 
-  var attSheet = getSheet_(SHEET_NAMES.ATTENDANCE);
-  if (!attSheet) {
-    return {
-      programsNeedingAttendance: programKeys.map(function(pk) { return programMap[pk]; }),
-      stalePrograms: []
-    };
-  }
-
-  var data = getAllData_(attSheet);
-  if (data.length < 2) {
-    return {
-      programsNeedingAttendance: programKeys.map(function(pk) { return programMap[pk]; }),
-      stalePrograms: []
-    };
-  }
-
-  var headerMeta = getHeaderMap_(attSheet);
-  var h = headerMeta.headersLower;
-  var idxProgram = findHeaderIndex_(h, ['program key', 'program_key', 'program']);
-  var idxDate = findHeaderIndex_(h, ['last_att_date', 'last attendance date', 'date']);
-
   var latestByProgram = {};
-  for (var i = 1; i < data.length; i++) {
-    var row = data[i];
-    var pk = idxProgram >= 0 ? (row[idxProgram] || '').toString().trim() : (row[ATT_COLS.PROGRAM_KEY] || '').toString().trim();
-    if (!programMap[pk]) continue;
-    var dtVal = idxDate >= 0 ? row[idxDate] : '';
-    var dt = parseDate_(dtVal);
-    if (!latestByProgram[pk] || (dt && latestByProgram[pk] < dt)) {
-      latestByProgram[pk] = dt || latestByProgram[pk] || null;
+  for (var i = 0; i < programKeys.length; i++) {
+    var pk = programKeys[i];
+    var rows = getTab2RowsForProgram(pk);
+    for (var r = 0; r < rows.length; r++) {
+      var dt = parseDate_(rows[r].lastAttDate);
+      if (!dt) continue;
+      if (!latestByProgram[pk] || latestByProgram[pk] < dt) {
+        latestByProgram[pk] = dt;
+      }
     }
   }
 
