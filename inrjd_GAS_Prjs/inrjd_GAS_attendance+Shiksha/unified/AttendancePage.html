@@ -1612,6 +1612,10 @@
     var currentUserId = '';
     var currentUserRole = 'owner';
 
+    function isCurrentUserAdmin() {
+      return (currentUserRole || '').toString().trim().toLowerCase() === 'admin';
+    }
+
     /* ─── Helpers: build standardised wrappers for GAS inputs ─── */
     function makeFormField(labelText, inputEl, wrapperClass) {
       var field = document.createElement('div');
@@ -1658,9 +1662,9 @@
               alert(status);
             }
           })
-          .withFailureHandler(function() {
+          .withFailureHandler(function(err) {
             resetLoginButton();
-            alert('Login failed. Please redeploy the latest web app version.');
+            alert('Login failed: ' + ((err && err.message) ? err.message : 'Unknown server error'));
           })
           .checkCredentials(id, pass);
       }
@@ -1717,7 +1721,7 @@
       header.className = 'section-header';
       header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
       var adminBtn = '';
-      if (currentUserRole === 'admin') {
+      if (isCurrentUserAdmin()) {
         adminBtn = '<button class="btn-action" style="background:linear-gradient(135deg,var(--coral),#f97316);color:#fff;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-size:0.86rem;" onclick="openAdminConsole()">🛡 Admin Console</button>';
       }
       header.innerHTML = '<div><p class="section-eyebrow">Owner Dashboard</p><h2 class="section-title">Welcome, ' + ownerId + ' 🙏</h2></div>' +
@@ -1849,7 +1853,7 @@
     }
 
     function openAdminConsole() {
-      if (currentUserRole !== 'admin') {
+      if (!isCurrentUserAdmin()) {
         alert('Admin access is required.');
         return;
       }
@@ -1857,10 +1861,10 @@
         .withSuccessHandler(function(token) {
           google.script.run
             .withSuccessHandler(function(url) {
-              window.open(url + '?page=admin&token=' + encodeURIComponent(token), '_self');
+              window.location.assign(url + '?page=admin&token=' + encodeURIComponent(token));
             })
             .withFailureHandler(function() {
-              window.open('?page=admin', '_self');
+              window.location.assign('?page=admin');
             })
             .getWebAppUrl();
         })
@@ -2612,13 +2616,12 @@
     }
 
     function openIntegratedShiksha(url) {
-      // Open in a new tab — GAS web apps require Google auth which cannot be
-      // passed through a same-page iframe (results in 403 / "You need access").
+      // Open in the same tab/window for a seamless in-app flow.
       if (url) {
-        window.open(url, '_blank');
+        window.location.assign(url);
       } else {
         google.script.run
-          .withSuccessHandler(function(baseUrl) { window.open(baseUrl + '?page=shiksha', '_blank'); })
+          .withSuccessHandler(function(baseUrl) { window.location.assign(baseUrl + '?page=shiksha'); })
           .withFailureHandler(function() { alert('Unable to open Shiksha module. Please try again.'); })
           .getWebAppUrl();
       }

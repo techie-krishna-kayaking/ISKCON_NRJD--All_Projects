@@ -58,7 +58,9 @@ function getCredUserRecord_(id) {
 function getUserRole(id) {
   var rec = getCredUserRecord_(id);
   if (rec.found && rec.role === 'admin') return 'admin';
-  if (isSuperUser(id)) return 'admin';
+  // Keep auth independent from other files so login never fails if a non-auth
+  // module is temporarily out-of-sync in a deployment.
+  if (typeof isSuperUser === 'function' && isSuperUser(id)) return 'admin';
   return 'owner';
 }
 
