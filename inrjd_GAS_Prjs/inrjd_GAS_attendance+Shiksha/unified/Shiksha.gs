@@ -164,14 +164,17 @@ function pickFromMapped_(mapped, keys) {
  */
 function generateShikshaCode(bioformData) {
   if (!bioformData) return 'ERROR_NO_DATA';
-  var name = (bioformData.aadhar || '').toString().trim();
-  var dob = (bioformData.dob || '').toString().trim();
-  if (!name || !dob) return 'ERROR_MISSING_FIELDS';
-  var prefix = name.substring(0, 4).toUpperCase();
+  var aadhar = (bioformData.aadhar || '').toString().trim().replace(/\s+/g, '');
+  var dob    = (bioformData.dob    || '').toString().trim();
+  if (!aadhar || !dob) return 'ERROR_MISSING_FIELDS';
+  // Last 4 characters of Aadhar number
+  var suffix4 = aadhar.slice(-4).toUpperCase();
+  // DOB is expected as YYYY-MM-DD; extract dd and mm
   var parts = dob.split('-');
   if (parts.length !== 3) return 'ERROR_INVALID_DOB';
-  var dobFormatted = parts[2] + parts[1] + parts[0];
-  return prefix + dobFormatted;
+  var dd = parts[2].padStart(2, '0');
+  var mm = parts[1].padStart(2, '0');
+  return suffix4 + dd + mm;
 }
 
 /**
@@ -387,25 +390,56 @@ function submitShikshaData(formData) {
 }
 
 /**
- * Combined certify handler: looks up devotee, stores prefill, returns full URL.
- * Single server call from the Certify button.
+ * Combined certify handler: decides mode from tab2 shiksha code, stores prefill, returns URL.
+ *
+ * Routing rules (based on tab2 for this devotee+program):
+ *   - Real shiksha code (not temp_*)  → mode = 'shiksha'  → open shiksha certification form directly.
+ *   - temp_* code OR no code at all   → mode = 'biodata'  → open bio-data form first; after the code
+ *     is generated there, ShikshaPage transitions automatically to the shiksha form.
+ *
  * @param {string} devoteeName
  * @param {string} programKey
  * @return {{url: string, mode: string}}
  */
 function prepareCertifyUrl(devoteeName, programKey) {
-  var lookup = lookupDevoteeForCertify(devoteeName, programKey);
-  var prefillData, mode;
+  var parsedInput = parseDevoteeRef_(devoteeName);
+  var normalizedName = parsedInput.name || (devoteeName || '').toString().trim();
 
-  if (lookup.found && lookup.mapped) {
-    mode = 'shiksha';
-    prefillData = { mapped: lookup.mapped };
+  // ── Step 1: determine effective shiksha code from tab2 (most reliable source) ──
+  var tab2Code = extractShikshaCodeFromTab2_(programKey, normalizedName);
+  var effectiveCode = parsedInput.shikshaCode || tab2Code;
+
+  // ── Step 2: decide mode ──
+  var isTemp = !effectiveCode || isTempTab2Code_(effectiveCode, programKey);
+
+  var mode, prefillData;
+
+  if (!isTemp) {
+    // Real code → look up tab5 for rich prefill, go straight to shiksha form.
+    var lookup = lookupDevoteeForCertify(devoteeName, programKey);
+    if (lookup.found && lookup.mapped) {
+      mode = 'shiksha';
+      prefillData = { mapped: lookup.mapped };
+    } else {
+      // Real code but no tab5 row yet — still open shiksha form with minimal prefill.
+      mode = 'shiksha';
+      var prog = getProgramByKey(programKey);
+      prefillData = {
+        mapped: null,
+        shikshaCode: effectiveCode,
+        name: normalizedName,
+        programKey: programKey,
+        programOwner: prog ? (prog[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim() : ''
+      };
+    }
   } else {
+    // temp_ or no code → go to bio-data form first.
     mode = 'biodata';
+    var prog2 = getProgramByKey(programKey);
     prefillData = {
-      name: lookup.devoteeName || devoteeName,
+      name: normalizedName,
       programKey: programKey,
-      programOwner: lookup.programOwner || '',
+      programOwner: prog2 ? (prog2[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim() : '',
       subArea: ''
     };
   }

@@ -2612,39 +2612,14 @@
     }
 
     function openIntegratedShiksha(url) {
-      function render(urlToLoad) {
-        var container = document.getElementById('programDetails');
-        container.innerHTML = '';
-
-        var wrapper = document.createElement('div');
-        wrapper.className = 'attendance-wrapper';
-        wrapper.style.padding = '18px';
-
-        var topBar = document.createElement('div');
-        topBar.className = 'attendance-top-bar';
-        topBar.innerHTML = '<div><p class="section-eyebrow">Integrated Module</p><h2 class="attendance-title">Shiksha Portal</h2></div>';
-
-        var backBtn = document.createElement('button');
-        backBtn.className = 'btn-secondary';
-        backBtn.innerHTML = '&#8592; Back to Dashboard';
-        backBtn.onclick = function() { loadOwnerDashboard(); };
-        topBar.appendChild(backBtn);
-
-        var frameWrap = document.createElement('div');
-        frameWrap.style.cssText = 'margin-top:14px;border:1px solid var(--border-card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-soft);';
-        frameWrap.innerHTML = '<iframe src="' + urlToLoad + '" style="width:100%;height:78vh;border:none;background:#fff;" title="Integrated Shiksha"></iframe>';
-
-        wrapper.appendChild(topBar);
-        wrapper.appendChild(frameWrap);
-        container.appendChild(wrapper);
-      }
-
+      // Open in a new tab — GAS web apps require Google auth which cannot be
+      // passed through a same-page iframe (results in 403 / "You need access").
       if (url) {
-        render(url);
+        window.open(url, '_blank');
       } else {
         google.script.run
-          .withSuccessHandler(function(baseUrl) { render(baseUrl + '?page=shiksha'); })
-          .withFailureHandler(function() { alert('Unable to open shiksha module.'); })
+          .withSuccessHandler(function(baseUrl) { window.open(baseUrl + '?page=shiksha', '_blank'); })
+          .withFailureHandler(function() { alert('Unable to open Shiksha module. Please try again.'); })
           .getWebAppUrl();
       }
     }

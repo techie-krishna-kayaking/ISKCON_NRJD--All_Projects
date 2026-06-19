@@ -1361,22 +1361,46 @@ function submitShikshaForm() {
     .then(data => {
       bioformData.IP_ADDRESS = data.ip || 'unknown';
       google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Bio-data submitted');
-        form.reset();
         btn.disabled = false;
         btn.textContent = 'Submit';
-        backToLanding();
+        var generatedCode = '';
+        if (resp) {
+          var m = resp.match(/Generated Shiksha Code:\s*([A-Za-z0-9_-]+)/i);
+          if (m) generatedCode = m[1].trim();
+        }
+        if (_certifyActive && generatedCode) {
+          alert(resp || 'Bio-data submitted');
+          form.reset();
+          transitionToShikshaForm(generatedCode);
+        } else {
+          alert(resp || 'Bio-data submitted');
+          form.reset();
+          backToLanding();
+        }
       }).submitBioForm(bioformData);
     })
     .catch(err => {
       console.error('Failed to fetch IP:', err);
       bioformData.IP_ADDRESS = 'unknown';
       google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Bio-data submitted');
-        form.reset();
         btn.disabled = false;
         btn.textContent = 'Submit';
-        backToLanding();
+        // Extract generated shiksha code from response string
+        var generatedCode = '';
+        if (resp) {
+          var m = resp.match(/Generated Shiksha Code:\s*([A-Za-z0-9_-]+)/i);
+          if (m) generatedCode = m[1].trim();
+        }
+        // In certify mode: skip landing, auto-transition to shiksha form
+        if (_certifyActive && generatedCode) {
+          alert(resp || 'Bio-data submitted');
+          form.reset();
+          transitionToShikshaForm(generatedCode);
+        } else {
+          alert(resp || 'Bio-data submitted');
+          form.reset();
+          backToLanding();
+        }
       }).submitBioForm(bioformData);
     });
 }
@@ -1393,11 +1417,53 @@ function submitShikshaForm() {
       }
     }
 
+    // ── Certify mode state (set during init, used by biodata submit) ──
+    var _certifyActive = false;   // true when this page was opened from a Certify button
+
     function backToLanding() {
       document.getElementById('shikshaForm').classList.add('hidden');
       document.getElementById('biodataForm').classList.add('hidden');
       document.getElementById('landingPage').classList.remove('hidden');
       Array.from(document.querySelectorAll('.back-btn')).forEach(function(b){ b.style.display = 'none'; });
+    }
+
+    /**
+     * Transition to shiksha form after biodata is submitted in certify mode.
+     * Searches for the newly generated code in tab3/tab5 and prefills the form.
+     * @param {string} generatedCode
+     */
+    function transitionToShikshaForm(generatedCode) {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showForm('shiksha');
+          if (result && result.matches && result.matches.length) {
+            var mapped = result.matches[0].mapped;
+            if (mapped) {
+              populateShikshaFormWithRow(mapped);
+              document.getElementById('shikshaMain').classList.remove('hidden');
+              document.getElementById('proposed-level').disabled = false;
+              var currentLevel = (document.getElementById('current_level').value || '').trim().toLowerCase();
+              var nextLevel = nextLevelMap[currentLevel];
+              if (nextLevel) {
+                setSelectValueInsensitive(document.getElementById('proposed-level'), nextLevel);
+                document.getElementById('proposed-level').dispatchEvent(new Event('change'));
+              }
+            }
+          } else {
+            // code generated but not found yet — still open shiksha form so user can fill manually
+            document.getElementById('shiksha-code').value = generatedCode || '';
+            document.getElementById('shikshaMain').classList.remove('hidden');
+            document.getElementById('proposed-level').disabled = false;
+          }
+        })
+        .withFailureHandler(function() {
+          // graceful fallback: just open shiksha form
+          document.getElementById('shiksha-code').value = generatedCode || '';
+          showForm('shiksha');
+          document.getElementById('shikshaMain').classList.remove('hidden');
+          document.getElementById('proposed-level').disabled = false;
+        })
+        .findShikshaByQuery(generatedCode);
     }
 
     (function init() {
@@ -1408,6 +1474,7 @@ function submitShikshaForm() {
       var urlParams = <?= JSON.stringify(urlParams || {}) ?>;
       var certifyToken = urlParams.certify || '';
       var certifyMode = urlParams.mode || ''; // 'shiksha' or 'biodata'
+      _certifyActive = !!certifyToken;
 
       if (certifyToken) {
         google.script.run
