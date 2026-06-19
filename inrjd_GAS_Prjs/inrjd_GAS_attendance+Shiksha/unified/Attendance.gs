@@ -107,6 +107,8 @@ function recordAttendance(programKey, attendees, attendanceStatus, date, hostNam
     sheet.getRange(u.rowIndex, TAB2_COLS.UPDATED_AT + 1).setValue(u.updatedAt);
   });
 
+  enforceWorkbookTextFormat_();
+
   var elapsed = ((new Date() - startTime) / 1000).toFixed(1);
   logInfo_('Attendance.record',
     'Done. Updated ' + updates.length + ' rows, appended ' + added +

@@ -357,7 +357,11 @@ function getSuperAdminDashboard() {
  * @return {boolean}
  */
 function isSuperUser(userId) {
-  return SUPER_USERS.indexOf(userId) !== -1;
+  var uid = (userId || '').toString().trim();
+  if (!uid) return false;
+  if (SUPER_USERS.indexOf(uid) !== -1) return true;
+  var rec = getCredUserRecord_(uid);
+  return rec.found && rec.role === 'admin';
 }
 
 // ────────────────────────────────────────────────────────────────

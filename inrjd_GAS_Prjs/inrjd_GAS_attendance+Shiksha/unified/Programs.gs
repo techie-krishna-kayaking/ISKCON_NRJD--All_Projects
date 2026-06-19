@@ -95,9 +95,39 @@ function generateProgramKey_(programOwner, sheet) {
  * @return {string} Success message.
  */
 function submitForm(formData) {
+  var actorId = arguments.length > 1 ? (arguments[1] || '').toString().trim() : '';
+  formData = formData || {};
+
   var ss = getSpreadsheet_();
   var sheet1 = ss.getSheetByName(SHEET_NAMES.PROGRAMS);
-  var programOwner = formData.programOwner;
+  if (!sheet1) throw new Error('Programs sheet not found.');
+
+  var programOwner = (formData.programOwner || '').toString().trim();
+  if (!actorId) actorId = programOwner;
+
+  var required = [
+    ['programOwner', formData.programOwner],
+    ['area', formData.area],
+    ['subArea', formData.subArea],
+    ['frequency', formData.frequency],
+    ['typeOfProgram', formData.typeOfProgram],
+    ['language', formData.language],
+    ['virtual', formData.virtual],
+    ['programStartDate', formData.programStartDate],
+    ['day', formData.day],
+    ['time', formData.time],
+    ['devotees', formData.devotees]
+  ];
+  for (var r = 0; r < required.length; r++) {
+    if (!(required[r][1] || '').toString().trim()) {
+      throw new Error('Missing mandatory field: ' + required[r][0]);
+    }
+  }
+
+  if (!canManageOwnerData(actorId, programOwner)) {
+    throw new Error('You are not allowed to create programs for this owner.');
+  }
+
   var key = generateProgramKey_(programOwner, sheet1);
 
   sheet1.appendRow([
@@ -112,11 +142,14 @@ function submitForm(formData) {
     formData.programStartDate,
     formData.day,
     formData.time,
-    'YES'  // ACT_FLG
+    'YES',
+    '',
+    ''
   ]);
 
   // Save devotees to tab2
   saveDevoteesToSheet2_(ss, key, formData.devotees);
+  enforceWorkbookTextFormat_();
 
   logInfo_('Programs.submitForm', 'New program created: ' + key);
   return 'Form submitted successfully!\nContact DB Admin for any changes';
@@ -146,6 +179,7 @@ function saveDevoteesToSheet2_(ss, key, devotees) {
     var tempCode = generateTempShikshaCode_(sheet2, key);
     sheet2.appendRow([key, tempCode, devList[i], 0, 0, '0%', '', '', new Date().toISOString()]);
   }
+  enforceSheetTextFormat_(sheet2);
 }
 
 /**
@@ -202,7 +236,7 @@ function getOwnerProgramForEdit(ownerId, programKey) {
   if (!program) throw new Error('Program not found.');
 
   var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
-  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+  if (!canManageOwnerData(ownerId, owner)) {
     throw new Error('You are not allowed to edit this program.');
   }
 
@@ -254,8 +288,20 @@ function updateOwnerProgram(ownerId, payload) {
   if (targetRow === -1) throw new Error('Program not found.');
 
   var owner = (data[targetRow - 1][TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
-  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+  if (!canManageOwnerData(ownerId, owner)) {
     throw new Error('You are not allowed to edit this program.');
+  }
+
+  var oldType = (data[targetRow - 1][TAB1_COLS.TYPE_OF_PROGRAM] || '').toString().trim();
+  var oldPromoted = (data[targetRow - 1][TAB1_COLS.PROMOTED] || '').toString().trim();
+  var incomingType = payload.hasOwnProperty('typeOfProgram') ? (payload.typeOfProgram || '').toString().trim() : oldType;
+  var incomingPromoted = payload.hasOwnProperty('promoted') ? (payload.promoted || '').toString().trim() : oldPromoted;
+  var promotionChanged = incomingType !== oldType || incomingPromoted !== oldPromoted;
+  if (promotionChanged && !isAdminUser(ownerId)) {
+    var comment = (payload.comment || '').toString().trim();
+    if (!comment) {
+      throw new Error('Comment is required when promotion/type is changed.');
+    }
   }
 
   // Immutable / key fields are not edited.
@@ -288,6 +334,8 @@ function updateOwnerProgram(ownerId, payload) {
     }
     sheet.getRange(targetRow, updates[k] + 1).setValue(val);
   });
+
+  enforceWorkbookTextFormat_();
 
   logInfo_('Programs.updateOwnerProgram', 'owner=' + ownerId + ', program=' + programKey + ' updated.');
   return { updated: true, programKey: programKey };

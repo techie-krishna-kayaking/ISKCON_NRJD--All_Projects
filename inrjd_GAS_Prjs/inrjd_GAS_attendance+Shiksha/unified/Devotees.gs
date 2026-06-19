@@ -51,7 +51,7 @@ function addDevotee(programKey, devoteeName) {
     var program = getProgramByKey(cleanProgramKey);
     if (!program) throw new Error('Program not found.');
     var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
-    if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+    if (!canManageOwnerData(ownerId, owner)) {
       throw new Error('You are not allowed to add members to this program.');
     }
   }
@@ -68,6 +68,7 @@ function addDevotee(programKey, devoteeName) {
     '',
     _nowIsoForTab2_()
   ]);
+  enforceSheetTextFormat_(sheet);
 
   logInfo_('Devotees.addDevotee', 'Added "' + cleanName + '" to program ' + cleanProgramKey + ' with temp code ' + tempCode);
   return cleanName;
@@ -182,6 +183,7 @@ function updateTab2ShikshaCode(programKey, devoteeName, shikshaCode) {
     if (!sc || isTempTab2Code_(sc, key)) {
       sheet.getRange(r + 1, 2).setValue(code);
       sheet.getRange(r + 1, TAB2_COLS.UPDATED_AT + 1).setValue(_nowIsoForTab2_());
+      enforceSheetTextFormat_(sheet);
       return true;
     }
     if (fallbackRow === -1) fallbackRow = r + 1;
@@ -190,10 +192,12 @@ function updateTab2ShikshaCode(programKey, devoteeName, shikshaCode) {
   if (fallbackRow !== -1) {
     sheet.getRange(fallbackRow, 2).setValue(code);
     sheet.getRange(fallbackRow, TAB2_COLS.UPDATED_AT + 1).setValue(_nowIsoForTab2_());
+    enforceSheetTextFormat_(sheet);
     return true;
   }
 
   sheet.appendRow([key, code, name, 0, 0, '0%', '', '', _nowIsoForTab2_()]);
+  enforceSheetTextFormat_(sheet);
   return true;
 }
 
@@ -216,6 +220,7 @@ function ensureTab2RowSchema_(sheet) {
     for (var i = 0; i < TAB2_HEADERS.length; i++) {
       sheet.getRange(1, i + 1).setValue(TAB2_HEADERS[i]);
     }
+    enforceSheetTextFormat_(sheet);
     return;
   }
 
@@ -251,6 +256,7 @@ function migrateTab2WideToRows_(sheet, existingData) {
 
   sheet.clearContents();
   sheet.getRange(1, 1, rows.length, TAB2_HEADERS.length).setValues(rows);
+  enforceSheetTextFormat_(sheet);
   logInfo_('Devotees.migrateTab2', 'Migrated tab2 to row schema with ' + (rows.length - 1) + ' rows.');
 }
 
@@ -355,7 +361,8 @@ function renameMemberForOwner(ownerId, programKey, oldName, newName) {
 
   var program = getProgramByKey(programKey);
   if (!program) throw new Error('Program not found.');
-  if ((program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim().toUpperCase() !== ownerId.toUpperCase()) {
+  var programOwner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
+  if (!canManageOwnerData(ownerId, programOwner)) {
     throw new Error('You are not allowed to edit this program members.');
   }
 
@@ -402,6 +409,7 @@ function renameMemberForOwner(ownerId, programKey, oldName, newName) {
   }
 
   if (!updatedTab2) throw new Error('Member not found in this program.');
+  enforceWorkbookTextFormat_();
 
   logInfo_('Devotees.renameMemberForOwner',
     'owner=' + ownerId + ', program=' + programKey + ', old=' + oldName + ', new=' + newName +
@@ -424,7 +432,7 @@ function getOwnerProgramMembers(ownerId, programKey) {
   var program = getProgramByKey(programKey);
   if (!program) throw new Error('Program not found.');
   var owner = (program[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim();
-  if (owner.toUpperCase() !== ownerId.toUpperCase()) {
+  if (!canManageOwnerData(ownerId, owner)) {
     throw new Error('You are not allowed to view members for this program.');
   }
 

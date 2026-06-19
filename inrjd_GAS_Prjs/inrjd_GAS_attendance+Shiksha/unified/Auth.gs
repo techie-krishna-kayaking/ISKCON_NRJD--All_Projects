@@ -12,21 +12,77 @@ function checkCredentials(id, pass) {
   var sheet = getSheet_(SHEET_NAMES.CRED);
   if (!sheet) return 'Credentials sheet not found';
 
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return 'User not found';
+  var rec = getCredUserRecord_(id);
+  if (!rec.found) return 'User not found';
+  if (rec.password !== pass) return 'Incorrect password';
+  return 'success';
+}
 
-  var data = sheet.getRange('A2:B' + lastRow).getValues();
+/**
+ * Returns one user record from cred sheet.
+ * Expected columns: A=id, B=password, C=role.
+ * @param {string} id
+ * @return {{found:boolean,id:string,password:string,role:string}}
+ */
+function getCredUserRecord_(id) {
+  var out = { found: false, id: '', password: '', role: 'owner' };
+  var userId = (id || '').toString().trim();
+  if (!userId) return out;
 
-  for (var i = 0; i < data.length; i++) {
-    if (data[i][0] === id) {
-      if (data[i][1] === pass) {
-        return 'success';
-      } else {
-        return 'Incorrect password';
-      }
-    }
+  var sheet = getSheet_(SHEET_NAMES.CRED);
+  if (!sheet) return out;
+
+  var data = getAllData_(sheet);
+  if (data.length < 2) return out;
+
+  var userUpper = userId.toUpperCase();
+  for (var i = 1; i < data.length; i++) {
+    var rowId = (data[i][0] || '').toString().trim();
+    if (!rowId || rowId.toUpperCase() !== userUpper) continue;
+    out.found = true;
+    out.id = rowId;
+    out.password = (data[i][1] || '').toString();
+    var role = (data[i][2] || '').toString().trim().toLowerCase();
+    out.role = role === 'admin' ? 'admin' : 'owner';
+    return out;
   }
-  return 'User not found';
+  return out;
+}
+
+/**
+ * Returns effective role for a user.
+ * cred.role='admin' is primary, SUPER_USERS fallback kept for compatibility.
+ * @param {string} id
+ * @return {'admin'|'owner'}
+ */
+function getUserRole(id) {
+  var rec = getCredUserRecord_(id);
+  if (rec.found && rec.role === 'admin') return 'admin';
+  if (isSuperUser(id)) return 'admin';
+  return 'owner';
+}
+
+/**
+ * @param {string} id
+ * @return {boolean}
+ */
+function isAdminUser(id) {
+  return getUserRole(id) === 'admin';
+}
+
+/**
+ * Returns true when the actor can manage data owned by ownerId.
+ * Admins can manage any owner. Owners can manage their own rows only.
+ * @param {string} actorId
+ * @param {string} ownerId
+ * @return {boolean}
+ */
+function canManageOwnerData(actorId, ownerId) {
+  var actor = (actorId || '').toString().trim();
+  var owner = (ownerId || '').toString().trim();
+  if (!actor || !owner) return false;
+  if (isAdminUser(actor)) return true;
+  return actor.toUpperCase() === owner.toUpperCase();
 }
 
 /**
@@ -38,9 +94,7 @@ function checkCredentials(id, pass) {
 function loginWithRole(id, pass) {
   var result = checkCredentials(id, pass);
   var role = 'owner';
-  if (result === 'success' && isSuperUser(id)) {
-    role = 'admin';
-  }
+  if (result === 'success') role = getUserRole(id);
   return { status: result, role: role };
 }
 
@@ -50,7 +104,7 @@ function loginWithRole(id, pass) {
  * @return {string}
  */
 function createAdminLaunchToken(userId) {
-  if (!userId || !isSuperUser(userId)) {
+  if (!userId || !isAdminUser(userId)) {
     throw new Error('Not allowed to create admin launch token.');
   }
 
@@ -79,7 +133,7 @@ function consumeAdminLaunchToken(token) {
   try {
     var parsed = JSON.parse(raw);
     var userId = (parsed && parsed.userId) ? parsed.userId.toString().trim() : '';
-    if (!userId || !isSuperUser(userId)) {
+    if (!userId || !isAdminUser(userId)) {
       return { ok: false, userId: '' };
     }
     return { ok: true, userId: userId };
