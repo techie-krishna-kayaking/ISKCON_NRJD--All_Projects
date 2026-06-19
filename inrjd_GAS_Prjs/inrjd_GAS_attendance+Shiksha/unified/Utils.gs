@@ -111,6 +111,52 @@ function formatDateISO_(d) {
   return y + '-' + m + '-' + day;
 }
 
+/**
+ * Forces an entire sheet to plain text format.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ */
+function enforceSheetTextFormat_(sheet) {
+  if (!sheet) return;
+  var maxRows = sheet.getMaxRows();
+  var maxCols = sheet.getMaxColumns();
+  if (maxRows < 1 || maxCols < 1) return;
+  sheet.getRange(1, 1, maxRows, maxCols).setNumberFormat('@');
+}
+
+/**
+ * Applies plain text format to all business sheets.
+ */
+function enforceWorkbookTextFormat_() {
+  var ss = getSpreadsheet_();
+  var names = [
+    SHEET_NAMES.CONFIG,
+    SHEET_NAMES.CRED,
+    SHEET_NAMES.PROGRAMS,
+    SHEET_NAMES.DEVOTEES,
+    SHEET_NAMES.PARTICIPANTS
+  ];
+  for (var i = 0; i < names.length; i++) {
+    var sh = ss.getSheetByName(names[i]);
+    if (sh) enforceSheetTextFormat_(sh);
+  }
+}
+
+/**
+ * Simple trigger for manual edits.
+ * @param {GoogleAppsScript.Events.SheetsOnEdit} e
+ */
+function onEdit(e) {
+  enforceWorkbookTextFormat_();
+}
+
+/**
+ * Installable trigger for structural/data changes.
+ * @param {GoogleAppsScript.Events.SheetsOnChange} e
+ */
+function onChange(e) {
+  enforceWorkbookTextFormat_();
+}
+
 // ────────────────────────────────────────
 // LOGGING
 // ────────────────────────────────────────
