@@ -4,8 +4,9 @@
  * Optional: set SHEET_ID if this script is standalone and not bound to a sheet.
  * If left blank, it uses the active spreadsheet.
  */
-const SHEET_ID = '';
-const SHEET_NAME = '';
+const SHEET_ID = '1eNn5eLhGdKtLaytm55X0cCmyRdolHSG7mA39iBEXHfw';
+const SHEET_NAME = 'Dashboards';
+
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
