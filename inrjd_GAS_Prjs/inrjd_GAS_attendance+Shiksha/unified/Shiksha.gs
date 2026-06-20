@@ -413,6 +413,11 @@ function prepareCertifyUrl(devoteeName, programKey) {
   var isTemp = !effectiveCode || isTempTab2Code_(effectiveCode, programKey);
 
   var mode, prefillData;
+  var fallbackName = normalizedName || '';
+  var fallbackProgramKey = (programKey || '').toString().trim();
+  var fallbackProgramOwner = '';
+  var fallbackSubArea = '';
+  var fallbackTempCode = isTemp ? (effectiveCode || '') : '';
 
   if (!isTemp) {
     // Real code → look up tab5 for rich prefill, go straight to shiksha form.
@@ -432,22 +437,34 @@ function prepareCertifyUrl(devoteeName, programKey) {
         programOwner: prog ? (prog[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim() : ''
       };
     }
+    fallbackProgramOwner = prefillData.programOwner || '';
+    fallbackSubArea = (prog && prog[TAB1_COLS.SUB_AREA]) ? (prog[TAB1_COLS.SUB_AREA] || '').toString().trim() : '';
   } else {
     // temp_ or no code → go to bio-data form first.
     mode = 'biodata';
     var prog2 = getProgramByKey(programKey);
+    fallbackProgramOwner = prog2 ? (prog2[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim() : '';
+    fallbackSubArea = prog2 ? (prog2[TAB1_COLS.SUB_AREA] || '').toString().trim() : '';
     prefillData = {
       name: normalizedName,
       programKey: programKey,
-      programOwner: prog2 ? (prog2[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim() : '',
-      subArea: ''
+      programOwner: fallbackProgramOwner,
+      subArea: fallbackSubArea,
+      tempShikshaCode: fallbackTempCode
     };
   }
 
   var token = storeCertifyPrefill(prefillData);
   var baseUrl = ScriptApp.getService().getUrl();
+  var fallbackParams = [
+    'cname=' + encodeURIComponent(fallbackName),
+    'cpk=' + encodeURIComponent(fallbackProgramKey),
+    'cpo=' + encodeURIComponent(fallbackProgramOwner),
+    'csa=' + encodeURIComponent(fallbackSubArea),
+    'ctsc=' + encodeURIComponent(fallbackTempCode)
+  ].join('&');
   return {
-    url: baseUrl + '?page=shiksha&certify=' + token + '&mode=' + mode,
+    url: baseUrl + '?page=shiksha&certify=' + token + '&mode=' + mode + '&' + fallbackParams,
     mode: mode
   };
 }
