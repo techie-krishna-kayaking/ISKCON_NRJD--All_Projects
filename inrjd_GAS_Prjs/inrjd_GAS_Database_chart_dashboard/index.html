@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NRJD Preaching Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <style>
+    :root {
+      --sky: #4a9ecc;
+      --sky-bright: #5bb8e8;
+      --sky-deep: #2d7dae;
+      --arctic: #7bc8e2;
+      --periwinkle: #7b8fd4;
+      --teal: #2bbfb0;
+      --gold: #c8a84b;
+      --coral: #e07b7b;
+
+      --bg-page: #eef6fb;
+      --bg-card: rgba(255, 255, 255, 0.82);
+      --text-dark: #0f2740;
+      --text-muted: #6a92ae;
+      --border-soft: rgba(74, 158, 204, 0.18);
+
+      --shadow-soft: 0 6px 24px rgba(30, 58, 92, 0.1);
+      --shadow-card: 0 12px 40px rgba(30, 58, 92, 0.14);
+
+      --r-md: 20px;
+      --r-lg: 30px;
+
+      --font-display: 'Cinzel', Georgia, serif;
+      --font-body: 'Jost', 'Segoe UI', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text-dark);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(123, 200, 226, 0.3), transparent 35%),
+        radial-gradient(circle at 90% 0%, rgba(123, 143, 212, 0.25), transparent 30%),
+        linear-gradient(165deg, #eff7fc 0%, #f7fbff 55%, #eef4fc 100%);
+      min-height: 100vh;
+    }
+
+    .page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 32px 20px 26px;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(180deg, rgba(240, 248, 255, 0.95) 0%, rgba(236, 244, 252, 0.8) 100%);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(74, 158, 204, 0.14);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+          transparent 0%,
+          var(--periwinkle) 20%,
+          var(--arctic) 35%,
+          var(--sky-bright) 50%,
+          var(--teal) 65%,
+          var(--gold) 80%,
+          transparent 100%);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+
+    .header-eyebrow {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--sky-deep);
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3.6vw, 46px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 2px;
+      background: linear-gradient(145deg, #16395e 0%, #4a9ecc 28%, #2bbfb0 56%, #c8a84b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-logo {
+      width: clamp(46px, 6vw, 70px);
+      height: clamp(46px, 6vw, 70px);
+      object-fit: contain;
+      border-radius: 50%;
+      border: 2px solid rgba(200, 168, 75, 0.5);
+      background: rgba(255, 255, 255, 0.65);
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .header-subtitle {
+      margin-top: 9px;
+      font-size: 13px;
+      color: #315f84;
+      letter-spacing: 1.2px;
+    }
+
+    .announcement {
+      margin: 18px auto 0;
+      width: min(960px, calc(100% - 30px));
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.74);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .announcement span {
+      flex-shrink: 0;
+    }
+
+    .announcement marquee {
+      color: #28567b;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    main {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+      padding: 16px 14px 54px;
+      flex: 1;
+    }
+
+    .top-summary {
+      margin-top: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .title-line {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: clamp(20px, 2.4vw, 30px);
+      color: #20476b;
+    }
+
+    .overall-total {
+      font-size: clamp(34px, 7vw, 56px);
+      line-height: 1;
+      font-weight: 700;
+      color: #0f2740;
+    }
+
+    .summary-sub {
+      color: var(--text-muted);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .combo-total-bar {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .combo-pill {
+      border: 1px solid rgba(74, 158, 204, 0.2);
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: center;
+      box-shadow: 0 3px 14px rgba(30, 58, 92, 0.08);
+    }
+
+    .combo-pill .pill-label {
+      font-size: 12px;
+      color: #2a5a80;
+      font-weight: 600;
+    }
+
+    .combo-pill .pill-value {
+      margin-top: 3px;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 700;
+      color: #123a5d;
+    }
+
+    .big-funnel-card {
+      margin-top: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      padding: 14px;
+    }
+
+    .big-funnel-title {
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: clamp(19px, 2.2vw, 30px);
+      color: #1d4a70;
+      margin-bottom: 8px;
+    }
+
+    #allDataFunnel {
+      width: 100%;
+      min-height: 430px;
+    }
+
+    .pair-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .pair-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .funnel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .funnel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .funnel-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1d4a70;
+    }
+
+    .funnel-total {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      min-height: 290px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .details-panel {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-card);
+      padding: 16px;
+    }
+
+    .details-title {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2.2vw, 28px);
+      color: #1f4b70;
+      text-align: center;
+    }
+
+    .details-hint {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #detailPie {
+      width: 100%;
+      min-height: 320px;
+    }
+
+    .legend-table {
+      border: 1px solid rgba(74, 158, 204, 0.18);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: linear-gradient(120deg, rgba(123, 143, 212, 0.22), rgba(43, 191, 176, 0.18));
+      color: #21466a;
+      text-align: left;
+      padding: 10px;
+      font-weight: 600;
+    }
+
+    tbody td {
+      border-top: 1px solid rgba(74, 158, 204, 0.12);
+      padding: 9px 10px;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(123, 200, 226, 0.08);
+    }
+
+    footer {
+      padding: 24px 14px;
+      text-align: center;
+      border-top: 1px solid rgba(74, 158, 204, 0.12);
+      background: linear-gradient(0deg, rgba(163, 221, 240, 0.12), transparent);
+    }
+
+    .footer-brand {
+      font-family: var(--font-display);
+      font-size: clamp(17px, 2.2vw, 22px);
+      font-style: italic;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--sky-deep), var(--sky-bright), var(--teal), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    footer p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .loader {
+      margin-top: 30px;
+      text-align: center;
+      color: #2f6288;
+      font-weight: 600;
+    }
+
+    @media (min-width: 900px) {
+      main {
+        padding: 18px 22px 66px;
+      }
+
+      .pair-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .details-panel {
+        grid-template-columns: 1.2fr 1fr;
+        align-items: start;
+      }
+
+      .details-title,
+      .details-hint {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <header>
+      <div class="header-inner">
+        <img src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png" alt="Left Logo" class="header-logo" />
+        <div class="header-title-wrap">
+          <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+          <h1>ISKCON New Rajapur Jagannatha Dham</h1>
+        </div>
+        <img src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png" alt="Right Logo" class="header-logo" />
+      </div>
+      <p class="header-subtitle">Preaching Database Dashboard • 6C Journey Insights</p>
+      <div class="announcement">
+        <span>📊</span>
+        <marquee behavior="scroll" direction="left" scrollamount="4">Hare Krishna • Dynamic 6C Funnel Analytics • Tap any funnel stage to view Program + Source split • Hare Krishna</marquee>
+      </div>
+    </header>
+
+    <main>
+      <div id="loader" class="loader">Loading dashboard data...</div>
+
+      <section id="dashboard" style="display:none;">
+        <div class="top-summary">
+          <div class="title-line">🪷 Total Members</div>
+          <div class="overall-total" id="overallTotal">0</div>
+          <div class="summary-sub" id="summarySub">0 records loaded</div>
+          <div class="combo-total-bar" id="comboTotalBar"></div>
+        </div>
+
+        <div class="big-funnel-card">
+          <div class="big-funnel-title">6C Inclusive Funnel (All Categories + Gender)</div>
+          <div id="allDataFunnel"></div>
+        </div>
+
+        <div id="pairGrid" class="pair-grid"></div>
+
+        <div class="details-panel">
+          <div class="details-title" id="detailsTitle">🎯 Program Breakdown</div>
+          <div class="details-hint" id="detailsHint">Tap/click any funnel stage to expand details by Program and Source.</div>
+          <div id="detailPie"></div>
+          <div class="legend-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Program</th>
+                  <th>Source</th>
+                  <th>Numbers</th>
+                </tr>
+              </thead>
+              <tbody id="detailTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-brand">ISKCON Magadi Main Road</div>
+      <p>&copy; 2026 Iskcon NRJD Website. All rights reserved. | Designed &amp; Developed by INRJD Tech Team</p>
+    </footer>
+  </div>
+
+  <script>
+    var APP = {
+      data: null,
+      comboLookup: {},
+      palette: ['#8EC7E7', '#9FDBCD', '#B9C4F2', '#F4C8C8', '#F2DFAB', '#BFE5F4'],
+      lightPalette: ['#9ED0EC', '#B5E5DA', '#C8D0F5', '#F7D4D4', '#F6E5BC', '#CCEAF7']
+    };
+
+    function formatNumber(n) {
+      return new Intl.NumberFormat('en-IN').format(Number(n || 0));
+    }
+
+    function slug(text) {
+      return String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    function stageLabel(stage) {
+      var emojiMap = {
+        '1': '1️⃣',
+        '2': '2️⃣',
+        '3': '3️⃣',
+        '4': '4️⃣',
+        '5': '5️⃣',
+        '6': '6️⃣'
+      };
+      var m = String(stage || '').match(/^(\d)/);
+      return (m ? (emojiMap[m[1]] + ' ') : '') + String(stage || 'Unknown Stage');
+    }
+
+    function getPairRows(combos) {
+      var rows = [];
+      for (var i = 0; i < combos.length; i += 2) {
+        rows.push(combos.slice(i, i + 2));
+      }
+      return rows;
+    }
+
+    function renderComboTotals(combos) {
+      var bar = document.getElementById('comboTotalBar');
+      bar.innerHTML = '';
+
+      combos.forEach(function(combo) {
+        var pill = document.createElement('div');
+        pill.className = 'combo-pill';
+        pill.innerHTML =
+          '<div class="pill-label">' + escapeHtml(combo.cat + ' ' + combo.gender) + '</div>' +
+          '<div class="pill-value">' + formatNumber(combo.total) + '</div>';
+        bar.appendChild(pill);
+      });
+    }
+
+    function renderAllDataFunnel(data) {
+      var stageMap = {};
+      data.stageOrder.forEach(function(stage) {
+        stageMap[stage] = 0;
+      });
+
+      data.combos.forEach(function(combo) {
+        combo.stages.forEach(function(s) {
+          if (typeof stageMap[s.stage] !== 'number') {
+            stageMap[s.stage] = 0;
+          }
+          stageMap[s.stage] += Number(s.total || 0);
+        });
+      });
+
+      var y = data.stageOrder.map(stageLabel);
+      var x = data.stageOrder.map(function(stage) {
+        return stageMap[stage] || 0;
+      });
+
+      var trace = {
+        type: 'funnel',
+        y: y,
+        x: x,
+        textposition: 'inside',
+        texttemplate: '<b>%{value}</b><br>%{percentInitial:.1%}',
+        marker: {
+          color: APP.lightPalette,
+          line: {
+            width: 1,
+            color: 'rgba(255,255,255,0.9)'
+          }
+        },
+        hovertemplate: '<b>%{y}</b><br>Numbers: %{x}<br>Percent: %{percentInitial}<extra></extra>'
+      };
+
+      Plotly.newPlot('allDataFunnel', [trace], {
+        margin: { l: 170, r: 20, t: 12, b: 12 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        yaxis: {
+          automargin: true,
+          tickfont: {
+            size: 14
+          }
+        },
+        font: {
+          family: 'Jost, sans-serif',
+          size: 15,
+          color: '#123a5d'
+        }
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    function buildDashboard(data) {
+      APP.data = data;
+      APP.comboLookup = {};
+
+      var loader = document.getElementById('loader');
+      var dashboard = document.getElementById('dashboard');
+      loader.style.display = 'none';
+      dashboard.style.display = 'block';
+
+      document.getElementById('overallTotal').textContent = formatNumber(data.totals.overall);
+      document.getElementById('summarySub').textContent = formatNumber(data.totals.records) + ' records loaded';
+      renderComboTotals(data.combos);
+      renderAllDataFunnel(data);
+
+      var pairGrid = document.getElementById('pairGrid');
+      pairGrid.innerHTML = '';
+
+      var rows = getPairRows(data.combos);
+      rows.forEach(function(pair) {
+        var rowEl = document.createElement('div');
+        rowEl.className = 'pair-row';
+
+        pair.forEach(function(combo) {
+          var key = combo.cat + '||' + combo.gender;
+          APP.comboLookup[key] = combo;
+
+          var card = document.createElement('article');
+          card.className = 'funnel-card';
+
+          var head = document.createElement('div');
+          head.className = 'funnel-head';
+          head.innerHTML = '' +
+            '<div class="funnel-title">📍 ' + combo.cat + ' | ' + combo.gender + '</div>' +
+            '<div class="funnel-total">Total: <strong>' + formatNumber(combo.total) + '</strong></div>';
+          card.appendChild(head);
+
+          var chart = document.createElement('div');
+          chart.className = 'chart-wrap';
+          chart.id = 'funnel-' + slug(key);
+          card.appendChild(chart);
+
+          var totalLine = document.createElement('div');
+          totalLine.className = 'summary-sub';
+          totalLine.innerHTML = 'Below funnel total for ' + combo.cat + ' + ' + combo.gender + ': <strong>' + formatNumber(combo.total) + '</strong>';
+          card.appendChild(totalLine);
+
+          rowEl.appendChild(card);
+        });
+
+        if (pair.length === 1) {
+          var empty = document.createElement('article');
+          empty.className = 'funnel-card';
+          empty.style.opacity = '0.4';
+          empty.innerHTML = '<div class="funnel-title">Coming Next</div><div class="details-hint">Add another category/gender row in sheet to auto-fill this panel.</div>';
+          rowEl.appendChild(empty);
+        }
+
+        pairGrid.appendChild(rowEl);
+      });
+
+      data.combos.forEach(function(combo, index) {
+        renderFunnel(combo, index);
+      });
+
+      // Auto-select the first available non-zero stage.
+      var firstCombo = data.combos[0];
+      if (firstCombo) {
+        var firstStage = firstCombo.stages.find(function(s) { return s.total > 0; }) || firstCombo.stages[0];
+        renderDetailsPie(firstCombo, firstStage.stage);
+      }
+    }
+
+    function renderFunnel(combo, colorOffset) {
+      var key = combo.cat + '||' + combo.gender;
+      var target = document.getElementById('funnel-' + slug(key));
+      if (!target) return;
+
+      var y = [];
+      var x = [];
+      var custom = [];
+      var colors = [];
+
+      combo.stages.forEach(function(stage, i) {
+        y.push(stageLabel(stage.stage));
+        x.push(stage.total);
+        custom.push(stage.stage);
+        colors.push(APP.palette[(i + colorOffset) % APP.palette.length]);
+      });
+
+      var trace = {
+        type: 'funnel',
+        y: y,
+        x: x,
+        texttemplate: '<b>%{value}</b><br>%{percentInitial:.1%}',
+        textposition: 'inside',
+        marker: {
+          color: colors,
+          line: {
+            width: 1,
+            color: 'rgba(255,255,255,0.72)'
+          }
+        },
+        hovertemplate: '<b>%{y}</b><br>Numbers: %{x}<br>Percent: %{percentInitial}<extra></extra>',
+        customdata: custom
+      };
+
+      var layout = {
+        margin: { l: 95, r: 10, t: 8, b: 10 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        yaxis: {
+          automargin: true,
+          tickfont: {
+            size: 11
+          }
+        },
+        font: {
+          family: 'Jost, sans-serif',
+          size: 12,
+          color: '#133453'
+        }
+      };
+
+      Plotly.newPlot(target, [trace], layout, { displayModeBar: false, responsive: true });
+
+      target.on('plotly_click', function(eventData) {
+        if (!eventData || !eventData.points || !eventData.points.length) return;
+        var selectedStage = eventData.points[0].customdata;
+        renderDetailsPie(combo, selectedStage);
+      });
+    }
+
+    function renderDetailsPie(combo, stageName) {
+      var title = document.getElementById('detailsTitle');
+      var hint = document.getElementById('detailsHint');
+      var tableBody = document.getElementById('detailTableBody');
+      var pieTarget = document.getElementById('detailPie');
+
+      tableBody.innerHTML = '';
+
+      var stageObj = combo.stages.find(function(s) { return s.stage === stageName; });
+      var rows = (stageObj && stageObj.rows) ? stageObj.rows : [];
+
+      title.textContent = '🎯 ' + combo.cat + ' | ' + combo.gender + ' • ' + stageLabel(stageName);
+
+      if (!rows.length || rows.every(function(r) { return Number(r.number || 0) === 0; })) {
+        hint.textContent = 'No numbers entered for this stage yet. Add Numbers in sheet to view detailed pie split.';
+        Plotly.newPlot(pieTarget, [{
+          type: 'pie',
+          labels: ['No Data'],
+          values: [1],
+          marker: { colors: ['#d7e9f4'] },
+          textinfo: 'label'
+        }], {
+          margin: { l: 8, r: 8, t: 8, b: 8 },
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          font: { family: 'Jost, sans-serif', color: '#466786' }
+        }, { displayModeBar: false, responsive: true });
+        return;
+      }
+
+      hint.textContent = 'Program + Source split for selected funnel step.';
+
+      var map = {};
+      rows.forEach(function(r) {
+        var key = (r.program || 'Not Specified') + '||' + (r.source || 'Not Specified');
+        if (!map[key]) {
+          map[key] = {
+            program: r.program || 'Not Specified',
+            source: r.source || 'Not Specified',
+            value: 0
+          };
+        }
+        map[key].value += Number(r.number || 0);
+      });
+
+      var list = Object.keys(map).map(function(k) { return map[k]; })
+        .sort(function(a, b) { return b.value - a.value; });
+
+      var labels = list.map(function(item) { return item.program + ' • ' + item.source; });
+      var values = list.map(function(item) { return item.value; });
+      var colors = list.map(function(_, i) { return APP.palette[i % APP.palette.length]; });
+
+      Plotly.newPlot(pieTarget, [{
+        type: 'pie',
+        labels: labels,
+        values: values,
+        marker: { colors: colors },
+        textinfo: 'label+percent',
+        hovertemplate: '<b>%{label}</b><br>Numbers: %{value}<br>%{percent}<extra></extra>'
+      }], {
+        margin: { l: 10, r: 10, t: 10, b: 10 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        font: { family: 'Jost, sans-serif', color: '#133453' },
+        showlegend: false
+      }, { displayModeBar: false, responsive: true });
+
+      list.forEach(function(item) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + escapeHtml(item.program) + '</td>' +
+          '<td>' + escapeHtml(item.source) + '</td>' +
+          '<td><strong>' + formatNumber(item.value) + '</strong></td>';
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showError(error) {
+      var loader = document.getElementById('loader');
+      loader.style.display = 'block';
+      loader.textContent = 'Unable to load dashboard data: ' + (error && error.message ? error.message : error);
+      loader.style.color = '#9d2f2f';
+    }
+
+    function init() {
+      google.script.run
+        .withSuccessHandler(buildDashboard)
+        .withFailureHandler(showError)
+        .getDashboardData();
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
