@@ -51,16 +51,13 @@ function getCredUserRecord_(id) {
 
 /**
  * Returns effective role for a user.
- * cred.role='admin' is primary, SUPER_USERS fallback kept for compatibility.
+ * cred.role='admin' is the only source of admin role.
  * @param {string} id
  * @return {'admin'|'owner'}
  */
 function getUserRole(id) {
   var rec = getCredUserRecord_(id);
   if (rec.found && rec.role === 'admin') return 'admin';
-  // Keep auth independent from other files so login never fails if a non-auth
-  // module is temporarily out-of-sync in a deployment.
-  if (typeof isSuperUser === 'function' && isSuperUser(id)) return 'admin';
   return 'owner';
 }
 

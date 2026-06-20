@@ -756,6 +756,9 @@
       <label for="fname">Name:*</label>
       <input type="text" id="fname" required />
 
+      <label for="tempShikshaCode">Temp Shiksha Code:</label>
+      <input type="text" id="tempShikshaCode" readonly />
+
       <label for="aadhar">Aadhar Number:*</label>
       <input type="text" id="aadhar" required />
 
@@ -1420,6 +1423,19 @@ function submitShikshaForm() {
     // ── Certify mode state (set during init, used by biodata submit) ──
     var _certifyActive = false;   // true when this page was opened from a Certify button
 
+    function applyCertifyBiodataPrefill(prefill) {
+      var data = prefill || {};
+      if (data.name) document.getElementById('fname').value = data.name;
+      if (data.programKey) document.getElementById('programKey').value = data.programKey;
+      if (data.programOwner) document.getElementById('bvLeader').value = data.programOwner;
+      if (data.subArea) document.getElementById('subArea').value = data.subArea;
+      if (data.tempShikshaCode) document.getElementById('tempShikshaCode').value = data.tempShikshaCode;
+
+      // In certify mode these are context fields and should not be changed.
+      if (data.programKey) document.getElementById('programKey').readOnly = true;
+      if (data.programOwner) document.getElementById('bvLeader').readOnly = true;
+    }
+
     function backToLanding() {
       document.getElementById('shikshaForm').classList.add('hidden');
       document.getElementById('biodataForm').classList.add('hidden');
@@ -1475,6 +1491,13 @@ function submitShikshaForm() {
       var certifyToken = urlParams.certify || '';
       var certifyMode = urlParams.mode || ''; // 'shiksha' or 'biodata'
       _certifyActive = !!certifyToken;
+      var fallbackPrefill = {
+        name: urlParams.cname || '',
+        programKey: urlParams.cpk || '',
+        programOwner: urlParams.cpo || '',
+        subArea: urlParams.csa || '',
+        tempShikshaCode: urlParams.ctsc || ''
+      };
 
       if (certifyToken) {
         google.script.run
@@ -1482,6 +1505,7 @@ function submitShikshaForm() {
             if (!prefill) {
               if (certifyMode === 'biodata') {
                 showForm('biodata');
+                applyCertifyBiodataPrefill(fallbackPrefill);
               } else {
                 showForm('shiksha');
               }
@@ -1490,10 +1514,13 @@ function submitShikshaForm() {
             if (certifyMode === 'biodata') {
               // Open biodata form and prefill
               showForm('biodata');
-              if (prefill.name) document.getElementById('fname').value = prefill.name;
-              if (prefill.programKey) document.getElementById('programKey').value = prefill.programKey;
-              if (prefill.programOwner) document.getElementById('bvLeader').value = prefill.programOwner;
-              if (prefill.subArea) document.getElementById('subArea').value = prefill.subArea;
+              applyCertifyBiodataPrefill({
+                name: prefill.name || fallbackPrefill.name,
+                programKey: prefill.programKey || fallbackPrefill.programKey,
+                programOwner: prefill.programOwner || fallbackPrefill.programOwner,
+                subArea: prefill.subArea || fallbackPrefill.subArea,
+                tempShikshaCode: prefill.tempShikshaCode || fallbackPrefill.tempShikshaCode
+              });
             } else {
               // Open shiksha form and prefill from mapped data
               showForm('shiksha');
@@ -1511,7 +1538,18 @@ function submitShikshaForm() {
               }
             }
           })
+          .withFailureHandler(function() {
+            if (certifyMode === 'biodata') {
+              showForm('biodata');
+              applyCertifyBiodataPrefill(fallbackPrefill);
+            }
+          })
           .getCertifyPrefill(certifyToken);
+      } else if (certifyMode === 'biodata' && (fallbackPrefill.name || fallbackPrefill.programKey || fallbackPrefill.programOwner)) {
+        // If token is missing/expired but URL still carries context, go straight to biodata.
+        _certifyActive = true;
+        showForm('biodata');
+        applyCertifyBiodataPrefill(fallbackPrefill);
       }
     })();
   </script>

@@ -4,13 +4,6 @@
 //                 tab3 (participants/shiksha), and optional tab6 (certifications).
 
 /**
- * Super user IDs — owners in this list see the Super Admin dashboard.
- * Add column C = 'admin' in cred sheet as alternative.
- * @const {string[]}
- */
-var SUPER_USERS = ['VNP','LRM'];
-
-/**
  * Shiksha level hierarchy (lowest → highest) used for funnel chart ordering.
  * @const {string[]}
  */
@@ -33,14 +26,44 @@ var SHIKSHA_LEVELS = [
  * @return {Object}
  */
 function getOwnerDashboard(ownerId) {
+  var normalizedOwnerId = (ownerId || '').toString().trim();
+  if (!normalizedOwnerId) {
+    return {
+      summary: {
+        totalPrograms: 0,
+        activePrograms: 0,
+        totalDevotees: 0,
+        uniqueDevotees: 0,
+        avgAttendance: 0
+      },
+      membersByType: {},
+      levelDist: {},
+      programs: [],
+      attention: { programsNeedingAttendance: [], stalePrograms: [] },
+      recommendations: []
+    };
+  }
+
+  var cacheKey = 'owner_dashboard_' + normalizedOwnerId.toUpperCase();
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get(cacheKey);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (e) {
+      // Ignore cache parse failures and continue with fresh calculation.
+    }
+  }
+
   var programs = _getAllPrograms();
   var attData  = _getAllAttendance();
   var partData = _getAllParticipants();
-  var attention = getOwnerAttention(ownerId);
-  var ownerRecommendations = getOwnerRecommendations(ownerId);
+  var ownerRecommendations = getOwnerRecommendations(normalizedOwnerId);
 
   // Filter owner's programs
-  var ownerPrograms = programs.filter(function(p) { return p[TAB1_COLS.PROGRAM_OWNER] === ownerId; });
+  var ownerPrograms = programs.filter(function(p) {
+    return (p[TAB1_COLS.PROGRAM_OWNER] || '').toString().trim().toUpperCase() === normalizedOwnerId.toUpperCase();
+  });
   var activePrograms = ownerPrograms.filter(function(p) {
     var flag = (p[TAB1_COLS.ACT_FLG] || '').toString().trim().toUpperCase();
     return flag === 'YES' || flag === 'Y';
@@ -49,6 +72,7 @@ function getOwnerDashboard(ownerId) {
   // Program keys for this owner
   var ownerKeys = {};
   ownerPrograms.forEach(function(p) { ownerKeys[p[TAB1_COLS.PROGRAM_KEY]] = true; });
+  var tab2ByProgram = _getTab2RowsByProgram_(ownerKeys);
 
   // Count devotees per program from tab2 (row schema)
   var devCountByProgram = {};
@@ -56,10 +80,62 @@ function getOwnerDashboard(ownerId) {
   var uniqueDevotees = {};
   ownerPrograms.forEach(function(p) {
     var pk = p[TAB1_COLS.PROGRAM_KEY];
-    var rows = getTab2RowsForProgram(pk);
+    var rows = tab2ByProgram[pk] || [];
     devCountByProgram[pk] = rows.length;
     totalDevotees += rows.length;
     rows.forEach(function(r) { uniqueDevotees[r.name.toUpperCase()] = true; });
+  });
+
+  // Attention summary without repeated sheet scans.
+  var latestByProgram = {};
+  var today = new Date();
+  var staleCutoffMs = 10 * 24 * 60 * 60 * 1000;
+  ownerPrograms.forEach(function(p) {
+    var pk = p[TAB1_COLS.PROGRAM_KEY];
+    var rows = tab2ByProgram[pk] || [];
+    for (var i = 0; i < rows.length; i++) {
+      var dt = _parseDashboardDate_(rows[i].lastAttDate);
+      if (!dt) continue;
+      if (!latestByProgram[pk] || latestByProgram[pk] < dt) {
+        latestByProgram[pk] = dt;
+      }
+    }
+  });
+
+  var programsNeedingAttendance = [];
+  var stalePrograms = [];
+  ownerPrograms.forEach(function(p) {
+    var pk = p[TAB1_COLS.PROGRAM_KEY];
+    var flag = (p[TAB1_COLS.ACT_FLG] || '').toString().trim().toUpperCase();
+    var isActive = flag === 'YES' || flag === 'Y';
+    if (!isActive) return;
+
+    var d = latestByProgram[pk];
+    if (!d) {
+      programsNeedingAttendance.push({
+        programKey: pk,
+        area: p[TAB1_COLS.AREA] || '',
+        subArea: p[TAB1_COLS.SUB_AREA] || '',
+        type: p[TAB1_COLS.TYPE_OF_PROGRAM] || '',
+        day: p[TAB1_COLS.DAY] || '',
+        time: p[TAB1_COLS.TIME] || '',
+        active: true
+      });
+      return;
+    }
+
+    var delta = today.getTime() - d.getTime();
+    if (delta > staleCutoffMs) {
+      stalePrograms.push({
+        programKey: pk,
+        lastAttendanceDate: _formatDateISO_(d),
+        daysSinceLastMarked: Math.floor(delta / (24 * 60 * 60 * 1000)),
+        day: p[TAB1_COLS.DAY] || '',
+        time: p[TAB1_COLS.TIME] || '',
+        area: p[TAB1_COLS.AREA] || '',
+        subArea: p[TAB1_COLS.SUB_AREA] || ''
+      });
+    }
   });
 
   // Attendance stats for owner's programs
@@ -129,7 +205,7 @@ function getOwnerDashboard(ownerId) {
     };
   });
 
-  return {
+  var payload = {
     summary: {
       totalPrograms:    ownerPrograms.length,
       activePrograms:   activePrograms.length,
@@ -140,9 +216,15 @@ function getOwnerDashboard(ownerId) {
     membersByType:  membersByType,
     levelDist:      levelDist,
     programs:       programList,
-    attention:      attention,
+    attention:      {
+      programsNeedingAttendance: programsNeedingAttendance,
+      stalePrograms: stalePrograms
+    },
     recommendations: ownerRecommendations
   };
+
+  cache.put(cacheKey, JSON.stringify(payload), 60);
+  return payload;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -353,13 +435,13 @@ function getSuperAdminDashboard() {
 
 /**
  * Checks if a user ID is a super user.
+ * Admin status is sourced only from cred.role='admin'.
  * @param {string} userId
  * @return {boolean}
  */
 function isSuperUser(userId) {
   var uid = (userId || '').toString().trim();
   if (!uid) return false;
-  if (SUPER_USERS.indexOf(uid) !== -1) return true;
   var rec = getCredUserRecord_(uid);
   return rec.found && rec.role === 'admin';
 }
@@ -442,6 +524,69 @@ function _getAllCertifications() {
   if (data.length < 1) return { headers: [], rows: [] };
   var headers = data[0].map(function(h) { return (h || '').toString().trim().toLowerCase(); });
   return { headers: headers, rows: data.slice(1) };
+}
+
+/**
+ * Returns tab2 rows grouped by program key in a single sheet scan.
+ * @param {Object<string,boolean>} allowedProgramKeysMap
+ * @return {Object<string,Array<Object>>}
+ */
+function _getTab2RowsByProgram_(allowedProgramKeysMap) {
+  var out = {};
+  var sheet = getSheet_(SHEET_NAMES.DEVOTEES);
+  if (!sheet) return out;
+
+  ensureTab2RowSchema_(sheet);
+  var data = getAllData_(sheet);
+  if (data.length < 2) return out;
+
+  for (var r = 1; r < data.length; r++) {
+    var pk = (data[r][TAB2_COLS.PROGRAM_KEY] || '').toString().trim();
+    var sc = (data[r][TAB2_COLS.SHIKSHA_CODE] || '').toString().trim();
+    var parsed = parseTab2DevoteeCell_(data[r][TAB2_COLS.NAME]);
+    if (!pk || !parsed.name) continue;
+    if (allowedProgramKeysMap && !allowedProgramKeysMap[pk]) continue;
+
+    if (!out[pk]) out[pk] = [];
+    out[pk].push({
+      programKey: pk,
+      shikshaCode: sc,
+      name: parsed.name,
+      totalSessions: Number(data[r][TAB2_COLS.TOTAL_SESSIONS]) || 0,
+      attended: Number(data[r][TAB2_COLS.ATTENDED]) || 0,
+      attendancePct: (data[r][TAB2_COLS.PERCENTAGE] || '').toString().trim(),
+      lastAttDate: (data[r][TAB2_COLS.LAST_ATT_DATE] || '').toString().trim(),
+      lastStatus: (data[r][TAB2_COLS.LAST_STATUS] || '').toString().trim(),
+      updatedAt: (data[r][TAB2_COLS.UPDATED_AT] || '').toString().trim(),
+      rowNumber: r + 1
+    });
+  }
+
+  return out;
+}
+
+function _parseDashboardDate_(value) {
+  var raw = (value || '').toString().trim();
+  if (!raw) return null;
+
+  var d = new Date(raw);
+  if (!isNaN(d.getTime())) return d;
+
+  var m = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+  if (m) {
+    var day = Number(m[1]);
+    var mon = Number(m[2]) - 1;
+    var year = Number(m[3]);
+    if (year < 100) year += 2000;
+    var d2 = new Date(year, mon, day);
+    if (!isNaN(d2.getTime())) return d2;
+  }
+
+  return null;
+}
+
+function _formatDateISO_(d) {
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 }
 
 /**
