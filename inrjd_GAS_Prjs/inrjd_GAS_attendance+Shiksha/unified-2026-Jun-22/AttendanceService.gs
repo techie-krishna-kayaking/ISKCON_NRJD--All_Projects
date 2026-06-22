@@ -66,6 +66,9 @@ var AttendanceService = (function () {
   function getAttendanceMembers(sessionToken, programKey) {
     var session = AuthService.requireSession(sessionToken);
     var program = ProgramService.enforceProgramAccess(session, programKey);
+    if (!ProgramService.isProgramActive_(program)) {
+      throw new Error('Attendance is disabled for inactive programs');
+    }
 
     var pKey = normalizeProgramKey_(program.program_key);
     var members = Utils.readObjects(APP_CONFIG.SHEETS.TAB2)
@@ -91,7 +94,8 @@ var AttendanceService = (function () {
         owner: program.program_owner,
         zone: program.zone,
         subArea: program.sub_area,
-        city: program.city
+        city: program.city,
+        activeFlg: ProgramService.isProgramActive_(program) ? 'YES' : 'NO'
       },
       members: members
     };
@@ -100,6 +104,9 @@ var AttendanceService = (function () {
   function getCertifyRoute(sessionToken, programKey, devoteeName) {
     var session = AuthService.requireSession(sessionToken);
     var program = ProgramService.enforceProgramAccess(session, programKey);
+    if (!ProgramService.isProgramActive_(program)) {
+      throw new Error('Attendance is disabled for inactive programs');
+    }
 
     var pKey = normalizeProgramKey_(program.program_key);
     var dName = Utils.sanitizeString(devoteeName);
@@ -165,7 +172,10 @@ var AttendanceService = (function () {
 
   function updateAttendance(sessionToken, programKey, updates) {
     var session = AuthService.requireSession(sessionToken);
-    ProgramService.enforceProgramAccess(session, programKey);
+    var program = ProgramService.enforceProgramAccess(session, programKey);
+    if (!ProgramService.isProgramActive_(program)) {
+      throw new Error('Attendance is disabled for inactive programs');
+    }
 
     var list = updates || [];
     if (!list.length) {

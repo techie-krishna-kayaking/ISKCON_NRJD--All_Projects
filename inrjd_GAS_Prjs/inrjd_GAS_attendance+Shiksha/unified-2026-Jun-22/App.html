@@ -406,6 +406,9 @@
                   <th>Area</th>
                   <th>Sub-Area</th>
                   <th>Virtual</th>
+                  <th>ACT_FLG</th>
+                  <th>PROMOTED</th>
+                  <th>COMMENT</th>
                   <th>Day</th>
                   <th>Time</th>
                   <th>Attendance Last Updated</th>
@@ -438,8 +441,8 @@
                 <input id="npProgramName" required />
               </div>
               <div>
-                <label>Program Key (optional)</label>
-                <input id="npProgramKey" placeholder="Auto if blank" />
+                <label>Program Key</label>
+                <input id="npProgramKey" placeholder="Auto-generated as owner_<number>" readonly />
               </div>
               <div>
                 <label>Frequency</label>
@@ -488,6 +491,125 @@
                 <button class="btn btn-primary" type="submit">Create Program</button>
               </div>
             </form>
+          </div>
+
+          <div class="card panel hidden" id="editProgramPanel">
+            <div class="row" style="justify-content: space-between">
+              <h3 style="margin: 0">Edit Program</h3>
+              <button class="btn btn-light" id="cancelEditProgramBtn">Close</button>
+            </div>
+            <div class="spacer"></div>
+            <form id="editProgramForm" class="form-grid">
+              <div>
+                <label>Program Key</label>
+                <input id="epProgramKey" readonly />
+              </div>
+              <div>
+                <label>Program Name</label>
+                <input id="epProgramName" required />
+              </div>
+              <div>
+                <label>Area</label>
+                <select id="epArea" required></select>
+              </div>
+              <div>
+                <label>Sub Area</label>
+                <select id="epSubArea" required></select>
+              </div>
+              <div>
+                <label>Frequency</label>
+                <select id="epFrequency" required></select>
+              </div>
+              <div>
+                <label>Type of Program</label>
+                <select id="epTypeOfProgram" required></select>
+              </div>
+              <div>
+                <label>Language</label>
+                <select id="epLanguage" required></select>
+              </div>
+              <div>
+                <label>Virtual</label>
+                <select id="epVirtual" required>
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div>
+                <label>Day</label>
+                <select id="epDay" required></select>
+              </div>
+              <div>
+                <label>Time</label>
+                <input id="epTime" type="time" required />
+              </div>
+              <div>
+                <label>City</label>
+                <input id="epCity" />
+              </div>
+              <div>
+                <label>ACT_FLG</label>
+                <select id="epActFlg" required>
+                  <option value="YES">YES</option>
+                  <option value="NO">NO</option>
+                </select>
+              </div>
+              <div>
+                <label>PROMOTED</label>
+                <select id="epPromoted" required>
+                  <option value="NO">NO</option>
+                  <option value="YES">YES</option>
+                </select>
+              </div>
+              <div class="full">
+                <label>COMMENT</label>
+                <textarea id="epComment" placeholder="Promoted to Manajari in Jun 2025 - Merged to AKP004"></textarea>
+              </div>
+              <div class="full">
+                <button class="btn btn-primary" type="submit">Save Program Details</button>
+              </div>
+            </form>
+
+            <div class="spacer"></div>
+            <h4 style="margin: 0 0 8px">Members</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Gender</th>
+                  <th>Shiksha Code</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="editMemberRows"></tbody>
+            </table>
+
+            <div class="spacer"></div>
+            <div class="form-grid">
+              <div>
+                <label>New Member Name</label>
+                <input id="newMemberName" />
+              </div>
+              <div>
+                <label>Gender</label>
+                <select id="newMemberGender">
+                  <option value="">Select</option>
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Shiksha Code (optional)</label>
+                <input id="newMemberCode" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button class="btn btn-primary" id="addNewMemberBtn" type="button">Add Member</button>
+              </div>
+            </div>
           </div>
 
           <div class="card panel">
@@ -777,10 +899,12 @@
         sessionToken: '',
         user: null,
         selectedProgram: '',
+        selectedProgramActive: 'YES',
         prefillContext: null,
         adminFilters: {},
         attendanceRows: [],
-        programFormConfig: null
+        programFormConfig: null,
+        editProgramData: null
       };
 
       var SESSION_KEY = 'temple_unified_session';
@@ -963,12 +1087,19 @@
       function renderProgramTable(rows) {
         var body = el('programRows');
         if (!rows.length) {
-          body.innerHTML = '<tr><td colspan="12">No programs found.</td></tr>';
+          body.innerHTML = '<tr><td colspan="15">No programs found.</td></tr>';
           return;
         }
 
         body.innerHTML = rows.map(function (r) {
           var lastUpdated = r.attendanceLastUpdated || '-';
+          var inactive = String(r.actFlg || 'YES').toUpperCase() !== 'YES';
+          var openBtn = inactive
+            ? '<button class="btn btn-light" disabled title="Inactive program">Open Attendance</button>'
+            : '<button class="btn btn-light" onclick="openAttendance(\'' + esc(r.programKey) + '\')">Open Attendance</button>';
+          var commentBtn = r.comment
+            ? '<button class="btn btn-light" onclick="showProgramComment(\'' + esc(r.comment) + '\')">View</button>'
+            : '-';
           return '<tr>' +
             '<td>' + safe(r.programName) + ' (' + safe(r.programKey) + ')</td>' +
             '<td>' + safe(r.owner) + '</td>' +
@@ -976,14 +1107,22 @@
             '<td>' + safe(r.area || '-') + '</td>' +
             '<td>' + safe(r.subArea || '-') + '</td>' +
             '<td>' + safe(r.virtual || '-') + '</td>' +
+            '<td>' + safe(r.actFlg || '-') + '</td>' +
+            '<td>' + safe(r.promoted || '-') + '</td>' +
+            '<td>' + commentBtn + '</td>' +
             '<td>' + safe(r.day || '-') + '</td>' +
             '<td>' + safe(r.time || '-') + '</td>' +
             '<td>' + safe(lastUpdated) + '</td>' +
             '<td>' + r.totalMembers + '</td>' +
             '<td>' + r.presentCount + '</td>' +
-            '<td><button class="btn btn-light" onclick="openAttendance(\'' + esc(r.programKey) + '\')">Open Attendance</button></td>' +
+            '<td>' + openBtn +
+              ' <button class="btn btn-light" onclick="openEditProgram(\'' + esc(r.programKey) + '\')">Edit</button></td>' +
             '</tr>';
         }).join('');
+      }
+
+      function showProgramComment(comment) {
+        alert(comment || 'No comment');
       }
 
       async function openAttendance(programKey) {
@@ -991,8 +1130,10 @@
         setStatus('info', 'Loading attendance members...');
         try {
           var data = unwrap(await callApi('apiGetAttendanceMembers', state.sessionToken, programKey));
+          state.selectedProgramActive = data.program.activeFlg || 'YES';
           el('attendanceProgramLabel').textContent = data.program.programName + ' (' + data.program.programKey + ')';
           renderMemberTable(data.members || []);
+          el('saveProgramAttendanceBtn').disabled = String(state.selectedProgramActive).toUpperCase() !== 'YES';
           setStatus('', '');
         } catch (error) {
           setStatus('err', error.message);
@@ -1059,6 +1200,11 @@
           return;
         }
 
+        if (String(state.selectedProgramActive).toUpperCase() !== 'YES') {
+          setStatus('err', 'Attendance is disabled for inactive programs.');
+          return;
+        }
+
         if (!state.attendanceRows || !state.attendanceRows.length) {
           setStatus('err', 'No members found for attendance update.');
           return;
@@ -1080,6 +1226,156 @@
           setStatus('ok', 'Full program attendance saved.');
           await openAttendance(state.selectedProgram);
           await loadOwnerDashboard();
+        } catch (error) {
+          setStatus('err', error.message);
+        }
+      }
+
+      async function openEditProgram(programKey) {
+        setStatus('info', 'Loading program editor...');
+        try {
+          await loadProgramFormConfig();
+          state.editProgramData = unwrap(await callApi('apiGetProgramEditData', state.sessionToken, programKey));
+          fillEditProgramForm(state.editProgramData);
+          el('editProgramPanel').classList.remove('hidden');
+          setStatus('', '');
+        } catch (error) {
+          setStatus('err', error.message);
+        }
+      }
+
+      function hideEditProgramPanel() {
+        el('editProgramPanel').classList.add('hidden');
+      }
+
+      function fillEditProgramForm(data) {
+        var p = (data && data.program) ? data.program : {};
+        var cfg = state.programFormConfig || {};
+
+        el('epProgramKey').value = p.programKey || '';
+        el('epProgramName').value = p.programName || '';
+        setSelect('epArea', 'Select Area', cfg.areas || [], p.area || '');
+        updateEditSubAreaOptions(p.subArea || '');
+        setSelect('epFrequency', 'Select Frequency', cfg.frequencies || [], p.frequency || '');
+        setSelect('epTypeOfProgram', 'Select Type', cfg.typesOfProgram || [], p.typeOfProgram || '');
+        setSelect('epLanguage', 'Select Language', cfg.languages || [], p.language || '');
+        setSelect('epDay', 'Select Day', cfg.days || [], p.day || '');
+        el('epVirtual').value = p.virtual || '';
+        el('epTime').value = p.time || '';
+        el('epCity').value = p.city || '';
+        el('epActFlg').value = p.actFlg || 'YES';
+        el('epPromoted').value = p.promoted || 'NO';
+        el('epComment').value = p.comment || '';
+
+        renderEditMembers(data.members || []);
+      }
+
+      function updateEditSubAreaOptions(selected) {
+        var cfg = state.programFormConfig || {};
+        var area = el('epArea').value;
+        var subAreas = (cfg.subAreasByArea && cfg.subAreasByArea[area]) ? cfg.subAreasByArea[area] : [];
+        setSelect('epSubArea', 'Select Sub Area', subAreas, selected || '');
+      }
+
+      function renderEditMembers(rows) {
+        var body = el('editMemberRows');
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="5">No members found.</td></tr>';
+          return;
+        }
+
+        body.innerHTML = rows.map(function (m) {
+          var deleted = m.deleted ? 'DELETED' : 'ACTIVE';
+          var disabledAttr = m.deleted ? ' disabled' : '';
+          return '<tr>' +
+            '<td><input id="emName_' + m.rowNum + '" value="' + safe(m.devoteeName) + '"' + disabledAttr + ' /></td>' +
+            '<td><input id="emGender_' + m.rowNum + '" value="' + safe(m.gender) + '"' + disabledAttr + ' /></td>' +
+            '<td><input id="emCode_' + m.rowNum + '" value="' + safe(m.shikshaCode) + '"' + disabledAttr + ' /></td>' +
+            '<td>' + deleted + '</td>' +
+            '<td>' + (m.deleted ? '-' :
+              '<button class="btn btn-light" onclick="saveEditMember(' + m.rowNum + ')">Save</button> ' +
+              '<button class="btn btn-warn" onclick="deleteEditMember(' + m.rowNum + ')">Delete</button>') + '</td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      async function submitEditProgram(ev) {
+        ev.preventDefault();
+        setStatus('info', 'Saving program details...');
+        try {
+          var payload = {
+            programKey: el('epProgramKey').value,
+            programName: el('epProgramName').value,
+            area: el('epArea').value,
+            subArea: el('epSubArea').value,
+            frequency: el('epFrequency').value,
+            typeOfProgram: el('epTypeOfProgram').value,
+            language: el('epLanguage').value,
+            virtual: el('epVirtual').value,
+            day: el('epDay').value,
+            time: el('epTime').value,
+            city: el('epCity').value,
+            actFlg: el('epActFlg').value,
+            promoted: el('epPromoted').value,
+            comment: el('epComment').value
+          };
+          state.editProgramData = unwrap(await callApi('apiUpdateProgram', state.sessionToken, payload));
+          fillEditProgramForm(state.editProgramData);
+          await loadOwnerDashboard();
+          setStatus('ok', 'Program details updated.');
+        } catch (error) {
+          setStatus('err', error.message);
+        }
+      }
+
+      async function saveEditMember(rowNum) {
+        setStatus('info', 'Saving member...');
+        try {
+          var payload = {
+            programKey: el('epProgramKey').value,
+            rowNum: rowNum,
+            devoteeName: el('emName_' + rowNum).value,
+            gender: el('emGender_' + rowNum).value,
+            shikshaCode: el('emCode_' + rowNum).value
+          };
+          state.editProgramData = unwrap(await callApi('apiUpdateProgramMember', state.sessionToken, payload));
+          fillEditProgramForm(state.editProgramData);
+          await loadOwnerDashboard();
+          setStatus('ok', 'Member updated.');
+        } catch (error) {
+          setStatus('err', error.message);
+        }
+      }
+
+      async function deleteEditMember(rowNum) {
+        setStatus('info', 'Deleting member...');
+        try {
+          state.editProgramData = unwrap(await callApi('apiDeleteProgramMember', state.sessionToken, el('epProgramKey').value, rowNum));
+          fillEditProgramForm(state.editProgramData);
+          await loadOwnerDashboard();
+          setStatus('ok', 'Member marked deleted.');
+        } catch (error) {
+          setStatus('err', error.message);
+        }
+      }
+
+      async function addNewMember() {
+        setStatus('info', 'Adding member...');
+        try {
+          var payload = {
+            programKey: el('epProgramKey').value,
+            rowNum: 0,
+            devoteeName: el('newMemberName').value,
+            gender: el('newMemberGender').value,
+            shikshaCode: el('newMemberCode').value
+          };
+          state.editProgramData = unwrap(await callApi('apiUpdateProgramMember', state.sessionToken, payload));
+          fillEditProgramForm(state.editProgramData);
+          el('newMemberName').value = '';
+          el('newMemberGender').value = '';
+          el('newMemberCode').value = '';
+          await loadOwnerDashboard();
+          setStatus('ok', 'Member added.');
         } catch (error) {
           setStatus('err', error.message);
         }
@@ -1519,6 +1815,10 @@
         });
         el('cancelAddProgramBtn').addEventListener('click', hideAddProgramPanel);
         el('npArea').addEventListener('change', updateSubAreaOptions);
+        el('cancelEditProgramBtn').addEventListener('click', hideEditProgramPanel);
+        el('epArea').addEventListener('change', function () { updateEditSubAreaOptions(''); });
+        el('editProgramForm').addEventListener('submit', submitEditProgram);
+        el('addNewMemberBtn').addEventListener('click', addNewMember);
         el('saveProgramAttendanceBtn').addEventListener('click', saveProgramAttendance);
         el('addProgramForm').addEventListener('submit', submitAddProgram);
         el('biodataForm').addEventListener('submit', submitBiodata);
@@ -1529,6 +1829,10 @@
       }
 
       window.saveAttendanceRow = saveAttendanceRow;
+      window.showProgramComment = showProgramComment;
+      window.openEditProgram = openEditProgram;
+      window.saveEditMember = saveEditMember;
+      window.deleteEditMember = deleteEditMember;
 
       (async function init() {
         bindEvents();
