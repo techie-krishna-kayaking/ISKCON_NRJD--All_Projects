@@ -1,0 +1,174 @@
+You are a senior Google Apps Script architect and full stack product engineer. Build a production-ready Google Apps Script web app from scratch for a temple program and shiksha management system. I want one unified app with one sign-in flow and role-based dashboards.
+
+Project Goal:
+Create a single web app for program owners and admins to manage programs, members, attendance, biodata, and shiksha progression using Google Sheets as the database.
+
+Core Requirements:
+1. Single sign-in only
+2. Role-based experience after login
+3. Program owner dashboard for day-to-day operations
+4. Admin analytics dashboard with deep drill-downs
+5. Certify flow in attendance with smart routing:
+- If shiksha code in tab2 is temp format, open biodata first
+- If shiksha code is real (not temp), open shiksha form directly with prefill from tab3
+6. Unified architecture in one GAS project and one deployment URL
+
+Tech Stack:
+1. Google Apps Script
+2. HtmlService for frontend pages
+3. Vanilla JavaScript, clean CSS, responsive UI
+4. google.script.run for client-server calls
+5. Google Sheets as persistent data store
+6. CacheService for short-lived prefill tokens/session helpers
+7. LockService where needed for safe writes
+
+Spreadsheet Architecture:
+Use one spreadsheet with these sheets:
+1. Config
+2. cred
+3. tab1 (Programs)
+4. tab2 (Members and attendance snapshot)
+5. tab3 (Shiksha and biodata SCD2 records)
+6. Logs
+refer this excel for more info - inrjd_GAS_Prjs/inrjd_GAS_attendance+Shiksha/unified copy/attendance-db-3tab-final-fuzzy-sync.xlsx
+
+Use this spreadsheet ID as an environment constant:
+1WVeDZ9cofYHn51Q-0mbKzliDlrMQaNMLq-PHQhkkm9E
+
+Data Model Expectations:
+1. cred:
+- id
+- password
+- role (owner or admin)
+
+2. tab1 Programs:
+- program key
+- program name
+- program owner
+- location fields (zone, sub-area, city as needed)
+- active flag
+- created and updated metadata
+
+3. tab2 Members:
+- program key
+- devotee name
+- shiksha code
+- gender
+- attendance status fields
+- latest quick fields needed for dashboard listing
+
+4. tab3 Shiksha and biodata:
+- shiksha code
+- aadhar
+- devotee profile fields
+- shiksha assessment fields
+- status and level fields
+- ACTIVE_FLG for SCD2 (Y current, N historical)
+- timestamps and audit fields
+
+Business Logic:
+1. Login:
+- Validate user against cred
+- Create secure session context
+- Redirect to role-specific dashboard in same app
+
+2. Owner dashboard:
+- Show only owner’s programs
+- Show member counts and attendance summary
+- View program details
+- Open attendance page for a selected program
+- Show member list with certify action
+
+3. Attendance and Certify flow:
+- Certify button receives devotee and program context
+- Resolve effective shiksha code from tab2
+- If code is temp_PROGRAMKEY_number:
+  - route to biodata form
+  - prefill known fields like name, program key, owner, sub-area
+  - on biodata submit generate real shiksha code and then transition to shiksha form
+- If code is real:
+  - open shiksha form directly
+  - prefill from tab3 by code first, then fallback by name and program if needed
+- Use a short-lived prefill token in CacheService for secure context passing
+- Handle token expiry gracefully with fallback params
+
+4. Admin dashboard:
+- Show all programs, all owners, all members, all shiksha states in one place
+- Insight cards:
+  - total programs
+  - total owners
+  - total members
+  - active members
+  - members by gender
+  - members by shiksha status
+  - members by location hierarchy
+- Drill-down filters:
+  - by owner
+  - by program
+  - by location
+  - by gender
+  - by shiksha status
+- Drill-down table and chart-ready aggregated data
+
+5. Data integrity:
+- SCD2 behavior in tab3:
+  - set old active row to N on update
+  - insert new active row as Y
+- Prevent duplicate active entries for same shiksha code
+- Add robust validation and error messaging
+
+6. Logging and audit:
+- Write important actions to Logs sheet
+- Include actor id, role, action type, timestamp, target entity, result
+
+Security and Access:
+1. Keep all data access server-side
+2. Enforce owner-only data boundaries in every server function
+3. Enforce admin-only access for admin APIs and admin UI
+4. Never trust client-side role flags alone
+5. Sanitize and validate every input
+
+UI and UX Requirements:
+1. Modern, clean, mobile-friendly interface
+2. Clear top navigation with role-aware actions
+3. Dashboard cards, filters, and searchable tables
+4. Embedded module transitions should feel seamless
+5. Reliable loading, empty, success, and error states
+6. Minimal clicks for common owner tasks
+
+Project Structure to Generate:
+1. WebApp routing file with doGet and page resolver
+2. Auth service
+3. Config and constants service
+4. Program service
+5. Attendance service
+6. Devotee and shiksha service
+7. Admin analytics service
+8. Utility service
+9. HTML pages:
+- Login and unified shell
+- Owner dashboard and attendance views
+- Shiksha and biodata forms
+- Admin dashboard
+10. Include comments and function-level documentation
+
+Output Format I Want:
+1. Full file-by-file code
+2. Header row setup script for all sheets
+3. Seed sample data script for cred and minimal demo records
+4. Deployment steps for Apps Script web app
+5. Post-deploy test checklist
+6. Acceptance criteria mapping for each requirement
+
+Critical Acceptance Criteria:
+1. One login handles both owner and admin
+2. Owner sees only owned programs and related members
+3. Admin sees all data and all insights with drill-downs
+4. Certify flow correctly routes:
+- temp code in tab2 leads to biodata first
+- real code in tab2 leads directly to shiksha
+5. Prefill works reliably from tab3 and fallback context
+6. No external API dependency for form submit metadata
+7. App is stable under concurrent updates
+
+Now implement this complete system end-to-end with production-quality code, clear modular design, and setup instructions.

@@ -1389,41 +1389,26 @@ function submitShikshaForm() {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
-  // Fetch client IP (best-effort) then send to server
-  fetch('https://api.ipify.org?format=json')
-    .then(res => res.json())
-    .then(data => {
-      formData.IP_ADDRESS = data.ip || 'unknown';
-      google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Submitted');
-        // reset UI
-        document.getElementById('shiksha').reset();
-        document.getElementById('shikshaMain').classList.add('hidden');
-        if (document.getElementById('proposed-level')) document.getElementById('proposed-level').disabled = true;
-        document.getElementById('searchFeedback').textContent = '';
-        document.getElementById('searchResults').innerHTML = '';
-        document.getElementById('searchResults').classList.add('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Submit';
-        backToLanding();
-      }).submitShikshaData(formData);
+  formData.IP_ADDRESS = 'unknown';
+  google.script.run
+    .withSuccessHandler(function(resp) {
+      alert(resp || 'Submitted');
+      document.getElementById('shiksha').reset();
+      document.getElementById('shikshaMain').classList.add('hidden');
+      if (document.getElementById('proposed-level')) document.getElementById('proposed-level').disabled = true;
+      document.getElementById('searchFeedback').textContent = '';
+      document.getElementById('searchResults').innerHTML = '';
+      document.getElementById('searchResults').classList.add('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+      backToLanding();
     })
-    .catch(err => {
-      console.error('Failed to fetch IP:', err);
-      formData.IP_ADDRESS = 'unknown';
-      google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Submitted');
-        document.getElementById('shiksha').reset();
-        document.getElementById('shikshaMain').classList.add('hidden');
-        if (document.getElementById('proposed-level')) document.getElementById('proposed-level').disabled = true;
-        document.getElementById('searchFeedback').textContent = '';
-        document.getElementById('searchResults').innerHTML = '';
-        document.getElementById('searchResults').classList.add('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Submit';
-        backToLanding();
-      }).submitShikshaData(formData);
-    });
+    .withFailureHandler(function(err) {
+      alert('Submission failed: ' + (err && err.message ? err.message : err));
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+    })
+    .submitShikshaData(formData);
 }
 
     function submitBioForm() {
@@ -1462,30 +1447,21 @@ function submitShikshaForm() {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
-  // Fetch IP before sending
-  fetch('https://api.ipify.org?format=json')
-    .then(res => res.json())
-    .then(data => {
-      bioformData.IP_ADDRESS = data.ip || 'unknown';
-      google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Bio-data submitted');
-        form.reset();
-        btn.disabled = false;
-        btn.textContent = 'Submit';
-        backToLanding();
-      }).submitBioForm(bioformData);
+  bioformData.IP_ADDRESS = 'unknown';
+  google.script.run
+    .withSuccessHandler(function(resp) {
+      alert(resp || 'Bio-data submitted');
+      form.reset();
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+      backToLanding();
     })
-    .catch(err => {
-      console.error('Failed to fetch IP:', err);
-      bioformData.IP_ADDRESS = 'unknown';
-      google.script.run.withSuccessHandler(function(resp){
-        alert(resp || 'Bio-data submitted');
-        form.reset();
-        btn.disabled = false;
-        btn.textContent = 'Submit';
-        backToLanding();
-      }).submitBioForm(bioformData);
-    });
+    .withFailureHandler(function(err) {
+      alert('Submission failed: ' + (err && err.message ? err.message : err));
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+    })
+    .submitBioForm(bioformData);
 }
 
     function showForm(formType) {
