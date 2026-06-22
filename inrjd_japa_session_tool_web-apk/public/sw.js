@@ -21,9 +21,11 @@ const PRECACHE = [
   '/',
   '/index.html',
   '/stopwatch.html',
+  '/counter.html',
   '/manifest.json',
   '/Temple_Bell_Sound.mp3',
   '/image-list.json',          // may 404 on fresh installs — handled gracefully
+  '/narashima-image-list.json',
 ];
 
 /* ─── Install ──────────────────────────────────────────────── */
@@ -74,8 +76,18 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  if (url.pathname === '/narashima-image-list.json') {
+    event.respondWith(networkFirst(request, CACHE_VER, 1500));
+    return;
+  }
+
   /* 3. NRJD_Pics images — cache-first (images don't change during a session) */
   if (url.pathname.startsWith('/NRJD_Pics/')) {
+    event.respondWith(cacheFirst(request, IMG_CACHE));
+    return;
+  }
+
+  if (url.pathname.startsWith('/NarashimaDev_pics/')) {
     event.respondWith(cacheFirst(request, IMG_CACHE));
     return;
   }

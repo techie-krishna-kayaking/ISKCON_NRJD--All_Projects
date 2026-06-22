@@ -36,6 +36,14 @@
 - 📊 **Total & Per-lap times** — See individual round time + cumulative total
 - ⌨️ **Shortcuts** — Space (start/pause), L (lap), R (reset), F (fullscreen)
 
+### 📿 Dual Counter Mode (NEW)
+- 🔢 **Two counters** — Hare Krishna counter + Narasimha Dev counter
+- 🧮 **108 bead logic** — Bead display runs 000 to 107; on next count, rounds increase by 1 and beads reset to 000
+- 🧵 **Round tracking** — Shows completed rounds (multiples of 108) and total japa count
+- 🦁 **Narasimha mantra display** — Sanskrit + transliteration shown in Narasimha mode
+- 🖼️ **Dedicated slideshows** — Hare Krishna uses `NRJD_Pics`, Narasimha uses `NarashimaDev_pics`
+- 💾 **Persistent state** — Counter values are saved locally and restored on reopen
+
 ## 🚀 Quick Start (Web)
 
 ```bash
@@ -49,10 +57,13 @@ Open **http://localhost:3000** in Chrome 🌐
 |------|-----|
 | Group Session | `http://localhost:3000` |
 | Japa Stopwatch | `http://localhost:3000/stopwatch.html` |
+| Japa Counter | `http://localhost:3000/counter.html` |
 
 ## 🖼️ Adding Images
 
-Place `.jpg`, `.jpeg`, or `.png` files in the `public/NRJD_Pics/` folder. They will be auto-detected on server start.
+Place `.jpg`, `.jpeg`, or `.png` files in these folders. They are auto-detected on server start and bundled into APK builds:
+- `public/NRJD_Pics/` for session + Hare Krishna counter slideshow
+- `public/NarashimaDev_pics/` for Narasimha counter slideshow
 
 ## 📱 Android APK Build
 
