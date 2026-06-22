@@ -16,6 +16,20 @@ var ProgramService = (function () {
     return Utils.sanitizeString(value).toLowerCase();
   }
 
+  function normalizeYesNo_(value) {
+    var v = Utils.sanitizeString(value).toUpperCase();
+    return (v === 'Y' || v === 'YES' || v === 'TRUE' || v === '1') ? 'YES' : 'NO';
+  }
+
+  function normalizeActiveFlag_(value) {
+    var v = Utils.sanitizeString(value).toUpperCase();
+    return (v === 'N' || v === 'NO' || v === 'INACTIVE' || v === '0') ? 'NO' : 'YES';
+  }
+
+  function isProgramActive_(program) {
+    return normalizeActiveFlag_(firstValue_(program, ['act_flg', 'active_flg', 'active'])) === 'YES';
+  }
+
   function getMemberProgramKey_(member) {
     return Utils.sanitizeString(firstValue_(member, ['program_key', 'program', 'program_code', 'prg_key']));
   }
@@ -73,7 +87,7 @@ var ProgramService = (function () {
   function getProgramByKey(programKey) {
     var pKey = normalizeProgramKey_(programKey);
     return Utils.readObjects(APP_CONFIG.SHEETS.TAB1).find(function (p) {
-      return normalizeProgramKey_(p.program_key) === pKey;
+      return normalizeProgramKey_(firstValue_(p, ['program_key', 'programkey'])) === pKey;
     }) || null;
   }
 
@@ -84,7 +98,7 @@ var ProgramService = (function () {
     }
 
     if (session.role === APP_CONFIG.ROLES.OWNER) {
-      var owner = Utils.sanitizeString(program.program_owner).toLowerCase();
+      var owner = Utils.sanitizeString(firstValue_(program, ['program_owner', 'owner'])).toLowerCase();
       if (owner !== Utils.sanitizeString(session.id).toLowerCase()) {
         throw new Error('Access denied for this program');
       }
@@ -95,9 +109,7 @@ var ProgramService = (function () {
 
   function getOwnerPrograms(sessionToken) {
     var session = AuthService.requireSession(sessionToken);
-    var all = Utils.readObjects(APP_CONFIG.SHEETS.TAB1).filter(function (p) {
-      return Utils.normBoolY(p.active_flg);
-    });
+    var all = Utils.readObjects(APP_CONFIG.SHEETS.TAB1);
 
     if (session.role === APP_CONFIG.ROLES.ADMIN) {
       return all;
@@ -117,7 +129,7 @@ var ProgramService = (function () {
 
     var programMap = {};
     programs.forEach(function (p) {
-      programMap[normalizeProgramKey_(p.program_key)] = p;
+      programMap[normalizeProgramKey_(firstValue_(p, ['program_key', 'programkey']))] = p;
     });
 
     var counts = {};
@@ -141,7 +153,7 @@ var ProgramService = (function () {
     });
 
     var rows = programs.map(function (p) {
-      var pKey = normalizeProgramKey_(p.program_key);
+      var pKey = normalizeProgramKey_(firstValue_(p, ['program_key', 'programkey']));
       var c = counts[pKey] || { totalMembers: 0, presentCount: 0, attendanceLastUpdated: '' };
       return {
         programKey: Utils.sanitizeString(firstValue_(p, ['program_key', 'programkey'])),
@@ -154,6 +166,9 @@ var ProgramService = (function () {
         virtual: firstValue_(p, ['virtual']),
         day: getProgramDay_(p),
         time: getProgramTime_(p),
+        actFlg: normalizeActiveFlag_(firstValue_(p, ['act_flg', 'active_flg', 'active'])),
+        promoted: normalizeYesNo_(firstValue_(p, ['promoted'])),
+        comment: firstValue_(p, ['comment', 'remarks', 'note']),
         attendanceLastUpdated: c.attendanceLastUpdated,
         totalMembers: c.totalMembers,
         presentCount: c.presentCount,
@@ -183,10 +198,7 @@ var ProgramService = (function () {
       ? session.id
       : Utils.sanitizeString(firstValue_(data, ['programOwner', 'program_owner', 'owner'])) || session.id;
 
-    var programKey = Utils.sanitizeString(firstValue_(data, ['programKey', 'program_key'])).toUpperCase();
-    if (!programKey) {
-      programKey = generateProgramKey_(ownerId);
-    }
+    var programKey = generateProgramKey_();
 
     var existing = getProgramByKey(programKey);
     if (existing) {
@@ -213,10 +225,16 @@ var ProgramService = (function () {
     var now = Utils.nowIso();
 
     return Utils.withLock(function () {
+      if (getProgramByKey(programKey)) {
+        throw new Error('Program key already exists: ' + programKey);
+      }
+
       Utils.appendObject(APP_CONFIG.SHEETS.TAB1, {
         program_key: programKey,
+        programkey: programKey,
         program_name: programName,
         area: zone,
+        zone: zone,
         sub_area: subArea,
         city: city,
         frequency: frequency,
@@ -229,6 +247,8 @@ var ProgramService = (function () {
         time: time,
         active_flg: 'Y',
         act_flg: 'YES',
+        promoted: 'NO',
+        comment: '',
         created_on: now,
         created_by: session.id,
         updated_on: now,
@@ -284,18 +304,25 @@ var ProgramService = (function () {
   }
 
   function generateProgramKey_(ownerId) {
-    var prefix = Utils.sanitizeString(ownerId).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3) || 'PRG';
+    var prefix = 'owner_';
     var rows = Utils.readObjects(APP_CONFIG.SHEETS.TAB1);
     var maxNum = 0;
     rows.forEach(function (r) {
-      var code = Utils.sanitizeString(r.program_key).toUpperCase();
-      if (code.indexOf(prefix) !== 0) return;
-      var num = Number(code.replace(prefix, ''));
+      var code = Utils.sanitizeString(firstValue_(r, ['program_key', 'programkey'])).toLowerCase();
+      var match = code.match(/^owner_(\d+)$/);
+      if (!match) return;
+      var num = Number(match[1]);
       if (!isNaN(num)) {
         maxNum = Math.max(maxNum, num);
       }
     });
-    return prefix + ('000' + (maxNum + 1)).slice(-3);
+    var next = maxNum + 1;
+    var candidate = prefix + String(next);
+    while (getProgramByKey(candidate)) {
+      next += 1;
+      candidate = prefix + String(next);
+    }
+    return candidate;
   }
 
   function buildTempShikshaCode_(programKey, serial) {
@@ -354,6 +381,203 @@ var ProgramService = (function () {
     };
   }
 
+  function getProgramEditData(sessionToken, programKey) {
+    var session = AuthService.requireSession(sessionToken);
+    var program = enforceProgramAccess(session, programKey);
+    var pKeyNorm = normalizeProgramKey_(firstValue_(program, ['program_key', 'programkey']));
+
+    var members = Utils.readObjects(APP_CONFIG.SHEETS.TAB2)
+      .filter(function (m) {
+        return normalizeProgramKey_(firstValue_(m, ['program_key', 'programkey'])) === pKeyNorm;
+      })
+      .map(function (m) {
+        var memberActive = Utils.sanitizeString(firstValue_(m, ['active_member_flg', 'active_flg', 'active'])).toUpperCase();
+        var deleted = memberActive === 'N' || Utils.sanitizeString(firstValue_(m, ['status'])).toUpperCase() === 'DELETED';
+        return {
+          rowNum: m.__rowNum,
+          devoteeName: Utils.sanitizeString(firstValue_(m, ['name', 'devotee_name'])),
+          gender: Utils.sanitizeString(firstValue_(m, ['gender'])),
+          shikshaCode: Utils.sanitizeString(firstValue_(m, ['shiksha_code', 'shikshacode'])),
+          deleted: deleted
+        };
+      });
+
+    return {
+      program: {
+        programKey: Utils.sanitizeString(firstValue_(program, ['program_key', 'programkey'])),
+        programName: Utils.sanitizeString(firstValue_(program, ['program_name', 'name', 'program'])),
+        area: Utils.sanitizeString(firstValue_(program, ['area', 'zone'])),
+        subArea: Utils.sanitizeString(firstValue_(program, ['sub_area', 'subarea'])),
+        city: Utils.sanitizeString(firstValue_(program, ['city'])),
+        frequency: Utils.sanitizeString(firstValue_(program, ['frequency'])),
+        typeOfProgram: Utils.sanitizeString(firstValue_(program, ['type_of_program', 'program_type'])),
+        language: Utils.sanitizeString(firstValue_(program, ['language'])),
+        virtual: Utils.sanitizeString(firstValue_(program, ['virtual'])),
+        day: Utils.sanitizeString(firstValue_(program, ['day', 'program_day'])),
+        time: Utils.sanitizeString(firstValue_(program, ['time', 'program_time'])),
+        actFlg: normalizeActiveFlag_(firstValue_(program, ['act_flg', 'active_flg', 'active'])),
+        promoted: normalizeYesNo_(firstValue_(program, ['promoted'])),
+        comment: Utils.sanitizeString(firstValue_(program, ['comment', 'remarks', 'note']))
+      },
+      members: members
+    };
+  }
+
+  function updateProgram(sessionToken, payload) {
+    var session = AuthService.requireSession(sessionToken);
+    var data = payload || {};
+    var programKey = Utils.sanitizeString(firstValue_(data, ['programKey', 'program_key']));
+    Utils.required(programKey, 'Program key');
+    var program = enforceProgramAccess(session, programKey);
+
+    var now = Utils.nowIso();
+    var newType = Utils.sanitizeString(firstValue_(data, ['typeOfProgram', 'type_of_program']));
+    var oldType = Utils.sanitizeString(firstValue_(program, ['type_of_program', 'program_type']));
+    var promoted = normalizeYesNo_(firstValue_(data, ['promoted']));
+    var oldPromoted = normalizeYesNo_(firstValue_(program, ['promoted']));
+
+    if (newType && newType !== oldType && promoted !== 'YES') {
+      throw new Error('Program type can be changed only when PROMOTED is YES');
+    }
+
+    var patch = {
+      program_name: Utils.sanitizeString(firstValue_(data, ['programName', 'program_name'])),
+      area: Utils.sanitizeString(firstValue_(data, ['area', 'zone'])),
+      zone: Utils.sanitizeString(firstValue_(data, ['area', 'zone'])),
+      sub_area: Utils.sanitizeString(firstValue_(data, ['subArea', 'sub_area'])),
+      city: Utils.sanitizeString(firstValue_(data, ['city'])),
+      frequency: Utils.sanitizeString(firstValue_(data, ['frequency'])),
+      type_of_program: newType,
+      language: Utils.sanitizeString(firstValue_(data, ['language'])),
+      virtual: Utils.sanitizeString(firstValue_(data, ['virtual'])),
+      day: Utils.sanitizeString(firstValue_(data, ['day'])),
+      time: Utils.sanitizeString(firstValue_(data, ['time'])),
+      act_flg: normalizeActiveFlag_(firstValue_(data, ['actFlg', 'act_flg', 'active_flg'])),
+      active_flg: normalizeActiveFlag_(firstValue_(data, ['actFlg', 'act_flg', 'active_flg'])) === 'YES' ? 'Y' : 'N',
+      promoted: promoted,
+      comment: Utils.sanitizeString(firstValue_(data, ['comment'])),
+      updated_on: now,
+      updated_by: session.id
+    };
+
+    Utils.withLock(function () {
+      Utils.updateObjectAtRow(APP_CONFIG.SHEETS.TAB1, program.__rowNum, patch);
+    });
+
+    if (promoted === 'YES' && (oldPromoted !== 'YES' || oldType !== newType)) {
+      Utils.writeLog(session, 'PROGRAM_PROMOTED', 'tab1', programKey, 'SUCCESS', 'Program promoted / type updated', {
+        promoted_on: now,
+        previous_type: oldType,
+        new_type: newType,
+        comment: patch.comment
+      });
+    }
+
+    Utils.writeLog(session, 'PROGRAM_UPDATE', 'tab1', programKey, 'SUCCESS', 'Program details updated', {
+      act_flg: patch.act_flg,
+      promoted: patch.promoted
+    });
+
+    return getProgramEditData(sessionToken, programKey);
+  }
+
+  function updateProgramMember(sessionToken, payload) {
+    var session = AuthService.requireSession(sessionToken);
+    var data = payload || {};
+    var programKey = Utils.sanitizeString(firstValue_(data, ['programKey', 'program_key']));
+    Utils.required(programKey, 'Program key');
+    enforceProgramAccess(session, programKey);
+
+    var rowNum = Number(firstValue_(data, ['rowNum'])) || 0;
+    var name = Utils.sanitizeString(firstValue_(data, ['devoteeName', 'name', 'devotee_name']));
+    Utils.required(name, 'Member name');
+
+    var now = Utils.nowIso();
+    var shikshaCode = Utils.sanitizeString(firstValue_(data, ['shikshaCode', 'shiksha_code']));
+    var gender = Utils.sanitizeString(firstValue_(data, ['gender']));
+
+    if (rowNum > 1) {
+      Utils.withLock(function () {
+        Utils.updateObjectAtRow(APP_CONFIG.SHEETS.TAB2, rowNum, {
+          name: name,
+          devotee_name: name,
+          gender: gender,
+          shiksha_code: shikshaCode,
+          shikshaCode: shikshaCode,
+          active_member_flg: 'Y',
+          status: '',
+          updated_on: now,
+          updated_at: now,
+          updated_by: session.id
+        });
+      });
+      Utils.writeLog(session, 'PROGRAM_MEMBER_UPDATE', 'tab2', programKey + ':' + name, 'SUCCESS', 'Program member updated', {
+        row_num: rowNum
+      });
+    } else {
+      var useCode = shikshaCode || buildTempShikshaCode_(programKey, new Date().getTime() % 100000);
+      Utils.withLock(function () {
+        Utils.appendObject(APP_CONFIG.SHEETS.TAB2, {
+          program_key: programKey,
+          programKey: programKey,
+          name: name,
+          devotee_name: name,
+          gender: gender,
+          shiksha_code: useCode,
+          shikshaCode: useCode,
+          active_member_flg: 'Y',
+          status: '',
+          total_sessions: 0,
+          attended: 0,
+          attendance_pct: '0%',
+          updated_on: now,
+          updated_at: now,
+          updated_by: session.id
+        });
+      });
+      Utils.writeLog(session, 'PROGRAM_MEMBER_ADD', 'tab2', programKey + ':' + name, 'SUCCESS', 'Program member added');
+    }
+
+    return getProgramEditData(sessionToken, programKey);
+  }
+
+  function deleteProgramMember(sessionToken, programKey, rowNum) {
+    var session = AuthService.requireSession(sessionToken);
+    programKey = Utils.sanitizeString(programKey);
+    rowNum = Number(rowNum) || 0;
+    Utils.required(programKey, 'Program key');
+    if (rowNum < 2) {
+      throw new Error('Invalid member row');
+    }
+
+    enforceProgramAccess(session, programKey);
+    var now = Utils.nowIso();
+    var members = Utils.readObjects(APP_CONFIG.SHEETS.TAB2);
+    var row = members.find(function (m) {
+      return m.__rowNum === rowNum;
+    });
+
+    if (!row) {
+      throw new Error('Member row not found');
+    }
+
+    Utils.withLock(function () {
+      Utils.updateObjectAtRow(APP_CONFIG.SHEETS.TAB2, rowNum, {
+        active_member_flg: 'N',
+        status: 'DELETED',
+        updated_on: now,
+        updated_at: now,
+        updated_by: session.id
+      });
+    });
+
+    Utils.writeLog(session, 'PROGRAM_MEMBER_DELETE', 'tab2', programKey + ':' + Utils.sanitizeString(firstValue_(row, ['name', 'devotee_name'])), 'SUCCESS', 'Program member marked deleted', {
+      row_num: rowNum
+    });
+
+    return getProgramEditData(sessionToken, programKey);
+  }
+
   function uniqueStrings_(rows, fields) {
     var seen = {};
     rows.forEach(function (r) {
@@ -371,6 +595,11 @@ var ProgramService = (function () {
     getOwnerPrograms: getOwnerPrograms,
     getOwnerDashboard: getOwnerDashboard,
     createProgramWithMembers: createProgramWithMembers,
-    getProgramFormConfig: getProgramFormConfig
+    getProgramFormConfig: getProgramFormConfig,
+    getProgramEditData: getProgramEditData,
+    updateProgram: updateProgram,
+    updateProgramMember: updateProgramMember,
+    deleteProgramMember: deleteProgramMember,
+    isProgramActive_: isProgramActive_
   };
 })();
