@@ -3,7 +3,9 @@ name: Build & Release APK
 on:
   push:
     branches: [main, master]
-    tags: ["v*"]
+    paths:
+      - "inrjd_japa_session_tool_web-apk/**"
+      - ".github/workflows/build-apk.yml"
   workflow_dispatch:
 
 env:
