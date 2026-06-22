@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 const PROJECT = __dirname; // project root (where server.js lives)
 const PUBLIC = path.join(PROJECT, "public"); // webDir
 const OUTJSON = path.join(PUBLIC, "image-list.json");
+const OUTJSON_NARASHIMA = path.join(PUBLIC, "narashima-image-list.json");
 
 const MIME = {
   ".html": ".html",
@@ -66,6 +67,17 @@ function findImgDir() {
   return null;
 }
 
+function findNarashimaImgDir() {
+  const candidates = [
+    path.join(PUBLIC, "NarashimaDev_pics"),
+    path.join(PROJECT, "NarashimaDev_pics"),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return null;
+}
+
 /* ─────────────────────────────────────────────────────────────
    LIST IMAGES in the found directory
 ───────────────────────────────────────────────────────────── */
@@ -87,6 +99,8 @@ function listImages(imgDir) {
 function generateJson() {
   const imgDir = findImgDir();
   const files = listImages(imgDir);
+  const narashimaDir = findNarashimaImgDir();
+  const narashimaFiles = listImages(narashimaDir);
 
   const line = "─".repeat(52);
   console.log(`\n${line}`);
@@ -113,13 +127,34 @@ function generateJson() {
     }
   }
 
+  console.log("\n  🦁  NarashimaDev image list");
+  if (!narashimaDir) {
+    console.log("  ⚠️   NarashimaDev_pics folder not found!");
+    console.log(`       Create one of:`);
+    console.log(
+      `         ${path.join(PUBLIC, "NarashimaDev_pics")}   ← for APK (preferred)`
+    );
+    console.log(
+      `         ${path.join(PROJECT, "NarashimaDev_pics")}   ← legacy root location`
+    );
+  } else {
+    console.log(`  📁  Folder        : ${narashimaDir}`);
+    console.log(`  🖼️   Images found  : ${narashimaFiles.length}`);
+  }
+
   // Always write the JSON (even if empty — app needs the file to exist)
   if (!fs.existsSync(PUBLIC)) fs.mkdirSync(PUBLIC, { recursive: true });
   fs.writeFileSync(OUTJSON, JSON.stringify(files, null, 2), "utf8");
+  fs.writeFileSync(
+    OUTJSON_NARASHIMA,
+    JSON.stringify(narashimaFiles, null, 2),
+    "utf8"
+  );
   console.log(`\n  ✅  Written → ${OUTJSON}`);
+  console.log(`  ✅  Written → ${OUTJSON_NARASHIMA}`);
   console.log(line + "\n");
 
-  return { imgDir, files };
+  return { imgDir, files, narashimaDir, narashimaFiles };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -133,11 +168,14 @@ if (process.argv.includes("--gen") || process.argv.includes("--generate")) {
 /* ─────────────────────────────────────────────────────────────
    SERVER START — generate first, then serve
 ───────────────────────────────────────────────────────────── */
-const { imgDir: IMGS_DIR } = generateJson();
+const { imgDir: IMGS_DIR, narashimaDir: NARASHIMA_DIR } = generateJson();
 
 // Ensure NRJD_Pics exists (first-time hint)
 if (!IMGS_DIR) {
   fs.mkdirSync(path.join(PUBLIC, "NRJD_Pics"), { recursive: true });
+}
+if (!NARASHIMA_DIR) {
+  fs.mkdirSync(path.join(PUBLIC, "NarashimaDev_pics"), { recursive: true });
 }
 
 const server = http.createServer((req, res) => {
@@ -146,8 +184,9 @@ const server = http.createServer((req, res) => {
   const rawUrl = decodeURIComponent(req.url.split("?")[0]);
 
   /* ── API: list images live ─────────────────────────────── */
-  if (rawUrl === "/api/images") {
-    const dir = findImgDir();
+  if (rawUrl.startsWith("/api/images")) {
+    const mode = new URL(req.url, "http://localhost").searchParams.get("type");
+    const dir = mode === "nr" ? findNarashimaImgDir() : findImgDir();
     const files = listImages(dir);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(files));
@@ -173,6 +212,36 @@ const server = http.createServer((req, res) => {
     }
     const filePath = path.join(imgDir, imgName);
     // Security: stay inside imgDir
+    if (!filePath.startsWith(imgDir)) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+      const ext = path.extname(filePath).toLowerCase();
+      res.writeHead(200, {
+        "Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
+        "Cache-Control": "public, max-age=3600",
+      });
+      res.end(data);
+    });
+    return;
+  }
+
+  if (rawUrl.startsWith("/NarashimaDev_pics/")) {
+    const imgName = rawUrl.replace("/NarashimaDev_pics/", "");
+    const imgDir = findNarashimaImgDir();
+    if (!imgDir) {
+      res.writeHead(404);
+      res.end("Folder not found");
+      return;
+    }
+    const filePath = path.join(imgDir, imgName);
     if (!filePath.startsWith(imgDir)) {
       res.writeHead(403);
       res.end("Forbidden");

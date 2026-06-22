@@ -18,10 +18,15 @@ const path = require("path");
 const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, "public");
 const OUT = path.join(PUBLIC, "image-list.json");
+const OUT_NARASHIMA = path.join(PUBLIC, "narashima-image-list.json");
 
 const IMG_CANDIDATES = [
   path.join(PUBLIC, "NRJD_Pics"),
   path.join(ROOT, "NRJD_Pics"),
+];
+const NARASHIMA_CANDIDATES = [
+  path.join(PUBLIC, "NarashimaDev_pics"),
+  path.join(ROOT, "NarashimaDev_pics"),
 ];
 
 const SEP = "═".repeat(54);
@@ -85,6 +90,33 @@ fs.mkdirSync(PUBLIC, { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(files, null, 2), "utf8");
 console.log(`  📄  Written → ${OUT}`);
 
+/* ── Find NarashimaDev_pics and write list ─────────────── */
+let narashimaDir = null;
+for (const c of NARASHIMA_CANDIDATES) {
+  if (fs.existsSync(c)) {
+    narashimaDir = c;
+    break;
+  }
+}
+
+let narashimaFiles = [];
+if (narashimaDir) {
+  try {
+    narashimaFiles = fs
+      .readdirSync(narashimaDir)
+      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  } catch (e) {
+    console.error("  ❌  Could not read NarashimaDev_pics:", e.message);
+    process.exit(1);
+  }
+} else {
+  console.log("\n  ⚠️   NarashimaDev_pics not found. Writing empty list.");
+}
+
+fs.writeFileSync(OUT_NARASHIMA, JSON.stringify(narashimaFiles, null, 2), "utf8");
+console.log(`  📄  Written → ${OUT_NARASHIMA}`);
+
 /* ── Warn if images aren't inside public/ ───────────────── */
 if (!imgDir.startsWith(PUBLIC)) {
   console.log(`\n  ⚠️   WARNING: Your NRJD_Pics is in the project root.`);
@@ -94,6 +126,12 @@ if (!imgDir.startsWith(PUBLIC)) {
   console.log(`       But for the Android APK, images must be inside public/:`);
   console.log(`\n       Move folder:  mv NRJD_Pics public/NRJD_Pics\n`);
   console.log(`       Then run:     node gen.js\n`);
+}
+
+if (narashimaDir && !narashimaDir.startsWith(PUBLIC)) {
+  console.log(`\n  ⚠️   WARNING: NarashimaDev_pics is in the project root.`);
+  console.log(`       For APK, move it into public/:`);
+  console.log(`\n       Move folder:  mv NarashimaDev_pics public/NarashimaDev_pics\n`);
 }
 
 console.log(SEP + "\n");
