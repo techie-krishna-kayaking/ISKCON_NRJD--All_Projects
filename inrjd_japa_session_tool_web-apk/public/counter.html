@@ -2,20 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#fdf6ec" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Japa Counter</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Nunito:wght@400;500;700;800&family=Noto+Serif+Devanagari:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Nunito:wght@300;400;500;600;700&family=Noto+Serif+Devanagari:wght@600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
         --cream: #fdf6ec;
@@ -23,10 +17,9 @@
         --marigold: #f0a830;
         --ink: #1e1008;
         --ink-soft: #70441b;
-        --glass: rgba(253, 246, 236, 0.78);
-        --glass-deep: rgba(249, 238, 218, 0.9);
+        --glass: rgba(253, 246, 236, 0.76);
+        --glass-deep: rgba(250, 239, 218, 0.86);
         --glass-border: rgba(196, 130, 30, 0.22);
-        --shadow: rgba(120, 60, 0, 0.18);
         --f-sacred: "Cinzel", Georgia, serif;
         --f-ui: "Nunito", "Segoe UI", sans-serif;
         --f-deva: "Noto Serif Devanagari", serif;
@@ -34,374 +27,351 @@
         --sb: env(safe-area-inset-bottom, 0px);
       }
 
-      *,
-      *::before,
-      *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      html { height: 100%; }
       body {
-        width: 100%;
-        height: 100%;
-      }
-      body {
+        width: 100%; height: 100%;
         overflow: hidden;
         font-family: var(--f-ui);
-        color: var(--ink);
         background: var(--cream);
+        color: var(--ink);
+        overscroll-behavior: none;
         -webkit-tap-highlight-color: transparent;
         user-select: none;
       }
-      button {
-        font-family: var(--f-ui);
-        border: none;
-        background: none;
-        color: inherit;
-        cursor: pointer;
-      }
+      button { font-family: var(--f-ui); cursor: pointer; border: none; outline: none; background: none; color: inherit; }
 
+      /* ──────────────── BACKGROUND ──────────────── */
       #bg {
         position: fixed;
         inset: 0;
         z-index: 0;
+        pointer-events: none;
         background:
-          radial-gradient(ellipse 70% 55% at 10% 6%, rgba(240, 168, 48, 0.24) 0%, transparent 62%),
-          radial-gradient(ellipse 65% 48% at 92% 92%, rgba(224, 120, 32, 0.16) 0%, transparent 62%),
-          linear-gradient(158deg, #fef9f1 0%, #faecd9 48%, #fdf3e4 100%);
+          radial-gradient(ellipse 70% 55% at 12% 8%, rgba(240, 168, 48, 0.2) 0%, transparent 60%),
+          radial-gradient(ellipse 55% 48% at 90% 88%, rgba(224, 120, 32, 0.16) 0%, transparent 60%),
+          linear-gradient(158deg, #fdf8f0 0%, #f8e8d0 45%, #fdf3e4 100%);
       }
 
+      #watermark {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: center;
+        gap: 8px 20px;
+        padding: 16px;
+        opacity: 0.04;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      #watermark span {
+        font-family: var(--f-sacred);
+        font-size: 0.5rem;
+        font-weight: 600;
+        color: #b8690e;
+        letter-spacing: 0.1em;
+      }
+
+      /* ──────────────── SLIDESHOW ──────────────── */
+      #slideshow {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 2.4s ease-in-out;
+      }
+      .slide.active { opacity: 1; }
+      #slideshow::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 82% 76% at 50% 50%, rgba(253, 246, 236, 0.06) 0%, rgba(253, 246, 236, 0.3) 55%, rgba(253, 246, 236, 0.8) 100%);
+      }
+
+      /* ──────────────── APP SHELL ──────────────── */
       #app {
         position: fixed;
         inset: 0;
-        z-index: 3;
+        z-index: 10;
         display: flex;
         flex-direction: column;
-        padding: calc(var(--st) + 10px) clamp(8px, 2vw, 16px) calc(
-            var(--sb) + 70px
-          );
+        gap: 0;
+        padding: calc(var(--st) + 12px) clamp(14px, 3vw, 20px) calc(var(--sb) + 8px);
       }
 
+      /* ─ TOP BAR ─ */
       #topbar {
-        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        padding: 0 0 8px;
+        margin-bottom: 8px;
+      }
+      #brand {
+        display: flex;
+        align-items: center;
         gap: 10px;
+      }
+      #badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 3px 12px rgba(212, 134, 15, 0.3);
+      }
+      #brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #brand-name {
+        font-family: var(--f-sacred);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #c57514;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      #brand-sub {
+        font-size: 0.5rem;
+        color: #8f6b45;
       }
       #device-time {
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        min-width: 124px;
         text-align: center;
         font-family: var(--f-sacred);
-        font-size: clamp(0.62rem, 1.6vw, 0.82rem);
+        font-size: 0.68rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         color: #9a642f;
-        background: rgba(255, 247, 233, 0.86);
-        border: 1px solid var(--glass-border);
-        border-radius: 999px;
-        padding: 7px 14px;
-        box-shadow: 0 4px 12px rgba(150, 90, 20, 0.08);
+        min-width: 140px;
       }
-      #brand {
+      #topbar-right {
         display: flex;
-        align-items: center;
         gap: 8px;
       }
-      #badge {
+      .icon-btn {
         width: 36px;
         height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        box-shadow: 0 3px 10px rgba(212, 134, 15, 0.25);
-      }
-      #brand-copy {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.1;
-      }
-      #brand-name {
-        font-family: var(--f-sacred);
-        font-size: 0.58rem;
-        font-weight: 700;
-        color: #c57514;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-      #brand-sub {
-        font-size: 0.48rem;
-        color: var(--ink-soft);
-        letter-spacing: 0.06em;
-      }
-
-      /* ─────────────────────────────── TABS ─────────────────────────────── */
-      #tabs-container {
-        position: relative;
-        height: 44px;
-        margin-bottom: 10px;
-        overflow: hidden;
-        border-radius: 14px;
+        border-radius: 10px;
         background: var(--glass);
         border: 1px solid var(--glass-border);
-        box-shadow: 0 4px 12px rgba(120, 60, 0, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 8px rgba(120, 60, 0, 0.08);
+        font-size: 0.9rem;
+        transition: transform 0.1s;
+      }
+      .icon-btn:active { transform: scale(0.92); }
+
+      /* ─ TABS ─ */
+      #tabs-label {
+        font-family: var(--f-sacred);
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #b8690e;
+        margin-bottom: 6px;
+        text-align: center;
       }
 
-      #tabs-wrapper {
+      #tabs-container {
         display: flex;
-        height: 100%;
-        transition: transform 0.3s ease;
-        will-change: transform;
-      }
-
-      .tab {
-        flex: 0 0 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        color: #8f612f;
-        white-space: nowrap;
-        cursor: pointer;
-        transition: color 0.2s ease;
-      }
-
-      .tab.active {
-        color: #ffffff;
-        background: linear-gradient(140deg, var(--saffron), var(--marigold));
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-      }
-
-      #content {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        overflow-y: auto;
+        gap: 4px;
+        margin-bottom: 10px;
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
       }
-
-      #slide-wrap {
-        position: relative;
-        height: clamp(100px, 20vh, 180px);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid var(--glass-border);
-        background: rgba(40, 26, 12, 0.08);
-        box-shadow: 0 6px 18px rgba(90, 40, 6, 0.14);
+      .tab {
+        flex: 1;
+        min-width: 100px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(255, 245, 220, 0.9);
+        border: 1px solid rgba(196, 130, 30, 0.2);
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #8f6b45;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
       }
-      .slide {
-        position: absolute;
-        inset: 0;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
-        opacity: 0;
-        transition: opacity 1.6s ease;
-      }
-      .slide.active {
-        opacity: 1;
-      }
-      #slide-wrap::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to bottom,
-          rgba(253, 246, 236, 0.05) 0%,
-          rgba(253, 246, 236, 0.4) 100%
-        );
-        pointer-events: none;
+      .tab.active {
+        background: linear-gradient(140deg, var(--saffron), var(--marigold));
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(180, 90, 14, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
       }
 
+      /* ─ MANTRA DISPLAY ─ */
       #mantra-box {
         text-align: center;
         background: var(--glass);
         border: 1px solid var(--glass-border);
         border-radius: 12px;
-        padding: 10px 12px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6),
-          0 4px 12px rgba(120, 60, 0, 0.09);
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 3px 10px rgba(120, 60, 0, 0.08);
       }
       #mantra-title {
         font-family: var(--f-sacred);
-        font-size: 0.62rem;
-        font-weight: 800;
-        letter-spacing: 0.15em;
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: #cf7a19;
         margin-bottom: 4px;
       }
       #mantra-native {
         font-family: var(--f-deva);
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         line-height: 1.5;
         color: #5c3416;
       }
       #mantra-roman {
         margin-top: 4px;
-        font-size: 0.64rem;
+        font-size: 0.62rem;
         line-height: 1.4;
         font-weight: 700;
         color: #7c4b21;
       }
 
-      #counter-card {
+      /* ─ SLIDESHOW AREA ─ */
+      #slideshow-area {
+        position: relative;
         flex: 1;
         min-height: 0;
-        border-radius: 16px;
-        padding: 12px;
+        border-radius: 14px;
+        overflow: hidden;
         border: 1px solid var(--glass-border);
-        background: linear-gradient(
-            150deg,
-            rgba(255, 200, 120, 0.16) 0%,
-            rgba(255, 240, 214, 0.04) 38%,
-            rgba(255, 190, 110, 0.14) 100%
-          ),
-          var(--glass-deep);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55),
-          0 10px 24px rgba(120, 60, 0, 0.12);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+        background: rgba(40, 26, 12, 0.08);
+        box-shadow: 0 6px 18px rgba(90, 40, 6, 0.14);
+        margin-bottom: 10px;
       }
 
-      #counter-label {
-        font-family: var(--f-sacred);
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: #8f541f;
-      }
-
-      #count-circle {
-        width: clamp(120px, 35vw, 160px);
-        height: clamp(120px, 35vw, 160px);
+      /* ─ COUNTER DISPLAY ─ */
+      #counter-display {
+        position: relative;
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
-        border: 2px solid rgba(224, 120, 32, 0.32);
-        background: radial-gradient(
-            circle at 28% 22%,
-            rgba(255, 255, 255, 0.74),
-            rgba(255, 255, 255, 0) 32%
-          ),
-          linear-gradient(160deg, #fff7e8 0%, #f8e4bf 100%);
-        box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.75),
-          0 0 0 5px rgba(224, 120, 32, 0.1),
-          0 10px 22px rgba(160, 85, 12, 0.18);
+        background: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 34%), linear-gradient(160deg, #fff7e8 0%, #f8e4bf 100%);
+        border: 3px solid rgba(224, 120, 32, 0.5);
+        box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.85), 0 8px 20px rgba(160, 85, 12, 0.28);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 2px;
+        gap: 3px;
+        margin: 0 auto 16px;
       }
       #count-value {
         font-family: var(--f-sacred);
-        font-size: clamp(1.8rem, 8vw, 2.8rem);
+        font-size: 2.4rem;
         font-weight: 900;
-        letter-spacing: 0.04em;
         color: #7c4418;
-        text-shadow: 0 1px 8px rgba(224, 120, 32, 0.16);
+        text-shadow: 0 2px 8px rgba(224, 120, 32, 0.18);
+        line-height: 1;
       }
-      #count-caption {
-        text-transform: uppercase;
-        font-size: 0.42rem;
+      #count-label {
+        font-size: 0.5rem;
         font-weight: 800;
-        letter-spacing: 0.16em;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
         color: #9a5f2d;
       }
 
-      #round-row {
+      /* ─ CONTROLS ─ */
+      #controls {
         display: flex;
-        gap: 8px;
         align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
       }
-      .stat-chip {
+
+      .reset-btn {
+        min-height: 44px;
+        padding: 0 14px;
+        border-radius: 999px;
         background: rgba(255, 245, 226, 0.94);
-        color: #8d5524;
-        border: 1px solid rgba(196, 130, 30, 0.28);
-        border-radius: 999px;
-        padding: 5px 10px;
-        font-size: 0.62rem;
-        letter-spacing: 0.04em;
-        font-weight: 700;
-        box-shadow: 0 3px 10px rgba(120, 60, 0, 0.07);
-      }
-
-      /* ─────────────────────────────── BUTTONS LAYOUT ─────────────────────────────── */
-      #btns-container {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-      }
-
-      /* Large + button takes priority */
-      #plus-btn {
-        width: clamp(80px, 28vw, 120px);
-        height: clamp(80px, 28vw, 120px);
-        border-radius: 50%;
-        color: #fff6ea;
-        border: 1px solid rgba(255, 245, 220, 0.5);
-        background: radial-gradient(
-            circle at 12% 18%,
-            rgba(255, 255, 255, 0.48),
-            transparent 42%
-          ),
-          linear-gradient(150deg, var(--saffron) 0%, var(--marigold) 100%);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42),
-          0 10px 26px rgba(180, 90, 14, 0.36),
-          0 0 14px rgba(240, 168, 48, 0.24);
-        font-size: clamp(2rem, 6vw, 3rem);
-        font-weight: 900;
-        line-height: 1;
-        transition: transform 0.1s ease, box-shadow 0.1s ease;
-      }
-      #plus-btn:active {
-        transform: scale(0.92);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42),
-          0 6px 16px rgba(180, 90, 14, 0.28);
-      }
-
-      /* Small minus and other buttons in a row */
-      #controls-row {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .small-btn {
-        min-height: 34px;
-        padding: 0 12px;
-        border-radius: 999px;
-        background: rgba(255, 245, 226, 0.93);
-        color: #8d5524;
         border: 1px solid rgba(196, 130, 30, 0.24);
-        font-size: 0.65rem;
+        color: #8d5524;
+        font-size: 0.68rem;
         font-weight: 700;
         letter-spacing: 0.04em;
         box-shadow: 0 3px 10px rgba(120, 60, 0, 0.08);
-        transition: transform 0.08s ease;
+        transition: transform 0.08s;
       }
-      .small-btn:active {
-        transform: scale(0.95);
+      .reset-btn:active { transform: scale(0.94); }
+
+      .plus-btn {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.52), transparent 44%), linear-gradient(150deg, #e07820 0%, #f0a830 100%);
+        border: 2px solid rgba(255, 245, 220, 0.55);
+        color: #fff6ea;
+        font-size: 2.8rem;
+        font-weight: 900;
+        line-height: 1;
+        box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.48), 0 12px 28px rgba(180, 90, 14, 0.4), 0 0 14px rgba(240, 168, 48, 0.28);
+        transition: transform 0.1s, box-shadow 0.1s;
+        flex-shrink: 0;
+      }
+      .plus-btn:active {
+        transform: scale(0.88);
+        box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.48), 0 6px 14px rgba(180, 90, 14, 0.28);
       }
 
-      /* ─────────────────────────────── BOTTOM NAV ─────────────────────────────── */
+      .minus-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 999px;
+        background: rgba(255, 245, 226, 0.93);
+        border: 1px solid rgba(196, 130, 30, 0.24);
+        color: #8d5524;
+        font-size: 1.8rem;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(120, 60, 0, 0.08);
+        transition: transform 0.08s;
+        flex-shrink: 0;
+      }
+      .minus-btn:active { transform: scale(0.92); }
+
+      /* ─ STATS ─ */
+      #stats {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .stat-chip {
+        background: rgba(255, 245, 226, 0.94);
+        border: 1px solid rgba(196, 130, 30, 0.26);
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #8d5524;
+        box-shadow: 0 2px 8px rgba(120, 60, 0, 0.07);
+      }
+
+      /* ─ BOTTOM NAV ─ */
       #bottom-nav {
         position: fixed;
         bottom: 0;
@@ -416,129 +386,96 @@
         align-items: center;
         justify-content: space-around;
         z-index: 100;
-        box-shadow: 0 -4px 12px rgba(120, 60, 0, 0.1);
       }
-
       .nav-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         gap: 2px;
         text-decoration: none;
         color: #8f612f;
-        transition: color 0.2s ease, transform 0.1s ease;
         font-size: 0.6rem;
         font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        transition: color 0.2s;
       }
-
-      .nav-item.active {
-        color: var(--saffron);
-      }
-
-      .nav-item:active {
-        transform: scale(0.92);
-      }
-
-      .nav-icon {
-        font-size: 1.4rem;
-        line-height: 1;
-      }
-
-      .nav-label {
-        font-size: 0.55rem;
-      }
-
-      @media (orientation: landscape) and (max-height: 520px) {
-        #app {
-          padding-bottom: calc(var(--sb) + 50px);
-        }
-        #slide-wrap {
-          height: 80px;
-        }
-        #mantra-box {
-          padding: 6px 10px;
-        }
-        #count-circle {
-          width: clamp(90px, 28vw, 120px);
-          height: clamp(90px, 28vw, 120px);
-        }
-      }
+      .nav-item.active { color: var(--saffron); }
+      .nav-icon { font-size: 1.4rem; }
     </style>
   </head>
   <body>
-    <div id="bg" aria-hidden="true"></div>
+    <div id="bg"></div>
+    <div id="watermark"></div>
+    <div id="slideshow"></div>
 
     <div id="app">
+      <!-- TOP BAR -->
       <div id="topbar">
         <div id="brand">
           <img id="badge" src="logo.jpeg" alt="Logo" />
-          <div id="brand-copy">
-            <span id="brand-name">ISKCON NRJD</span>
-            <span id="brand-sub">Japa Counter</span>
+          <div id="brand-text">
+            <div id="brand-name">ISKCON NRJD</div>
+            <div id="brand-sub">Japa Counter</div>
           </div>
         </div>
-        <span id="device-time">--:--</span>
+        <div id="device-time">00:00</div>
+        <div id="topbar-right">
+          <button class="icon-btn" id="btn-fs">⛶</button>
+          <button class="icon-btn" id="btn-settings">⚙</button>
+        </div>
       </div>
 
-      <!-- SWIPEABLE TABS -->
+      <!-- TABS -->
+      <div id="tabs-label">COUNTER MODE</div>
       <div id="tabs-container">
-        <div id="tabs-wrapper">
-          <button class="tab active" data-mode="hk">Hare Krishna</button>
-          <button class="tab" data-mode="nr">Narasimha</button>
-          <button class="tab" data-mode="dv">Dhanvantara</button>
-        </div>
+        <button class="tab active" data-mode="hk">Hare Krishna</button>
+        <button class="tab" data-mode="nr">Ugram Veeram</button>
+        <button class="tab" data-mode="dv">Dhanvantara</button>
       </div>
 
-      <div id="content">
-        <div id="slide-wrap" aria-hidden="true"></div>
+      <!-- MANTRA -->
+      <div id="mantra-box">
+        <div id="mantra-title">Mantra</div>
+        <div id="mantra-native"></div>
+        <div id="mantra-roman"></div>
+      </div>
 
-        <div id="mantra-box" role="region" aria-live="polite">
-          <div id="mantra-title">Mantra</div>
-          <div id="mantra-native"></div>
-          <div id="mantra-roman"></div>
-        </div>
+      <!-- COUNTER DISPLAY -->
+      <div id="counter-display">
+        <div id="count-value">000</div>
+        <div id="count-label">BEADS</div>
+      </div>
 
-        <div id="counter-card">
-          <div id="counter-label">Bead Counter</div>
-          <div id="count-circle" aria-live="polite" aria-label="Current bead count">
-            <span id="count-value">000</span>
-            <span id="count-caption">Current Beads</span>
-          </div>
+      <!-- SLIDESHOW -->
+      <div id="slideshow-area">
+      </div>
 
-          <div id="round-row">
-            <span class="stat-chip" id="round-chip">Rounds: 0</span>
-            <span class="stat-chip" id="total-chip">Total: 0</span>
-          </div>
+      <!-- CONTROLS -->
+      <div id="controls">
+        <button class="reset-btn" id="reset-this">↺ Reset</button>
+        <button class="plus-btn" id="plus-btn">+</button>
+        <button class="minus-btn" id="minus-btn">−</button>
+      </div>
 
-          <div id="btns-container">
-            <button id="plus-btn" aria-label="Increase count">+</button>
-
-            <div id="controls-row">
-              <button class="small-btn" id="minus-btn" aria-label="Decrease count">−</button>
-              <button class="small-btn" id="reset-mode-btn">Reset This</button>
-              <button class="small-btn" id="reset-all-btn">Reset All</button>
-            </div>
-          </div>
-        </div>
+      <!-- STATS -->
+      <div id="stats">
+        <div class="stat-chip" id="rounds-chip">Rounds: 0</div>
+        <div class="stat-chip" id="total-chip">Total: 0</div>
       </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- BOTTOM NAV -->
     <div id="bottom-nav">
       <a href="index.html" class="nav-item">
         <div class="nav-icon">📿</div>
-        <div class="nav-label">Session</div>
+        <div>Session</div>
       </a>
       <a href="stopwatch.html" class="nav-item">
         <div class="nav-icon">⏱️</div>
-        <div class="nav-label">Stopwatch</div>
+        <div>Stopwatch</div>
       </a>
       <a href="counter.html" class="nav-item active">
         <div class="nav-icon">🔢</div>
-        <div class="nav-label">Counter</div>
+        <div>Counter</div>
       </a>
     </div>
 
@@ -549,63 +486,38 @@
         hk: {
           name: "Hare Krishna Counter",
           folder: "NRJD_Pics",
-          listUrl: "image-list.json",
-          native:
-            "हरे कृष्ण हरे कृष्ण कृष्ण कृष्ण हरे हरे। हरे राम हरे राम राम राम हरे हरे॥",
-          roman:
-            "Hare Krishna Hare Krishna Krishna Krishna Hare Hare | Hare Rama Hare Rama Rama Rama Hare Hare ||",
+          native: "हरे कृष्ण हरे कृष्ण कृष्ण कृष्ण हरे हरे। हरे राम हरे राम राम राम हरे हरे॥",
+          roman: "Hare Krishna Hare Krishna Krishna Krishna Hare Hare | Hare Rama Hare Rama Rama Rama Hare Hare ||",
         },
         nr: {
           name: "Narasimha Counter",
           folder: "NarashimaDev_pics",
-          listUrl: "narashima-image-list.json",
-          native:
-            "ॐ उग्रं वीरं महाविष्णुं ज्वलन्तं सर्वतोमुखम्। नृसिंहं भीषणं भद्रं मृत्युमृत्युं नमाम्यहम्॥",
-          roman:
-            "Om Ugram Veeram Maha-Vishnum Jvalantam Sarvato Mukham | Nrisimham Bheeshanam Bhadram Mrityur-Mrityum Namaamyaham ||",
+          native: "ॐ उग्रं वीरं महाविष्णुं ज्वलन्तं सर्वतोमुखम्। नृसिंहं भीषणं भद्रं मृत्युमृत्युं नमाम्यहम्॥",
+          roman: "Om Ugram Veeram Maha-Vishnum Jvalantam Sarvato Mukham | Nrisimham Bheeshanam Bhadram Mrityur-Mrityum Namaamyaham ||",
         },
         dv: {
           name: "Dhanvantara Counter",
           folder: "NRJD_Pics",
-          listUrl: "image-list.json",
-          native:
-            "ॐ धं धन्वन्तरये नमः ॐ",
-          roman:
-            "Om Dham Dhanvantarayē Namah Om",
+          native: "ॐ धं धन्वन्तरये नमः ॐ",
+          roman: "Om Dham Dhanvantarayē Namah Om",
         },
       };
 
-      const STORAGE_KEY = "japa_counter_state_v2";
       const BEADS_PER_ROUND = 108;
+      const STORAGE_KEY = "japa_counter_state_v3";
 
-      const state = loadState();
+      let state = loadState();
       let mode = state.lastMode || "hk";
       let slides = [];
       let slideIdx = 0;
       let slideTimer = null;
-      let touchStartX = 0;
-      let touchEndX = 0;
-
-      const $ = (id) => document.getElementById(id);
 
       function loadState() {
-        const base = {
-          hk: { rounds: 0, bead: 0 },
-          nr: { rounds: 0, bead: 0 },
-          dv: { rounds: 0, bead: 0 },
-          lastMode: "hk",
-        };
+        const base = { hk: { rounds: 0, bead: 0 }, nr: { rounds: 0, bead: 0 }, dv: { rounds: 0, bead: 0 }, lastMode: "hk" };
         try {
           const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-          return {
-            hk: norm(saved.hk),
-            nr: norm(saved.nr),
-            dv: norm(saved.dv),
-            lastMode: ["hk", "nr", "dv"].includes(saved.lastMode) ? saved.lastMode : "hk",
-          };
-        } catch {
-          return base;
-        }
+          return { hk: norm(saved.hk), nr: norm(saved.nr), dv: norm(saved.dv), lastMode: ["hk", "nr", "dv"].includes(saved.lastMode) ? saved.lastMode : "hk" };
+        } catch { return base; }
 
         function norm(obj) {
           const r = Math.max(0, Number(obj?.rounds || 0));
@@ -620,49 +532,33 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
-      function asDisplay(bead) {
-        return String(bead).padStart(3, "0");
-      }
-
       function updateDeviceTime() {
         const now = new Date();
-        $("device-time").textContent = now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      function switchMode(newMode) {
-        if (newMode !== mode && MODES[newMode]) {
-          mode = newMode;
-          saveState();
-          updateTabsUI();
-          loadSlidesForCurrentMode();
-          render();
-        }
-      }
-
-      function updateTabsUI() {
-        const modes = ["hk", "nr", "dv"];
-        const idx = modes.indexOf(mode);
-        const wrapper = $("tabs-wrapper");
-        wrapper.style.transform = `translateX(calc(-${idx} * 100%))`;
-
-        document.querySelectorAll(".tab").forEach((tab, i) => {
-          tab.classList.toggle("active", i === idx);
-        });
+        document.getElementById("device-time").textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       }
 
       function render() {
         const m = MODES[mode];
         const s = state[mode];
-        $("counter-label").textContent = m.name;
-        $("mantra-native").textContent = m.native;
-        $("mantra-roman").textContent = m.roman;
+        document.getElementById("mantra-title").textContent = m.name;
+        document.getElementById("mantra-native").textContent = m.native;
+        document.getElementById("mantra-roman").textContent = m.roman;
+        document.getElementById("count-value").textContent = String(s.bead).padStart(3, "0");
+        document.getElementById("rounds-chip").textContent = `Rounds: ${s.rounds}`;
+        document.getElementById("total-chip").textContent = `Total: ${s.rounds * BEADS_PER_ROUND + s.bead}`;
 
-        $("count-value").textContent = asDisplay(s.bead);
-        $("round-chip").textContent = `Rounds: ${s.rounds}`;
-        $("total-chip").textContent = `Total: ${s.rounds * BEADS_PER_ROUND + s.bead}`;
+        document.querySelectorAll(".tab").forEach((t, i) => {
+          t.classList.toggle("active", ["hk", "nr", "dv"][i] === mode);
+        });
+      }
+
+      function switchMode(m) {
+        if (m !== mode && MODES[m]) {
+          mode = m;
+          saveState();
+          loadSlides();
+          render();
+        }
       }
 
       function increment() {
@@ -678,9 +574,8 @@
 
       function decrement() {
         const s = state[mode];
-        if (s.bead > 0) {
-          s.bead -= 1;
-        } else if (s.rounds > 0) {
+        if (s.bead > 0) s.bead -= 1;
+        else if (s.rounds > 0) {
           s.rounds -= 1;
           s.bead = BEADS_PER_ROUND - 1;
         }
@@ -688,31 +583,22 @@
         render();
       }
 
-      function resetMode() {
+      function resetThis() {
         state[mode] = { rounds: 0, bead: 0 };
         saveState();
         render();
       }
 
-      function resetAll() {
-        state.hk = { rounds: 0, bead: 0 };
-        state.nr = { rounds: 0, bead: 0 };
-        state.dv = { rounds: 0, bead: 0 };
-        saveState();
-        render();
-      }
-
-      async function loadSlidesForCurrentMode() {
-        const wrap = $("slide-wrap");
-        wrap.innerHTML = "";
+      async function loadSlides() {
+        const ss = document.getElementById("slideshow");
+        ss.innerHTML = "";
         clearInterval(slideTimer);
-        slideTimer = null;
-        slideIdx = 0;
         slides = [];
+        slideIdx = 0;
 
         const m = MODES[mode];
         let list = [];
-        for (const u of [m.listUrl, `/api/images?type=${mode}`]) {
+        for (const u of [m.folder === "NRJD_Pics" ? "image-list.json" : "narashima-image-list.json"]) {
           try {
             const r = await fetch(u);
             if (!r.ok) continue;
@@ -725,82 +611,54 @@
         }
 
         if (!list.length) {
-          const empty = document.createElement("div");
-          empty.style.cssText =
-            "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:#7e5226;";
-          empty.textContent = `No images in ${m.folder}`;
-          wrap.appendChild(empty);
+          ss.innerHTML = `<div style="inset:0;position:absolute;display:flex;align-items:center;justify-content:center;color:#7e5226;font-size:0.8rem;">No images</div>`;
           return;
         }
 
         slides = list.map((f) => `/${m.folder}/${encodeURIComponent(f)}`);
-
         const a = document.createElement("div");
         const b = document.createElement("div");
         a.className = "slide active";
         b.className = "slide";
         a.style.backgroundImage = `url("${slides[0]}")`;
-        wrap.append(a, b);
-
-        slides.forEach((src) => {
-          const im = new Image();
-          im.src = src;
-        });
+        ss.append(a, b);
 
         function nextSlide() {
           slideIdx = (slideIdx + 1) % slides.length;
-          const sa = wrap.querySelectorAll(".slide");
+          const sa = ss.querySelectorAll(".slide");
           sa[0].classList.remove("active");
           sa[1].classList.add("active");
           sa[1].style.backgroundImage = `url("${slides[slideIdx]}")`;
-          wrap.append(sa[0]);
+          ss.append(sa[0]);
         }
 
         slideTimer = setInterval(nextSlide, 2000);
       }
 
-      /* ─── SWIPE GESTURE SUPPORT ─── */
-      document.addEventListener("touchstart", (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-      });
-
-      document.addEventListener("touchend", (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        const delta = touchStartX - touchEndX;
-        const threshold = 40;
-
-        if (Math.abs(delta) > threshold) {
-          const modes = ["hk", "nr", "dv"];
-          const idx = modes.indexOf(mode);
-
-          if (delta > 0 && idx < modes.length - 1) {
-            // Swiped left → next
-            switchMode(modes[idx + 1]);
-          } else if (delta < 0 && idx > 0) {
-            // Swiped right → prev
-            switchMode(modes[idx - 1]);
-          }
+      function populateWatermark() {
+        const wm = document.getElementById("watermark");
+        const words = ["HARE KRISHNA HARE KRISHNA", "KRISHNA KRISHNA HARE HARE", "HARE RAMA HARE RAMA", "RAMA RAMA HARE HARE"];
+        for (let i = 0; i < 60; i++) {
+          const s = document.createElement("span");
+          s.textContent = words[i % 4];
+          wm.appendChild(s);
         }
+      }
+
+      // Events
+      document.querySelectorAll(".tab").forEach((t) => {
+        t.addEventListener("click", () => switchMode(t.dataset.mode));
       });
 
-      /* ─── EVENT LISTENERS ─── */
-      $("plus-btn").addEventListener("click", increment);
-      $("minus-btn").addEventListener("click", decrement);
-      $("reset-mode-btn").addEventListener("click", resetMode);
-      $("reset-all-btn").addEventListener("click", resetAll);
+      document.getElementById("plus-btn").addEventListener("click", increment);
+      document.getElementById("minus-btn").addEventListener("click", decrement);
+      document.getElementById("reset-this").addEventListener("click", resetThis);
 
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.addEventListener("click", () => {
-          const newMode = tab.dataset.mode;
-          switchMode(newMode);
-        });
-      });
-
-      /* ─── INIT ─── */
+      // Init
+      populateWatermark();
       setInterval(updateDeviceTime, 1000);
       updateDeviceTime();
-      updateTabsUI();
-      loadSlidesForCurrentMode();
+      loadSlides();
       render();
     </script>
   </body>

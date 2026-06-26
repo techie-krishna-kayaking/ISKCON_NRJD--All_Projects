@@ -807,30 +807,32 @@
       }
 
       #btn-play {
-        width: clamp(54px, 13.5vw, 70px);
-        height: clamp(54px, 13.5vw, 70px);
+        width: clamp(64px, 16vw, 82px);
+        height: clamp(64px, 16vw, 82px);
         border-radius: 50%;
         padding: 0;
         flex-shrink: 0;
-        border: none;
+        border: 3px solid rgba(255, 245, 220, 0.6);
         background: linear-gradient(
           148deg,
-          var(--saffron) 0%,
-          var(--marigold) 100%
+          #e07820 0%,
+          #f0a830 100%
         );
         color: #fff;
-        font-size: clamp(1.1rem, 3.2vw, 1.5rem);
-        box-shadow: 0 0 0 3px rgba(224, 120, 32, 0.18),
-          0 6px 26px rgba(180, 90, 14, 0.44), 0 2px 6px rgba(0, 0, 0, 0.1);
+        font-size: clamp(1.4rem, 4vw, 1.8rem);
+        box-shadow: 0 0 0 6px rgba(224, 120, 32, 0.2),
+          0 10px 38px rgba(180, 90, 14, 0.52), 0 4px 10px rgba(0, 0, 0, 0.12);
         transition: box-shadow 0.2s, transform 0.12s;
+        position: relative;
+        z-index: 10;
       }
       #btn-play:hover {
-        box-shadow: 0 0 0 6px rgba(224, 120, 32, 0.22),
-          0 8px 34px rgba(180, 90, 14, 0.55);
-        transform: scale(1.06);
+        box-shadow: 0 0 0 8px rgba(224, 120, 32, 0.28),
+          0 14px 48px rgba(180, 90, 14, 0.62);
+        transform: scale(1.08);
       }
       #btn-play:active {
-        transform: scale(0.9);
+        transform: scale(0.92);
       }
       #btn-play:disabled {
         opacity: 0.3;
@@ -1342,6 +1344,7 @@
             <span id="b-sub">Japa Session Tool</span>
           </div>
         </div>
+        <div id="device-time" style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 600; color: #8f612f; letter-spacing: 0.05em;">00:00</div>
         <div id="right-cluster">
           <button
             class="ic-btn"
@@ -1616,6 +1619,19 @@
         elReset = $("btn-reset"),
         elNext = $("btn-next");
       const elOver = $("s-overlay");
+      const elDeviceTime = $("device-time");
+
+      // Update device time
+      function updateDeviceTime() {
+        if (elDeviceTime) {
+          const now = new Date();
+          const h = String(now.getHours()).padStart(2, "0");
+          const m = String(now.getMinutes()).padStart(2, "0");
+          elDeviceTime.textContent = `${h}:${m}`;
+        }
+      }
+      updateDeviceTime();
+      setInterval(updateDeviceTime, 30000); // Update every 30 seconds
 
       /* ── Audio ──────────────────────────────────────────── */
       let actx = null,
