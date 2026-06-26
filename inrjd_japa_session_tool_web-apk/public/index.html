@@ -876,9 +876,55 @@
         transform: scale(0.92);
       }
 
-      /* ══════════════════════════════════════════════════════════════
-         SETTINGS PANEL
-      ══════════════════════════════════════════════════════════════ */
+      /* ─────────────────────────────── BOTTOM NAV ─────────────────────────────── */
+      #bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(60px + var(--sb));
+        padding: 6px 0 var(--sb);
+        background: var(--glass);
+        border-top: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        z-index: 100;
+        box-shadow: 0 -4px 12px rgba(120, 60, 0, 0.1);
+      }
+
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        text-decoration: none;
+        color: #8f612f;
+        transition: color 0.2s ease, transform 0.1s ease;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .nav-item.active {
+        color: var(--saffron);
+      }
+
+      .nav-item:active {
+        transform: scale(0.92);
+      }
+
+      .nav-icon {
+        font-size: 1.4rem;
+        line-height: 1;
+      }
+
+      .nav-label {
+        font-size: 0.55rem;
+      }
       #s-overlay {
         position: fixed;
         inset: 0;
@@ -2154,5 +2200,21 @@
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("sw.js").catch(() => {});
     </script>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div id="bottom-nav">
+      <a href="index.html" class="nav-item active">
+        <div class="nav-icon">📿</div>
+        <div class="nav-label">Session</div>
+      </a>
+      <a href="stopwatch.html" class="nav-item">
+        <div class="nav-icon">⏱️</div>
+        <div class="nav-label">Stopwatch</div>
+      </a>
+      <a href="counter.html" class="nav-item">
+        <div class="nav-icon">🔢</div>
+        <div class="nav-label">Counter</div>
+      </a>
+    </div>
   </body>
 </html>
