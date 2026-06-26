@@ -96,7 +96,7 @@
       #slideshow {
         position: relative;
         width: 100%;
-        height: clamp(180px, 38vh, 320px);
+        height: clamp(220px, 42vh, 380px);
         border-radius: 16px;
         overflow: hidden;
         flex-shrink: 0;
@@ -137,6 +137,14 @@
         display: flex; align-items: center; justify-content: space-between;
         margin-bottom: clamp(8px,2vh,16px);
         animation: fadeDown 0.6s var(--ease) both;
+        position: relative;
+      }
+      #device-time {
+        position: absolute; left: 50%; top: 8px;
+        transform: translateX(-50%);
+        font-size: 0.65rem; font-weight: 700; color: #8f612f;
+        min-width: 180px; text-align: center; line-height: 1.3;
+        z-index: 5;
       }
       @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
 
@@ -427,6 +435,7 @@
           <img id="badge" src="logo.jpeg" alt="Logo" />
           <span id="b-name">Japa Stopwatch</span>
         </div>
+        <div id="device-time" style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 0.65rem; font-weight: 700; color: #8f612f; min-width: 180px; text-align: center; line-height: 1.3;">00:00</div>
         <div style="display:flex; gap:8px;">
           <button class="ic-btn" id="btn-fs" title="Fullscreen">⛶</button>
         </div>
@@ -450,7 +459,7 @@
         <div id="sw-display">0:00:00</div>
         <div id="sw-controls">
           <button class="sw-btn" id="btn-sw-start">▶ Start</button>
-          <button class="sw-btn" id="btn-sw-lap" disabled>📿 Lap</button>
+          <button class="sw-btn" id="btn-sw-lap" disabled>⏭️ Next Round</button>
           <button class="sw-btn" id="btn-sw-reset" disabled>↺ Reset</button>
         </div>
         <div id="lap-list-wrap"></div>
@@ -475,6 +484,21 @@
           wm.appendChild(s);
         }
       })();
+
+      /* ── Device Time ────────────────────────────────── */
+      const elDeviceTime = document.getElementById("device-time");
+      function updateDeviceTime() {
+        if (elDeviceTime) {
+          const now = new Date();
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+          const date = String(now.getDate()).padStart(2, "0");
+          const h = String(now.getHours()).padStart(2, "0");
+          const m = String(now.getMinutes()).padStart(2, "0");
+          elDeviceTime.textContent = `${month}/${date}\n${h}:${m}`;
+        }
+      }
+      updateDeviceTime();
+      setInterval(updateDeviceTime, 30000);
 
       /* ── Slideshow ──────────────────────────────────── */
       let imgs = [], iIdx = 0, sJob = null;
