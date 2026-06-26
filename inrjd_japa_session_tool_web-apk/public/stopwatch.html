@@ -134,7 +134,7 @@
 
       /* ── Top Bar ─────────────────────────────────────── */
       #topbar {
-        display: flex; align-items: center; justify-content: space-between;
+        display: flex; align-items: center; justify-content: flex-start;
         margin-bottom: clamp(8px,2vh,16px);
         animation: fadeDown 0.6s var(--ease) both;
         position: relative;
@@ -148,7 +148,8 @@
       }
       @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
 
-      #brand { display: flex; align-items: center; gap: clamp(8px,2vw,12px); }
+      #brand { display: flex; align-items: center; gap: clamp(8px,2vw,12px); margin-right: auto; }
+      #topbar > div:last-child { margin-left: auto; }
       #badge {
         width: clamp(34px,8vw,46px); height: clamp(34px,8vw,46px);
         object-fit: cover; border-radius: 50%; flex-shrink: 0;
