@@ -173,7 +173,9 @@ Simply push to `main` branch → APK builds automatically and is available in th
 
 <p align="center">
   <a href="https://www.linkedin.com/in/krishnakayaking/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/></a>
-  <a href="https://www.youtube.com/@TechieKrishnaKayaking"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"/></a>
+  <a href="https://www.youtube.com/@TechieKrishnaKayaking"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Techie Krishna Kayaking"/></a>
+  <a href="https://www.youtube.com/@KrsnarupaGauraDas"><img src="https://img.shields.io/badge/YouTube-Krsnarupa_Gaura_Das-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Krsnarupa Gaura Das"/></a>
+  <a href="https://www.youtube.com/@krgd_vlogs"><img src="https://img.shields.io/badge/YouTube-KRGD_Vlogs-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="KRGD Vlogs"/></a>
   <a href="https://www.instagram.com/techiekrishnakayaking/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"/></a>
   <a href="https://www.techiekrishnakayaking.com/"><img src="https://img.shields.io/badge/Website-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website"/></a>
   <a href="https://topmate.io/techie_krishna_kayaking"><img src="https://img.shields.io/badge/Topmate-00C853?style=for-the-badge&logo=bookstack&logoColor=white" alt="Topmate"/></a>
