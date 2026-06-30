@@ -31,6 +31,10 @@ jobs:
         working-directory: inrjd_japa_session_tool_web-apk
         run: node gen.js
 
+      - name: Ensure Capacitor iOS package
+        working-directory: inrjd_japa_session_tool_web-apk
+        run: npm install --no-save @capacitor/ios
+
       - name: Capacitor sync iOS
         working-directory: inrjd_japa_session_tool_web-apk
         run: |
