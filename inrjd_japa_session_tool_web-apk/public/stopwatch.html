@@ -110,7 +110,7 @@
         background-position: center;
         background-repeat: no-repeat;
         opacity: 0;
-        transition: opacity 2.4s ease-in-out;
+        transition: opacity 2.6s ease-in-out;
         will-change: opacity;
       }
       .slide.active { opacity: 1; }
@@ -337,24 +337,6 @@
       .lap-item.fastest .lap-name { color: var(--tulsi); }
       .lap-item.slowest .lap-name { color: var(--krishna); }
 
-      /* ── Back link ───────────────────────────────────── */
-      #back-link {
-        display: inline-block;
-        margin-top: clamp(8px,2vh,14px);
-        font-size: clamp(0.65rem,1.5vw,0.78rem);
-        font-weight: 600;
-        color: var(--ink-soft);
-        text-decoration: none;
-        background: var(--glass-deep);
-        border: 1px solid var(--glass-border);
-        border-radius: 100px;
-        padding: 8px 18px;
-        backdrop-filter: blur(16px);
-        box-shadow: 0 4px 16px rgba(120,60,0,0.1);
-        transition: all 0.2s;
-      }
-      #back-link:hover { color: var(--gold); background: rgba(212,134,15,0.15); }
-
       /* ── Responsive ──────────────────────────────────── */
       @media (max-width: 380px) {
         #sw-display { font-size: 2.4rem; padding: 10px 18px; }
@@ -473,10 +455,6 @@
         <div id="lap-list-wrap"></div>
       </div>
 
-      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
-        <a id="back-link" href="index.html">← Back to Session</a>
-        <a id="back-link" href="counter.html">📿 Counter</a>
-      </div>
     </div>
 
     <script>
@@ -527,7 +505,7 @@
         ss.append(A, B);
         A.style.backgroundImage = `url("/NRJD_Pics/${encodeURIComponent(imgs[0])}")`;
         imgs.forEach(n => { const i = new Image(); i.src = `/NRJD_Pics/${encodeURIComponent(n)}`; });
-        sJob = setInterval(nxtImg, 10000);
+        sJob = setInterval(nxtImg, 9000);
       }
       function nxtImg() {
         if (imgs.length <= 1) return;
