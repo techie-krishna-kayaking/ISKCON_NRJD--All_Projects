@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">ISKCON NRJD app</string>
     <string name="title_activity_main">ISKCON NRJD app</string>
-    <string name="package_name">com.nrjd.japasession</string>
-    <string name="custom_url_scheme">com.nrjd.japasession</string>
+    <string name="package_name">com.nrjd.iskconnrjdapp</string>
+    <string name="custom_url_scheme">com.nrjd.iskconnrjdapp</string>
 </resources>

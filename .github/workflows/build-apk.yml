@@ -8,7 +8,7 @@ on:
   push:
     branches: [main, master]
     paths:
-      - "inrjd_japa_session_tool_web-apk/**"
+      - "inrjd_GAS_Prjs/inrjd_GAS_static_WebApps/inrjd_GAS_combined_launcher/android_app/**"
       - ".github/workflows/build-apk.yml"
     tags: ["v*"]
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
 env:
   NODE_VERSION: "22"
   JAVA_VERSION: "21"
-  APP_DIR: inrjd_japa_session_tool_web-apk
+  APP_DIR: inrjd_GAS_Prjs/inrjd_GAS_static_WebApps/inrjd_GAS_combined_launcher/android_app
 
 # ── Job ──────────────────────────────────────────────────────────────────────
 jobs:
@@ -128,7 +128,7 @@ jobs:
           echo "Found: $APK"
           SHA=$(git rev-parse --short HEAD)
           BUILD=$(echo "$APK" | grep -q "release" && echo "release" || echo "debug")
-          DEST="japa-session-${BUILD}-${SHA}.apk"
+          DEST="iskcon-nrjd-app-${BUILD}-${SHA}.apk"
           cp "$APK" "$DEST"
           echo "path=$DEST"         >> $GITHUB_OUTPUT
           echo "build_type=$BUILD"  >> $GITHUB_OUTPUT
@@ -137,7 +137,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JapaSession-APK-${{ steps.apk.outputs.build_type }}
+          name: ISKCON-NRJD-app-APK-${{ steps.apk.outputs.build_type }}
           path: ${{ steps.apk.outputs.path }}
           retention-days: 30
 
