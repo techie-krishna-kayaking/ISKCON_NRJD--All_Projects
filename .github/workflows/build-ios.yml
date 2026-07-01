@@ -57,7 +57,7 @@ jobs:
       # ── 5. Ensure @capacitor/ios is installed ────────────────────────────
       - name: Ensure @capacitor/ios
         working-directory: ${{ env.APP_DIR }}
-        run: npm install --no-save @capacitor/ios
+        run: npm install --no-save @capacitor/ios@^6.0.0
 
       # ── 6. Capacitor sync ────────────────────────────────────────────────
       - name: Capacitor sync (iOS)
