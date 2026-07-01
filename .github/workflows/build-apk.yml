@@ -72,6 +72,17 @@ jobs:
           [ ! -d android ] && npx cap add android || true
           npx cap sync android
 
+      - name: Detect signing secrets
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "has_keystore=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_keystore=false" >> $GITHUB_OUTPUT
+          fi
+
       # ── 8a. Decode keystore (SIGNED RELEASE) ─────────────────────────────
       #   Requires these GitHub Secrets:
       #     KEYSTORE_BASE64    – base64 of the .jks / .keystore file
@@ -79,13 +90,13 @@ jobs:
       #     KEY_ALIAS          – key alias inside the keystore
       #     KEY_PASSWORD       – key password
       - name: Decode keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ steps.signing.outputs.has_keystore == 'true' }}
         working-directory: ${{ env.APP_DIR }}/android
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release-key.jks
 
       # ── 8b. Build SIGNED Release APK ─────────────────────────────────────
       - name: Build Release APK (signed)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ steps.signing.outputs.has_keystore == 'true' }}
         working-directory: ${{ env.APP_DIR }}/android
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -102,7 +113,7 @@ jobs:
 
       # ── 8c. Build DEBUG APK (fallback when no keystore) ──────────────────
       - name: Build Debug APK (unsigned fallback)
-        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        if: ${{ steps.signing.outputs.has_keystore != 'true' }}
         working-directory: ${{ env.APP_DIR }}/android
         run: |
           chmod +x gradlew
