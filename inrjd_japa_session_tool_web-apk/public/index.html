@@ -299,10 +299,10 @@
         z-index: 10;
         display: grid;
         grid-template-rows: auto auto 1fr auto;
-        grid-template-areas: "topbar" "mantra" "." "ctrls";
+        grid-template-areas: "topbar" "mantra" "runcount" "ctrls";
         padding: calc(var(--st) + clamp(8px, 2vw, 14px))
           calc(var(--sr) + clamp(12px, 3vw, 20px))
-          calc(var(--sb) + 76px)
+          calc(var(--sb) + 104px)
           calc(var(--sl) + clamp(12px, 3vw, 20px));
         gap: clamp(8px, 1.8vh, 14px);
         pointer-events: none;
@@ -772,6 +772,34 @@
           opacity: 1;
           transform: translateY(0);
         }
+      }
+
+      /* ─ RUN COUNTER ─ */
+      #run-counter {
+        grid-area: runcount;
+        align-self: center;
+        justify-self: center;
+        font-family: var(--f-sacred);
+        font-size: clamp(1.05rem, 2.8vw, 1.4rem);
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: 0.06em;
+        background: rgba(253, 246, 236, 0.80);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(212, 134, 15, 0.28);
+        border-radius: 100px;
+        padding: 9px 24px;
+        box-shadow: 0 4px 22px rgba(120, 60, 0, 0.13),
+          inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease, transform 0.3s ease;
+        transform: scale(0.9);
+      }
+      #run-counter.visible {
+        opacity: 1;
+        transform: scale(1);
       }
 
       .pill {
@@ -1465,6 +1493,7 @@
       </div>
 
       <!-- (image shows through the empty middle row) -->
+      <div id="run-counter" aria-live="polite" aria-label="Run count"></div>
 
       <!-- ── BOTTOM CONTROLS ─────────────────────────────────── -->
       <div id="ctrls">
@@ -1627,6 +1656,7 @@
         running = false,
         tick = null,
         bellPend = false;
+      let runCount = 0, runDuration = cfg.duration;
 
       /* ── DOM ────────────────────────────────────────────── */
       const $ = (id) => document.getElementById(id);
@@ -1776,6 +1806,7 @@
         } else {
           elLbl.textContent = "remain";
         }
+        try{localStorage.setItem('nrjd_session_status',JSON.stringify({running:running,left:left,total:total}));}catch{}
       }
 
       function start() {
@@ -1796,9 +1827,13 @@
                 bellPend = false;
                 left = total;
                 ui();
+                incRunCount();
                 start();
               }, 5600);
-            else bellPend = false;
+            else {
+              incRunCount();
+              bellPend = false;
+            }
           }
         }, 1000);
       }
@@ -1817,6 +1852,9 @@
         if (typeof nd === "number") {
           total = nd;
           cfg.duration = nd;
+          runCount = 0;
+          runDuration = nd;
+          renderRunCount();
         }
         left = total;
         bellPend = false;
@@ -1844,6 +1882,27 @@
         setTimeout(() => {
           elNext.textContent = "🔔 Next";
         }, 1800);
+      }
+
+      /* ── Run Counter ─────────────────────────────────────── */
+      function fmtDurShort(s) {
+        if (s % 60 === 0) return (s / 60) + " min";
+        return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      }
+      function renderRunCount() {
+        const el = $("run-counter");
+        if (!el) return;
+        if (runCount === 0) {
+          el.classList.remove("visible");
+          el.textContent = "";
+        } else {
+          el.textContent = fmtDurShort(runDuration) + " \u00d7 " + runCount;
+          el.classList.add("visible");
+        }
+      }
+      function incRunCount() {
+        runCount++;
+        renderRunCount();
       }
 
       /* ── Fullscreen ─────────────────────────────────────── */
@@ -2219,10 +2278,25 @@
         }
       });
 
+      /* ── Activity Notification Bar ────────────────────────── */
+      function _tryLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}}
+      function _fmtSec(s){var ss=(s||0)|0;return Math.floor(ss/60)+':'+String(ss%60).padStart(2,'0');}
+      function refreshNotifBar(){
+        var sw=_tryLS('nrjd_sw_status'),ctr=_tryLS('nrjd_counter_status');
+        var nbs=document.getElementById('nb-sw'),nbp=document.getElementById('nb-sess'),nbc=document.getElementById('nb-ctr');
+        if(nbs){nbs.textContent='⏱ '+(sw&&sw.elapsed>999?_fmtSec(Math.floor(sw.elapsed/1000)):'—');nbs.classList.toggle('nb-on',!!(sw&&sw.running));}
+        if(nbp){nbp.textContent='📿 '+_fmtSec(left);nbp.classList.toggle('nb-on',running);}
+        if(nbc){nbc.textContent='🔢 '+(ctr?ctr.rounds+'×'+ctr.target:'—');nbc.classList.toggle('nb-on',!!(ctr&&(ctr.rounds>0||ctr.bead>0)));}
+      }
+      setInterval(refreshNotifBar,1000);
+      window.addEventListener('pagehide',function(){try{localStorage.setItem('nrjd_session_status',JSON.stringify({running:false,left:left,total:total}));}catch{};});
+
       /* ── Init ────────────────────────────────────────────── */
       watermark();
       particles();
       ui();
+      renderRunCount();
+      refreshNotifBar();
       buildMantraWords(); // build mantra display
       setInterval(tickMantra, WORD_MS); // start word bounce
       loadImgs();
@@ -2230,6 +2304,15 @@
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("sw.js").catch(() => {});
     </script>
+
+    <!-- ACTIVITY STATUS BAR -->
+    <div id="notif-bar" aria-label="Activity status">
+      <span class="nb-item" id="nb-sw">⏱ —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-sess">📿 —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-ctr">🔢 —</span>
+    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <div id="bottom-nav">

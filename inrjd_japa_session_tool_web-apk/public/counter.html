@@ -78,7 +78,10 @@
       /* ──────────────── SLIDESHOW ──────────────── */
       #slideshow {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 74vh;
         z-index: 2;
         pointer-events: none;
         overflow: hidden;
@@ -109,7 +112,7 @@
         display: flex;
         flex-direction: column;
         gap: 0;
-        padding: calc(var(--st) + 12px) clamp(14px, 3vw, 20px) calc(var(--sb) + 96px);
+        padding: calc(var(--st) + 12px) clamp(14px, 3vw, 20px) calc(var(--sb) + 124px);
       }
 
       /* ─ TOP BAR ─ */
@@ -314,14 +317,14 @@
       #app.mode-next #controls,
       #app.mode-next #stats {
         opacity: 0.78;
-        transform: translateX(12px);
+        transform: translateX(-12px);
       }
       #app.mode-prev #mantra-box,
       #app.mode-prev #counter-display,
       #app.mode-prev #controls,
       #app.mode-prev #stats {
         opacity: 0.78;
-        transform: translateX(-12px);
+        transform: translateX(12px);
       }
       #mantra-title {
         font-family: var(--f-sacred);
@@ -351,6 +354,7 @@
         position: relative;
         flex: 1;
         min-height: 0;
+        max-height: 48vh;
         border-radius: 0;
         overflow: hidden;
         border: none;
@@ -443,6 +447,35 @@
         transform: scale(0.86);
         box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.52), 0 8px 16px rgba(180, 90, 14, 0.32);
       }
+      .plus-btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255, 210, 100, 0.55);
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+      }
+      @keyframes plusPop {
+        0%   { transform: scale(1); }
+        28%  { transform: scale(0.84); }
+        62%  { transform: scale(1.12); }
+        100% { transform: scale(1); }
+      }
+      @keyframes plusRipple {
+        0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0.65; }
+        100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+      }
+      .plus-btn.tapped {
+        animation: plusPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      }
+      .plus-btn.tapped::after {
+        animation: plusRipple 0.48s ease-out forwards;
+      }
 
       .minus-btn {
         justify-self: end;
@@ -480,6 +513,30 @@
         color: #8d5524;
         box-shadow: 0 2px 8px rgba(120, 60, 0, 0.07);
       }
+
+      /* ─ Activity Status Bar ─ */
+      #notif-bar {
+        position: fixed;
+        bottom: calc(60px + var(--sb));
+        left: 0; right: 0;
+        height: 28px;
+        background: rgba(253, 246, 236, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid rgba(212, 134, 15, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        z-index: 99;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #b07840;
+        letter-spacing: 0.03em;
+      }
+      .nb-item { opacity: 0.45; transition: opacity 0.3s, color 0.3s; white-space: nowrap; }
+      .nb-item.nb-on { opacity: 1; color: #d48608; }
+      .nb-sep { opacity: 0.22; font-size: 0.5rem; }
 
       /* ─ BOTTOM NAV ─ */
       #bottom-nav {
@@ -574,6 +631,15 @@
         <div class="stat-chip" id="rounds-chip">Rounds: 0</div>
         <div class="stat-chip" id="total-chip">Total: 0</div>
       </div>
+    </div>
+
+    <!-- ACTIVITY STATUS BAR -->
+    <div id="notif-bar" aria-label="Activity status">
+      <span class="nb-item" id="nb-sw">⏱ —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-sess">📿 —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-ctr">🔢 —</span>
     </div>
 
     <!-- BOTTOM NAV -->
@@ -696,6 +762,8 @@
       function saveState() {
         state.lastMode = mode;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        try{localStorage.setItem('nrjd_counter_status',JSON.stringify({mode:mode,rounds:state[mode].rounds,bead:state[mode].bead,target:getRoundTarget()}));}catch{}
+        if(typeof refreshNotifBar==='function') refreshNotifBar();
       }
 
       function updateDeviceTime() {
@@ -798,6 +866,10 @@
         }
         saveState();
         render();
+        const btn = document.getElementById("plus-btn");
+        btn.classList.remove("tapped");
+        void btn.offsetWidth;
+        btn.classList.add("tapped");
       }
 
       function decrement() {
@@ -985,12 +1057,26 @@
         closeSettings();
       });
 
+      /* ── Activity Notification Bar ────────────────────────── */
+      function _tryLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}}
+      function _fmtSec(s){var ss=(s||0)|0;return Math.floor(ss/60)+':'+String(ss%60).padStart(2,'0');}
+      function refreshNotifBar(){
+        var sw=_tryLS('nrjd_sw_status'),sess=_tryLS('nrjd_session_status');
+        var s=state[mode],tgt=getRoundTarget();
+        var nbs=document.getElementById('nb-sw'),nbp=document.getElementById('nb-sess'),nbc=document.getElementById('nb-ctr');
+        if(nbs){nbs.textContent='⏱ '+(sw&&sw.elapsed>999?_fmtSec(Math.floor(sw.elapsed/1000)):'—');nbs.classList.toggle('nb-on',!!(sw&&sw.running));}
+        if(nbp){nbp.textContent='📿 '+(sess&&sess.left!=null?_fmtSec(sess.left):'—');nbp.classList.toggle('nb-on',!!(sess&&sess.running));}
+        if(nbc){nbc.textContent='🔢 '+s.rounds+'×'+tgt;nbc.classList.toggle('nb-on',!!(s.rounds>0||s.bead>0));}
+      }
+      setInterval(refreshNotifBar,1000);
+
       // Init
       populateWatermark();
       setInterval(updateDeviceTime, 1000);
       updateDeviceTime();
       loadSlides();
       render();
+      refreshNotifBar();
     </script>
   </body>
 </html>

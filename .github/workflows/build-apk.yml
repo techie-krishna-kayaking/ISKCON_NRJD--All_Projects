@@ -1,87 +1,139 @@
-name: Build & Release APK
+name: Build APK
 
+# ── Triggers ────────────────────────────────────────────────────────────────
+# Runs on every push to main/master that touches the app or this workflow.
+# Also triggered manually via Actions tab (workflow_dispatch).
+# On a version tag push (v*) the APK is attached to a GitHub Release.
 on:
   push:
     branches: [main, master]
     paths:
       - "inrjd_japa_session_tool_web-apk/**"
       - ".github/workflows/build-apk.yml"
+    tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build type"
+        required: false
+        default: "debug"
+        type: choice
+        options: [debug, release]
 
 env:
   NODE_VERSION: "22"
   JAVA_VERSION: "21"
+  APP_DIR: inrjd_japa_session_tool_web-apk
 
+# ── Job ──────────────────────────────────────────────────────────────────────
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create a GitHub Release
 
     steps:
-      # 1. Checkout Repository
+      # ── 1. Checkout ──────────────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
-      - name: Setup Node.js
+      # ── 2. Node.js ───────────────────────────────────────────────────────
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # 3. Setup Java
-      - name: Setup Java
+      # ── 3. Java (required by Gradle) ─────────────────────────────────────
+      - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
+          distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      # 4. Setup Android SDK
+      # ── 4. Android SDK ───────────────────────────────────────────────────
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 5. Install Dependencies
-      - name: Install dependencies
-        working-directory: inrjd_japa_session_tool_web-apk
+      # ── 5. Install JS dependencies ───────────────────────────────────────
+      - name: Install Node dependencies
+        working-directory: ${{ env.APP_DIR }}
         run: npm install
 
-      # 6. Generate image-list.json
+      # ── 6. Generate image list ───────────────────────────────────────────
       - name: Generate image-list.json
-        working-directory: inrjd_japa_session_tool_web-apk
+        working-directory: ${{ env.APP_DIR }}
         run: node gen.js
 
-      # 7. Capacitor Sync
-      - name: Capacitor sync
-        working-directory: inrjd_japa_session_tool_web-apk
+      # ── 7. Capacitor sync ────────────────────────────────────────────────
+      - name: Capacitor sync (Android)
+        working-directory: ${{ env.APP_DIR }}
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
+          [ ! -d android ] && npx cap add android || true
           npx cap sync android
 
-      # 8. Build Debug APK
-      - name: Build APK
-        working-directory: inrjd_japa_session_tool_web-apk/android
+      # ── 8a. Decode keystore (SIGNED RELEASE) ─────────────────────────────
+      #   Requires these GitHub Secrets:
+      #     KEYSTORE_BASE64    – base64 of the .jks / .keystore file
+      #     KEYSTORE_PASSWORD  – store password
+      #     KEY_ALIAS          – key alias inside the keystore
+      #     KEY_PASSWORD       – key password
+      - name: Decode keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}/android
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release-key.jks
+
+      # ── 8b. Build SIGNED Release APK ─────────────────────────────────────
+      - name: Build Release APK (signed)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: ${{ env.APP_DIR }}/android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$(pwd)/release-key.jks" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+            --no-daemon --stacktrace
 
-      # 9. Rename APK
-      - name: Locate APK
+      # ── 8c. Build DEBUG APK (fallback when no keystore) ──────────────────
+      - name: Build Debug APK (unsigned fallback)
+        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        working-directory: ${{ env.APP_DIR }}/android
         run: |
-          APK=$(find inrjd_japa_session_tool_web-apk/android -name "*.apk" | head -1)
-          echo "Found APK: $APK"
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
-          SHA=$(echo "${{ github.sha }}" | head -c 7)
-          DEST="japa-session-${SHA}.apk"
-
+      # ── 9. Locate, label and expose the APK ──────────────────────────────
+      - name: Locate APK
+        id: apk
+        run: |
+          APK=$(find ${{ env.APP_DIR }}/android -name "*.apk" \
+                  \( -path "*/release/*" -o -path "*/debug/*" \) | head -1)
+          echo "Found: $APK"
+          SHA=$(git rev-parse --short HEAD)
+          BUILD=$(echo "$APK" | grep -q "release" && echo "release" || echo "debug")
+          DEST="japa-session-${BUILD}-${SHA}.apk"
           cp "$APK" "$DEST"
+          echo "path=$DEST"         >> $GITHUB_OUTPUT
+          echo "build_type=$BUILD"  >> $GITHUB_OUTPUT
 
-          echo "APK_PATH=$DEST" >> $GITHUB_ENV
-
-      # 10. Upload APK
+      # ── 10. Upload artifact ───────────────────────────────────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: JapaSession-APK
-          path: ${{ env.APK_PATH }}
+          name: JapaSession-APK-${{ steps.apk.outputs.build_type }}
+          path: ${{ steps.apk.outputs.path }}
           retention-days: 30
+
+      # ── 11. Attach to GitHub Release (only on tag push) ───────────────────
+      - name: Attach APK to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.apk.outputs.path }}
+          generate_release_notes: true
