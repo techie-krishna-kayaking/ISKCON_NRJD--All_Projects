@@ -126,7 +126,7 @@
         position: fixed; inset: 0; z-index: 10;
         display: flex; flex-direction: column;
         align-items: center;
-        padding: calc(var(--st) + clamp(8px,2vw,14px)) clamp(12px,3vw,20px) calc(var(--sb) + clamp(10px,2.5vw,16px));
+        padding: calc(var(--st) + clamp(8px,2vw,14px)) clamp(12px,3vw,20px) calc(var(--sb) + 88px);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         gap: clamp(8px, 1.5vh, 14px);
@@ -360,6 +360,30 @@
       }
 
       /* ─────────────────────────────── BOTTOM NAV ─────────────────────────────── */
+      /* ─ Activity Status Bar ─ */
+      #notif-bar {
+        position: fixed;
+        bottom: calc(60px + var(--sb));
+        left: 0; right: 0;
+        height: 28px;
+        background: rgba(253, 246, 236, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid rgba(212, 134, 15, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        z-index: 99;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #b07840;
+        letter-spacing: 0.03em;
+      }
+      .nb-item { opacity: 0.45; transition: opacity 0.3s, color 0.3s; white-space: nowrap; }
+      .nb-item.nb-on { opacity: 1; color: #d48608; }
+      .nb-sep { opacity: 0.22; font-size: 0.5rem; }
+
       #bottom-nav {
         position: fixed;
         bottom: 0;
@@ -577,6 +601,7 @@
           elDisplay.classList.remove("running");
           elLap.disabled = true;
           elReset.disabled = false;
+          writeSwStatus();
         } else {
           // Start / Resume
           swStart = performance.now();
@@ -587,6 +612,7 @@
           elLap.disabled = false;
           elReset.disabled = true;
           updateDisplay();
+          writeSwStatus();
         }
       }
 
@@ -615,6 +641,7 @@
         elLap.disabled = true;
         elReset.disabled = true;
         elLapList.innerHTML = "";
+        writeSwStatus();
       }
 
       function renderLaps() {
@@ -647,6 +674,24 @@
         elLapList.scrollTop = 0;
       }
 
+      /* ── Activity Notification Bar ────────────────────────── */
+      function _tryLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}}
+      function _fmtSec(s){var ss=(s||0)|0;return Math.floor(ss/60)+':'+String(ss%60).padStart(2,'0');}
+      function writeSwStatus(){
+        var el=swRunning?(performance.now()-swStart+swElapsed):swElapsed;
+        try{localStorage.setItem('nrjd_sw_status',JSON.stringify({running:swRunning,elapsed:el}));}catch{}
+      }
+      function refreshNotifBar(){
+        var el=swRunning?(performance.now()-swStart+swElapsed):swElapsed;
+        var sess=_tryLS('nrjd_session_status'),ctr=_tryLS('nrjd_counter_status');
+        var nbs=document.getElementById('nb-sw'),nbp=document.getElementById('nb-sess'),nbc=document.getElementById('nb-ctr');
+        if(nbs){nbs.textContent='⏱ '+(el>999?_fmtSec(Math.floor(el/1000)):'—');nbs.classList.toggle('nb-on',swRunning);}
+        if(nbp){nbp.textContent='📿 '+(sess&&sess.left!=null?_fmtSec(sess.left):'—');nbp.classList.toggle('nb-on',!!(sess&&sess.running));}
+        if(nbc){nbc.textContent='🔢 '+(ctr?ctr.rounds+'×'+ctr.target:'—');nbc.classList.toggle('nb-on',!!(ctr&&(ctr.rounds>0||ctr.bead>0)));}
+      }
+      setInterval(refreshNotifBar,1000);
+      window.addEventListener('pagehide',function(){try{var s=_tryLS('nrjd_sw_status')||{};s.running=false;localStorage.setItem('nrjd_sw_status',JSON.stringify(s));}catch{}});
+
       /* ── Events ─────────────────────────────────────── */
       elStart.addEventListener("click", startSw);
       elLap.addEventListener("click", lapSw);
@@ -665,8 +710,18 @@
 
       /* ── Init ────────────────────────────────────────── */
       loadImgs();
+      refreshNotifBar();
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
     </script>
+
+    <!-- ACTIVITY STATUS BAR -->
+    <div id="notif-bar" aria-label="Activity status">
+      <span class="nb-item" id="nb-sw">⏱ —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-sess">📿 —</span>
+      <span class="nb-sep">●</span>
+      <span class="nb-item" id="nb-ctr">🔢 —</span>
+    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <div id="bottom-nav">
