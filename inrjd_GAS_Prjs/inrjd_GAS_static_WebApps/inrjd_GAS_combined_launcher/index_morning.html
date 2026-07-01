@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('styles_morning'); ?>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Jost:wght@400;500;600;700&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    .home-nav {
+      padding: 10px 16px 0;
+    }
+
+    .home-link {
+      display: inline-block;
+      text-decoration: none;
+      border: 1px solid #e0c8a0;
+      border-radius: 10px;
+      color: #7b3f00;
+      background: #fff9ef;
+      padding: 8px 12px;
+      font-family: 'Jost', 'Noto Serif', serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="home-nav">
+    <a class="home-link" href="<?= homeUrl ?>">Back to Main Page</a>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <img
+        src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+        alt="ISKCON Logo"
+        class="header-logo"
+      >
+
+      <div class="header-title-wrap">
+        <div class="title">MORNING PRAYERS</div>
+        <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+        <div class="subtitle">New Rajapur Jagannatha Dhama</div>
+      </div>
+
+      <img
+        src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+        alt="Jagannatha Logo"
+        class="header-logo"
+      >
+    </div>
+  </header>
+
+  <div class="search-container">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search prayers, verses..."
+      onkeyup="searchSections()"
+    >
+  </div>
+
+  <div class="container">
+    <?!= include('data_morning'); ?>
+  </div>
+
+  <div class="controls-bar">
+    <div class="font-size-controls">
+      <button onclick="increaseFontSize()" title="Increase font size">+</button>
+      <span class="font-size-label" id="fontSizeLabel">100%</span>
+      <button onclick="decreaseFontSize()" title="Decrease font size">-</button>
+    </div>
+  </div>
+
+  <?!= include('scripts_morning'); ?>
+</body>
+</html>

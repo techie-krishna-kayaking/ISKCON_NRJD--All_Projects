@@ -1,10 +1,16 @@
 {
   "appId": "com.nrjd.japasession",
-  "appName": "Japa Session",
+  "appName": "ISKCON NRJD app",
   "webDir": "public",
   "server": {
+    "url": "https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec",
     "androidScheme": "https",
-    "cleartext": false
+    "cleartext": false,
+    "allowNavigation": [
+      "script.google.com",
+      "script.googleusercontent.com",
+      "googleusercontent.com"
+    ]
   },
   "android": {
     "buildOptions": {

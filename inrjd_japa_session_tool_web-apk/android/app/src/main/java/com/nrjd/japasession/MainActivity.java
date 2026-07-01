@@ -1,5 +1,18 @@
 package com.nrjd.japasession;
 
+import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 
-public class MainActivity extends BridgeActivity {}
+public class MainActivity extends BridgeActivity {
+	@Override
+	public void onBackPressed() {
+		WebView webView = (bridge != null) ? bridge.getWebView() : null;
+
+		if (webView != null && webView.canGoBack()) {
+			webView.goBack();
+			return;
+		}
+
+		super.onBackPressed();
+	}
+}
