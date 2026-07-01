@@ -64,7 +64,7 @@ jobs:
         working-directory: ${{ env.APP_DIR }}
         run: |
           [ ! -d ios ] && npx cap add ios || true
-          npx cap sync ios --no-open
+          npx cap sync ios
 
           # Ensure CocoaPods dependencies are installed even if sync skips pods.
           if [ -d "ios/App" ]; then
