@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #fff8ee;
+      --bg2: #f6efe1;
+      --card: #ffffff;
+      --line: #e9d8bd;
+      --text: #3a2b1c;
+      --accent: #b55f09;
+      --accent-2: #2d6d98;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Jost', sans-serif;
+      background: radial-gradient(circle at top right, #ffe9c7 0%, transparent 42%),
+                  linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: min(720px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 20px 36px rgba(74, 39, 10, 0.14);
+      padding: 28px;
+    }
+
+    .title {
+      margin: 0;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.06em;
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      color: #7b3f00;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 8px 0 24px;
+      text-align: center;
+      color: #77552e;
+      font-size: 0.98rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .app-btn {
+      display: block;
+      width: 100%;
+      text-decoration: none;
+      background: #fffdfa;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 14px;
+      padding: 16px 18px;
+      font-size: 1.06rem;
+      font-weight: 600;
+      transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .app-btn:nth-child(2) {
+      border-left-color: var(--accent-2);
+    }
+
+    .app-btn:hover {
+      transform: translateY(-2px);
+      border-color: #d9be96;
+      box-shadow: 0 10px 18px rgba(49, 27, 8, 0.12);
+    }
+
+    @media (max-width: 520px) {
+      .shell {
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      .app-btn {
+        font-size: 0.98rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1 class="title">ISKCON NRJD Web Apps</h1>
+    <p class="subtitle">Select an app to continue</p>
+
+    <div class="grid">
+      <a class="app-btn" href="<?= morningUrl ?>">1. Morning Announcement</a>
+      <a class="app-btn" href="<?= purushotamUrl ?>">2. Purushotam Month Prayers</a>
+    </div>
+  </main>
+</body>
+</html>
