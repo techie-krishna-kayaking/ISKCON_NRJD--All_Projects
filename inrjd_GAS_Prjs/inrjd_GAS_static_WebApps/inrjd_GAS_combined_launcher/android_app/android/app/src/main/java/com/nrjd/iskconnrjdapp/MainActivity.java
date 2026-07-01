@@ -1,4 +1,4 @@
-package com.nrjd.japasession;
+package com.nrjd.iskconnrjdapp;
 
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
