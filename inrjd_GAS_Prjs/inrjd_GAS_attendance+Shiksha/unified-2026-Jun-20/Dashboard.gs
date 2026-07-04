@@ -56,7 +56,6 @@ function getOwnerDashboard(ownerId) {
   }
 
   var programs = _getAllPrograms();
-  var attData  = _getAllAttendance();
   var partData = _getAllParticipants();
   var ownerRecommendations = getOwnerRecommendations(normalizedOwnerId);
 
@@ -138,23 +137,25 @@ function getOwnerDashboard(ownerId) {
     }
   });
 
-  // Attendance stats for owner's programs
+  // Attendance stats for owner's programs (derived directly from tab2 rows to avoid
+  // extra full-sheet materialization through _getAllAttendance()).
   var attByProgram = {};
-  var totalSessions = 0, totalAttended = 0, attRows = 0;
-  for (var a = 0; a < attData.length; a++) {
-    var row = attData[a];
-    var pk2 = row[ATT_COLS.PROGRAM_KEY];
-    if (!ownerKeys[pk2]) continue;
-    var ts = Number(row[ATT_COLS.TOTAL_SESSIONS]) || 0;
-    var at = Number(row[ATT_COLS.ATTENDED]) || 0;
-    totalSessions += ts;
-    totalAttended += at;
-    attRows++;
+  var totalSessions = 0, totalAttended = 0;
+  ownerPrograms.forEach(function(p) {
+    var pk2 = p[TAB1_COLS.PROGRAM_KEY];
+    var rows = tab2ByProgram[pk2] || [];
     if (!attByProgram[pk2]) attByProgram[pk2] = { sessions: 0, attended: 0, rows: 0 };
-    attByProgram[pk2].sessions += ts;
-    attByProgram[pk2].attended += at;
-    attByProgram[pk2].rows++;
-  }
+
+    for (var a = 0; a < rows.length; a++) {
+      var ts = Number(rows[a].totalSessions) || 0;
+      var at = Number(rows[a].attended) || 0;
+      totalSessions += ts;
+      totalAttended += at;
+      attByProgram[pk2].sessions += ts;
+      attByProgram[pk2].attended += at;
+      attByProgram[pk2].rows++;
+    }
+  });
   var avgAttendance = totalSessions > 0 ? Math.round((totalAttended / totalSessions) * 100) : 0;
 
   // Members by program type
@@ -223,7 +224,8 @@ function getOwnerDashboard(ownerId) {
     recommendations: ownerRecommendations
   };
 
-  cache.put(cacheKey, JSON.stringify(payload), 60);
+  // Keep owner dashboard warm a bit longer to reduce repeated heavy recomputation.
+  cache.put(cacheKey, JSON.stringify(payload), 300);
   return payload;
 }
 
