@@ -192,6 +192,7 @@ function getOwnerDashboard(ownerId) {
     var pk4 = p[TAB1_COLS.PROGRAM_KEY];
     var att = attByProgram[pk4] || { sessions: 0, attended: 0, rows: 0 };
     var pct = att.sessions > 0 ? Math.round((att.attended / att.sessions) * 100) : 0;
+    var lastDt = latestByProgram[pk4] ? _formatDateISO_(latestByProgram[pk4]) : '';
     return {
       programKey:    pk4,
       area:          p[TAB1_COLS.AREA],
@@ -202,7 +203,8 @@ function getOwnerDashboard(ownerId) {
       time:          p[TAB1_COLS.TIME],
       actFlag:       p[TAB1_COLS.ACT_FLG],
       members:       devCountByProgram[pk4] || 0,
-      avgAttendance: pct + '%'
+      avgAttendance: pct + '%',
+      lastAttendanceDate: lastDt
     };
   });
 

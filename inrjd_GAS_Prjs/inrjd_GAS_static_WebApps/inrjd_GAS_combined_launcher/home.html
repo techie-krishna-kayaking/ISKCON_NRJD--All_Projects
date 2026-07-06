@@ -9,11 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg1: #fff8ee;
-      --bg2: #f6efe1;
+      --bg1: #fff9f0;
+      --bg2: #fef0d8;
       --card: #ffffff;
-      --line: #e9d8bd;
-      --text: #3a2b1c;
+      --line: #f0d4a8;
+      --text: #4d2f10;
       --accent: #b55f09;
       --accent-2: #2d6d98;
     }
@@ -26,13 +26,87 @@
       margin: 0;
       min-height: 100vh;
       font-family: 'Jost', sans-serif;
-      background: radial-gradient(circle at top right, #ffe9c7 0%, transparent 42%),
-                  linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      background: linear-gradient(180deg, var(--bg1) 0%, #fff5e6 50%, var(--bg2) 100%);
       color: var(--text);
       display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      width: 100%;
+      padding: 18px 14px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff7eb 0%, #ffe8c8 100%);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 10px rgba(180, 120, 40, 0.1);
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f5b041 0%, #e67e22 45%, #f39c12 100%);
+    }
+
+    .header-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .header-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(180, 120, 40, 0.16);
+      flex-shrink: 0;
+    }
+
+    .header-title-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #b8600a;
+      margin-bottom: 6px;
+    }
+
+    .header-title {
+      margin: 0;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.06em;
+      font-size: clamp(1.35rem, 4vw, 2rem);
+      color: #7b3f00;
+    }
+
+    .header-subtitle {
+      margin-top: 6px;
+      color: #a06820;
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .shell-wrap {
+      width: 100%;
       padding: 24px;
+      display: flex;
+      justify-content: center;
     }
 
     .shell {
@@ -44,17 +118,8 @@
       padding: 28px;
     }
 
-    .title {
-      margin: 0;
-      font-family: 'Cinzel', serif;
-      letter-spacing: 0.06em;
-      font-size: clamp(1.4rem, 4vw, 2.2rem);
-      color: #7b3f00;
-      text-align: center;
-    }
-
     .subtitle {
-      margin: 8px 0 24px;
+      margin: 0 0 24px;
       text-align: center;
       color: #77552e;
       font-size: 0.98rem;
@@ -90,7 +155,47 @@
       box-shadow: 0 10px 18px rgba(49, 27, 8, 0.12);
     }
 
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 16px 14px 24px;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff9ef 0%, #fff2dd 100%);
+      color: #7b3f00;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
     @media (max-width: 520px) {
+      .header {
+        padding: 14px 10px;
+      }
+
+      .header-inner {
+        gap: 8px;
+      }
+
+      .header-logo {
+        width: 40px;
+        height: 40px;
+        padding: 3px;
+      }
+
+      .header-eyebrow {
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 4px;
+      }
+
+      .header-subtitle {
+        font-size: 0.78rem;
+      }
+
+      .shell-wrap {
+        padding: 16px;
+      }
+
       .shell {
         padding: 20px;
         border-radius: 16px;
@@ -103,14 +208,43 @@
   </style>
 </head>
 <body>
-  <main class="shell">
-    <h1 class="title">ISKCON NRJD Web Apps</h1>
-    <p class="subtitle">Select an app to continue</p>
+  <header class="header">
+    <div class="header-inner">
+      <img
+        src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+        alt="ISKCON Logo"
+        class="header-logo"
+      >
 
-    <div class="grid">
-      <a class="app-btn" href="<?= morningUrl ?>">1. Morning Announcement</a>
-      <a class="app-btn" href="<?= purushotamUrl ?>">2. Purushotam Month Prayers</a>
+      <div class="header-title-wrap">
+        <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+        <h1 class="header-title">ISKCON NRJD WEB APPS</h1>
+        <div class="header-subtitle">New Rajapur Jagannatha Dhama</div>
+      </div>
+
+      <img
+        src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+        alt="Jagannatha Logo"
+        class="header-logo"
+      >
     </div>
-  </main>
+  </header>
+
+  <div class="shell-wrap">
+    <main class="shell">
+      <p class="subtitle">Select an app to continue</p>
+
+      <div class="grid">
+        <a class="app-btn" href="<?= morningUrl ?>">1. Morning Announcement</a>
+        <a class="app-btn" href="<?= purushotamUrl ?>">2. Purushotam Month Prayers</a>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    Thank you everyone for joining our devotional programs.<br>
+    Jagat Guru Srila Prabhupada Ki Jai!<br>
+    Samaveta Gaura-bhakta-vrinda ki Jai!
+  </footer>
 </body>
 </html>

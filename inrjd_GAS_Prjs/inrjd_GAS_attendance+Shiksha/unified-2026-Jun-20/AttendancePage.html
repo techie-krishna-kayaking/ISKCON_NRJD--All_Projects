@@ -985,6 +985,27 @@
       color: var(--text-dark);
     }
 
+    /* Owner dashboard program table tweaks */
+    .owner-programs-table th {
+      font-size: 9.2px;
+      letter-spacing: 1.45px;
+      padding: 13px 14px;
+    }
+
+    .owner-programs-table td {
+      padding: 11px 14px;
+    }
+
+    .owner-stale-row td {
+      background: rgba(224, 123, 123, 0.12) !important;
+      color: #7f1d1d;
+    }
+
+    .owner-stale-row:hover td {
+      background: rgba(224, 123, 123, 0.18) !important;
+      color: #7f1d1d;
+    }
+
     /* ─── Attendance Wrapper ─── */
     .attendance-wrapper {
       background: var(--bg-card);
@@ -1616,6 +1637,10 @@
       return (currentUserRole || '').toString().trim().toLowerCase() === 'admin';
     }
 
+    function isMobileView() {
+      return window.matchMedia('(max-width: 767px)').matches;
+    }
+
     /* ─── Helpers: build standardised wrappers for GAS inputs ─── */
     function makeFormField(labelText, inputEl, wrapperClass) {
       var field = document.createElement('div');
@@ -1728,6 +1753,31 @@
       var container = document.getElementById('programDetails');
       container.innerHTML = '';
 
+      function parseOwnerDashboardDate(val) {
+        if (!val) return null;
+        if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+        var raw = String(val).trim();
+        if (!raw) return null;
+        var d = new Date(raw);
+        if (!isNaN(d.getTime())) return d;
+        var m = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+        if (!m) return null;
+        var day = Number(m[1]);
+        var mon = Number(m[2]) - 1;
+        var year = Number(m[3]);
+        if (year < 100) year += 2000;
+        var d2 = new Date(year, mon, day);
+        return isNaN(d2.getTime()) ? null : d2;
+      }
+
+      function daysSinceDate(val) {
+        var d = parseOwnerDashboardDate(val);
+        if (!d) return null;
+        var now = new Date();
+        var ms = now.getTime() - d.getTime();
+        return Math.floor(ms / (24 * 60 * 60 * 1000));
+      }
+
       var s = data.summary;
 
       // Dashboard header + Add Program button
@@ -1782,8 +1832,9 @@
       container.appendChild(attentionPanel);
 
       // Charts row
+      var ownerTwoCol = isMobileView() ? '1fr' : '1fr 1fr';
       var chartsRow = document.createElement('div');
-      chartsRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;';
+      chartsRow.style.cssText = 'display:grid;grid-template-columns:' + ownerTwoCol + ';gap:16px;margin-bottom:24px;';
 
       var chartCard1 = document.createElement('div');
       chartCard1.style.cssText = 'background:var(--bg-card);border-radius:var(--r-sm);padding:18px;box-shadow:var(--shadow-soft);';
@@ -1824,22 +1875,36 @@
       var scrollWrapper = document.createElement('div');
       scrollWrapper.className = 'table-scroll-wrapper';
       var table = document.createElement('table');
-      table.className = 'programs-table';
+      table.className = 'programs-table owner-programs-table';
 
       var thead = document.createElement('thead');
       var headerRow = document.createElement('tr');
-      ['Program Key','Area','Sub-Area','Type','Frequency','Day','Time','Members','Avg Attendance','Status','Details'].forEach(function(h) {
+      ['Program Key','Area','Sub-Area','Type','Frequency','Day','Time','Members','Avg Attendance','Last Update','Status','Details'].forEach(function(h) {
         var th = document.createElement('th'); th.textContent = h; headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
       table.appendChild(thead);
 
       var tbody = document.createElement('tbody');
-      data.programs.forEach(function(p) {
+      var visiblePrograms = (data.programs || []).filter(function(p) {
+        var flag = (p.actFlag || '').toString().trim().toUpperCase();
+        return flag === 'YES' || flag === 'Y';
+      });
+
+      visiblePrograms.forEach(function(p) {
         var row = tbody.insertRow();
+        var daysSince = daysSinceDate(p.lastAttendanceDate);
+        if (daysSince !== null && daysSince > 10) {
+          row.classList.add('owner-stale-row');
+        }
+
         [p.programKey, p.area, p.subArea, p.type, p.frequency, p.day, p.time, p.members, p.avgAttendance].forEach(function(val) {
           var td = row.insertCell(); td.textContent = val;
         });
+
+        var tdLastUpdate = row.insertCell();
+        tdLastUpdate.textContent = p.lastAttendanceDate || '-';
+
         // Status badge
         var tdStatus = row.insertCell();
         var flag = (p.actFlag || '').toString().trim().toUpperCase();
@@ -1859,6 +1924,14 @@
         button.onclick = (function(pKey) { return function() { showProgramDetails(pKey); }; })(p.programKey);
         tdBtn.appendChild(button);
       });
+
+      if (!visiblePrograms.length) {
+        var emptyRow = tbody.insertRow();
+        var emptyCell = emptyRow.insertCell();
+        emptyCell.colSpan = 12;
+        emptyCell.textContent = 'No active programs to display.';
+        emptyCell.style.color = 'var(--text-muted)';
+      }
 
       table.appendChild(tbody);
       scrollWrapper.appendChild(table);
@@ -1986,7 +2059,12 @@
         table.appendChild(thead);
 
         var tbody = document.createElement('tbody');
-        programs.forEach(function(program) {
+        var activePrograms = (programs || []).filter(function(program) {
+          var flag = (program.actFlag || '').toString().trim().toUpperCase();
+          return flag === 'YES' || flag === 'Y';
+        });
+
+        activePrograms.forEach(function(program) {
           var row = tbody.insertRow();
           var values = [
             program.programKey, program.area, program.subArea, program.owner,
@@ -2007,6 +2085,14 @@
           })(program.programKey);
           tdBtn.appendChild(button);
         });
+
+        if (!activePrograms.length) {
+          var emptyRow = tbody.insertRow();
+          var emptyCell = emptyRow.insertCell();
+          emptyCell.colSpan = headers.length;
+          emptyCell.textContent = 'No active programs to display.';
+          emptyCell.style.color = 'var(--text-muted)';
+        }
 
         table.appendChild(tbody);
         scrollWrapper.appendChild(table);
@@ -2306,7 +2392,8 @@
               wrapper.appendChild(topBar);
 
               var form = document.createElement('div');
-              form.style.cssText = 'display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:12px;margin-top:12px;';
+              var editCols = isMobileView() ? '1fr' : 'repeat(2,minmax(260px,1fr))';
+              form.style.cssText = 'display:grid;grid-template-columns:' + editCols + ';gap:12px;margin-top:12px;';
 
               function mkInput(label, id, value, type, readOnly) {
                 var box = document.createElement('div');
@@ -2709,7 +2796,8 @@
 
       var frameWrap = document.createElement('div');
       frameWrap.style.cssText = 'margin-top:14px;border:1px solid var(--border-card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-soft);background:#fff;';
-      frameWrap.innerHTML = '<iframe src="' + urlToLoad + '" style="width:100%;height:78vh;border:none;background:#fff;" title="Embedded Module"></iframe>';
+      var frameHeight = isMobileView() ? '68vh' : '78vh';
+      frameWrap.innerHTML = '<iframe src="' + urlToLoad + '" style="width:100%;height:' + frameHeight + ';border:none;background:#fff;" title="Embedded Module"></iframe>';
 
       wrapper.appendChild(topBar);
       wrapper.appendChild(frameWrap);
@@ -2888,6 +2976,7 @@
         });
 
         var form = document.createElement('div');
+        var recoCols = isMobileView() ? '1fr' : '1fr 1fr';
         form.style.cssText = 'margin-top:14px;padding:16px;border:1px solid var(--border-card);border-radius:12px;background:var(--bg-card);';
 
         var campaignOptions = campaigns.map(function(c) {
@@ -2895,7 +2984,7 @@
         }).join('');
 
         form.innerHTML =
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div style="display:grid;grid-template-columns:' + recoCols + ';gap:10px;">' +
             '<div><label style="font-size:12px;font-weight:600;">Campaign</label><select id="rec_campaign" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select campaign</option>' + campaignOptions + '</select></div>' +
             '<div><label style="font-size:12px;font-weight:600;">Program</label><select id="rec_program" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select program</option></select></div>' +
             '<div><label style="font-size:12px;font-weight:600;">Member</label><select id="rec_member" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-blue);"><option value="">Select member</option></select></div>' +
@@ -3024,6 +3113,7 @@
         // Form card
         var formCard = document.createElement('div');
         formCard.style.cssText = 'background:var(--bg-card);border-radius:var(--r-sm);padding:28px 32px;box-shadow:var(--shadow-card);margin-top:16px;border:1px solid var(--border-card);';
+        var addProgramCols = isMobileView() ? '1fr' : '1fr 1fr';
 
         var selectStyle = 'width:100%;padding:11px 14px;border:1px solid var(--border-blue);border-radius:var(--r-xs);font-size:0.9rem;font-family:var(--font-body);background:var(--bg-input);color:var(--text-dark);outline:none;transition:border-color 0.2s,box-shadow 0.2s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%236A92AE\' fill=\'none\' stroke-width=\'1.5\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;';
         var inputStyle = 'width:100%;padding:11px 14px;border:1px solid var(--border-blue);border-radius:var(--r-xs);font-size:0.9rem;font-family:var(--font-body);background:var(--bg-input);color:var(--text-dark);outline:none;transition:border-color 0.2s,box-shadow 0.2s;';
@@ -3053,12 +3143,12 @@
               '<input type="text" id="ap_owner" value="' + ownerId + '" style="' + inputStyle + '" placeholder="Owner login ID" /></div>')
             : '') +
           '<div style="' + sectionLabel + '">📍 Location Details</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;">' +
+          '<div style="display:grid;grid-template-columns:' + addProgramCols + ';gap:0 20px;">' +
             makeSelect('ap_area', '🌍 Area', config.AREA) +
             makeSelect('ap_subArea', '🗺 Sub Area', config.SUB_AREA) +
           '</div>' +
           '<div style="' + sectionLabel + 'margin-top:8px;">🎙 Program Details</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;">' +
+          '<div style="display:grid;grid-template-columns:' + addProgramCols + ';gap:0 20px;">' +
             makeSelect('ap_frequency', '📅 Frequency', config.FREQUENCY) +
             makeSelect('ap_typeOfProgram', '🎙 Type of Program', config.TYPE_OF_PROGRAM) +
             makeSelect('ap_language', '🈯 Language', config.LANGUAGE) +
@@ -3070,7 +3160,7 @@
               '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem;color:var(--text-medium);"><input type="radio" name="ap_virtual" value="Yes" style="accent-color:var(--sky);width:16px;height:16px;"> Yes — Virtual</label>' +
               '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem;color:var(--text-medium);"><input type="radio" name="ap_virtual" value="No" style="accent-color:var(--sky);width:16px;height:16px;"> No — In Person</label>' +
             '</div></div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;">' +
+          '<div style="display:grid;grid-template-columns:' + addProgramCols + ';gap:0 20px;">' +
             makeInput('ap_startDate', '🛫 Start Date', 'date', '') +
             makeInput('ap_time', '⏰ Time', 'time', '') +
           '</div>' +
