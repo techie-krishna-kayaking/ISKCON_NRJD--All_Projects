@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#fdf6ec" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Prayers - ISKCON NRJD</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Nunito:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cream: #fdf6ec;
+        --ink: #1e1008;
+        --ink-soft: #8f6b45;
+        --gold: #b8690e;
+        --glass: rgba(253, 246, 236, 0.86);
+        --glass-border: rgba(196, 130, 30, 0.22);
+        --f-sacred: "Cinzel", Georgia, serif;
+        --f-ui: "Nunito", "Segoe UI", sans-serif;
+        --st: env(safe-area-inset-top, 0px);
+        --sb: env(safe-area-inset-bottom, 0px);
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--f-ui);
+        background: var(--cream);
+        color: var(--ink);
+      }
+
+      #app {
+        height: 100%;
+        display: grid;
+        grid-template-rows: calc(66px + var(--st)) 1fr calc(60px + var(--sb));
+      }
+
+      #topbar {
+        padding: calc(var(--st) + 10px) 14px 10px;
+        background: linear-gradient(165deg, rgba(255, 250, 240, 0.92), rgba(250, 236, 213, 0.9));
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(8px);
+      }
+
+      #brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 3px 12px rgba(212, 134, 15, 0.3);
+      }
+
+      #brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      #brand-name {
+        font-family: var(--f-sacred);
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #c57514;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      #brand-sub {
+        font-size: 0.52rem;
+        color: var(--ink-soft);
+      }
+
+      #screen-tag {
+        font-family: var(--f-sacred);
+        font-size: 0.58rem;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--gold);
+        text-transform: uppercase;
+      }
+
+      #iframe-wrap {
+        min-height: 0;
+        background: linear-gradient(180deg, #fff9ef 0%, #fdf6ec 100%);
+      }
+
+      #gas-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+        background: #fff;
+      }
+
+      #bottom-nav {
+        height: calc(60px + var(--sb));
+        padding: 6px 0 var(--sb);
+        background: var(--glass);
+        border-top: 1px solid var(--glass-border);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        align-items: center;
+        box-shadow: 0 -4px 12px rgba(120, 60, 0, 0.1);
+      }
+
+      .nav-item {
+        text-decoration: none;
+        color: #8d5524;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        font-size: 0.52rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .nav-icon {
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+
+      .nav-item.active {
+        color: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar">
+        <div id="brand">
+          <img id="badge" src="logo.jpeg" alt="ISKCON Logo" />
+          <div id="brand-text">
+            <div id="brand-name">ISKCON NRJD</div>
+            <div id="brand-sub">Japa Session Tool</div>
+          </div>
+        </div>
+        <div id="screen-tag">Prayers</div>
+      </header>
+
+      <main id="iframe-wrap">
+        <iframe
+          id="gas-frame"
+          title="Prayers"
+          src="https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec"
+        ></iframe>
+      </main>
+
+      <nav id="bottom-nav">
+        <a href="prayers.html" class="nav-item active">
+          <div class="nav-icon">🙏</div>
+          <div>Prayers</div>
+        </a>
+        <a href="attendance.html" class="nav-item">
+          <div class="nav-icon">🎤</div>
+          <div>Attendance</div>
+        </a>
+        <a href="index.html" class="nav-item">
+          <div class="nav-icon">📿</div>
+          <div>Session</div>
+        </a>
+        <a href="counter.html" class="nav-item">
+          <div class="nav-icon">🔢</div>
+          <div>Counter</div>
+        </a>
+        <a href="stopwatch.html" class="nav-item">
+          <div class="nav-icon">⏱️</div>
+          <div>Stopwatch</div>
+        </a>
+      </nav>
+    </div>
+  </body>
+</html>

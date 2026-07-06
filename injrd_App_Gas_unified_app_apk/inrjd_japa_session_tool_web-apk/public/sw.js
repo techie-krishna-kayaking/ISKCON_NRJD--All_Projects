@@ -12,7 +12,7 @@
  */
 
 /* ── Version — bump this to force cache refresh on all clients ── */
-const CACHE_VER   = 'japa-v5';
+const CACHE_VER   = 'japa-v6';
 const FONT_CACHE  = 'japa-fonts-v1';
 const IMG_CACHE   = 'japa-images-v1';
 
@@ -20,6 +20,8 @@ const IMG_CACHE   = 'japa-images-v1';
 const PRECACHE = [
   '/',
   '/index.html',
+  '/prayers.html',
+  '/attendance.html',
   '/stopwatch.html',
   '/counter.html',
   '/manifest.json',
