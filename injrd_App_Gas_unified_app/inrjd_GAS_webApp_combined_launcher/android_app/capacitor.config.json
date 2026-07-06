@@ -1,0 +1,51 @@
+{
+  "appId": "com.nrjd.iskconnrjdapp",
+  "appName": "ISKCON NRJD app",
+  "webDir": "public",
+  "server": {
+    "url": "https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec",
+    "androidScheme": "https",
+    "cleartext": false,
+    "allowNavigation": [
+      "script.google.com",
+      "script.googleusercontent.com",
+      "googleusercontent.com"
+    ]
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "release-key.jks",
+      "keystoreAlias": "japa-key",
+      "releaseType": "APK"
+    },
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "loggingBehavior": "none"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 500,
+      "backgroundColor": "#04030a",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true,
+      "layoutName": "launch_screen",
+      "useDialog": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#04030a",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    }
+  }
+}

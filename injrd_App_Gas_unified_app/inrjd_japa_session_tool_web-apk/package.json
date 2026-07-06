@@ -1,0 +1,31 @@
+{
+  "name": "japa-session-tool",
+  "version": "1.0.0",
+  "description": "Hare Krishna japa session timer with temple bell and mantra slideshow",
+  "private": true,
+  "scripts": {
+    "dev":   "node server.js",
+    "start": "node server.js",
+    "gen":   "node gen.js",
+    "build": "node gen.js",
+    "cap:add":  "npx cap add android",
+    "cap:sync": "node gen.js && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:run":  "node gen.js && npx cap sync android && npx cap run android"
+  },
+  "keywords": ["japa", "krishna", "mantra", "timer", "capacitor"],
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
