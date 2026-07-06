@@ -8,7 +8,7 @@ on:
   push:
     branches: [main, master]
     paths:
-      - "inrjd_GAS_Prjs/inrjd_GAS_static_WebApps/inrjd_GAS_combined_launcher/android_app/**"
+      - "injrd_App_Gas_unified_app_apk/inrjd_japa_session_tool_web-apk/**"
       - ".github/workflows/build-apk.yml"
     tags: ["v*"]
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
 env:
   NODE_VERSION: "22"
   JAVA_VERSION: "21"
-  APP_DIR: inrjd_GAS_Prjs/inrjd_GAS_static_WebApps/inrjd_GAS_combined_launcher/android_app
+  APP_DIR: injrd_App_Gas_unified_app_apk/inrjd_japa_session_tool_web-apk
 
 # ── Job ──────────────────────────────────────────────────────────────────────
 jobs:
