@@ -239,6 +239,37 @@ body {
 .top-bar .user-badge .user-name { font-weight: 600; color: var(--gold); }
 .top-bar .user-badge .user-role { color: var(--text-sidebar); font-size: 0.75rem; }
 
+/* Mobile top navigation (shown when sidebar is hidden) */
+.mobile-nav {
+  display: none;
+  background: var(--bg-dark);
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-nav::-webkit-scrollbar { height: 4px; }
+.mobile-nav::-webkit-scrollbar-thumb { background: rgba(200,168,75,0.35); border-radius: 4px; }
+.mobile-nav-item {
+  flex: 0 0 auto;
+  border: 1px solid rgba(200,168,75,0.28);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-sidebar);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mobile-nav-item.active {
+  background: rgba(200,168,75,0.18);
+  color: var(--gold);
+  border-color: rgba(200,168,75,0.6);
+}
+
 /* Page content area */
 .page-content { padding: 28px 32px; }
 .page-content.hidden { display: none; }
@@ -614,10 +645,20 @@ body {
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .main-content { margin-left: 0; }
+  .mobile-nav { display: flex; }
   .cards-grid.cols-4, .cards-grid.cols-3 { grid-template-columns: 1fr 1fr; }
   .cards-grid.cols-2 { grid-template-columns: 1fr; }
   .health-grid { grid-template-columns: 1fr; }
   .page-content { padding: 16px; }
+  .top-bar { padding: 12px 14px; }
+  .top-bar .greeting { font-size: 0.84rem; }
+  .top-bar .user-badge { padding: 5px 10px; }
+  .top-bar .user-badge .avatar { width: 28px; height: 28px; font-size: 0.72rem; }
+}
+
+@media (max-width: 560px) {
+  .cards-grid.cols-4, .cards-grid.cols-3, .cards-grid.cols-2 { grid-template-columns: 1fr; }
+  .quick-stat { flex-basis: 50%; }
 }
 
 /* btn-spinner */
@@ -699,6 +740,15 @@ body {
         <div class="user-role">SuperAdmin</div>
       </div>
     </div>
+  </div>
+
+  <!-- Mobile nav shown only on small screens -->
+  <div class="mobile-nav" id="mobileNav">
+    <button class="mobile-nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">📊 Dashboard</button>
+    <button class="mobile-nav-item" data-page="shiksha" onclick="switchPage('shiksha')">📚 Shiksha</button>
+    <button class="mobile-nav-item" data-page="recommendations" onclick="switchPage('recommendations')">🎓 Reco</button>
+    <button class="mobile-nav-item" onclick="openPage('attendance')">📝 Attendance</button>
+    <button class="mobile-nav-item" onclick="openPage('program')">➕ Program</button>
   </div>
 
   <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
@@ -931,10 +981,15 @@ function initGreeting(userId) {
   document.getElementById('userAvatar').textContent = userId.substring(0, 2).toUpperCase();
 }
 
+function isMobileView() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
 // ── NAVIGATION ──
 function switchPage(page) {
   document.querySelectorAll('.page-content').forEach(function(el) { el.classList.add('hidden'); });
   document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.mobile-nav-item[data-page]').forEach(function(el) { el.classList.remove('active'); });
 
   if (page === 'dashboard') {
     document.getElementById('pageDashboard').classList.remove('hidden');
@@ -952,6 +1007,8 @@ function switchPage(page) {
 
   var nav = document.querySelector('.nav-item[data-page="' + page + '"]');
   if (nav) nav.classList.add('active');
+  var mnav = document.querySelector('.mobile-nav-item[data-page="' + page + '"]');
+  if (mnav) mnav.classList.add('active');
 }
 
 function openPage(page) {
@@ -1196,9 +1253,12 @@ function renderRecommendationsPage(campaigns, snapshot) {
   var rows = snapshot.rows || [];
 
   var campaignPanel = document.getElementById('campaignCreatePanel');
+  var mobile = isMobileView();
+  var grid2 = mobile ? '1fr' : '1fr 1fr';
+  var grid4 = mobile ? '1fr' : '1fr 1fr 1fr 1fr';
   campaignPanel.innerHTML =
     '<div class="panel-title">Push New Shiksha Campaign</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+    '<div style="display:grid;grid-template-columns:' + grid2 + ';gap:10px;">' +
       '<div><label style="font-size:12px;font-weight:600;">Shiksha Date</label><input id="cmpDate" type="date" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;"></div>' +
       '<div><label style="font-size:12px;font-weight:600;">Target Level</label><select id="cmpLevel" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;"><option value="">Select</option><option>Shraddhavan</option><option>Krishna Sevak</option><option>Krishna Sadhak</option><option>Srila Prabhupada Ashraya</option><option>Srila Guru Charana Ashraya</option></select></div>' +
     '</div>' +
@@ -1223,7 +1283,7 @@ function renderRecommendationsPage(campaigns, snapshot) {
 
   tablePanel.innerHTML =
     '<div class="panel-title">Recommendation List</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px;">' +
+    '<div style="display:grid;grid-template-columns:' + grid4 + ';gap:8px;margin-bottom:10px;">' +
       '<select id="rfCampaign" style="padding:9px;border:1px solid #ddd;border-radius:8px;">' + campaignOptions + '</select>' +
       '<input id="rfOwner" placeholder="Filter owner" style="padding:9px;border:1px solid #ddd;border-radius:8px;" />' +
       '<select id="rfLevel" style="padding:9px;border:1px solid #ddd;border-radius:8px;"><option value="">All Levels</option><option>Shraddhavan</option><option>Krishna Sevak</option><option>Krishna Sadhak</option><option>Srila Prabhupada Ashraya</option><option>Srila Guru Charana Ashraya</option></select>' +
