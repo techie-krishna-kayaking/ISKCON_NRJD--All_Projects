@@ -22,6 +22,7 @@ function renderHomePage() {
   return template
     .evaluate()
     .setTitle('ISKCON NRJD Prayer Apps')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
@@ -32,6 +33,7 @@ function renderMorningPage() {
   return template
     .evaluate()
     .setTitle('Morning Prayers - ISKCON NRJD')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
@@ -44,6 +46,7 @@ function renderPurushotamPage(lang) {
   return template
     .evaluate()
     .setTitle('Purushotam Month')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
