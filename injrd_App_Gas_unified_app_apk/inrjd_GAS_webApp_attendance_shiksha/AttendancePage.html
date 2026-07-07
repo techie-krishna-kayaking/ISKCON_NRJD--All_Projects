@@ -396,6 +396,86 @@
       animation: fadeSlideDown 1.2s var(--spring) 0.2s both;
     }
 
+    /* ─── Remember-me checkbox ─── */
+    .remember-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .remember-row input[type=checkbox] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--sky-bright, #5BB8E8);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .remember-row span {
+      font-size: 0.88rem;
+      color: var(--text-muted, #6b8099);
+      font-weight: 500;
+    }
+
+    /* ─── Cached-session sign-out chip ─── */
+    #signOutChip {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(74,158,204,0.28);
+      border-radius: 999px;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--sky-deep);
+      cursor: pointer;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(74,158,204,0.12);
+      transition: background 0.2s, box-shadow 0.2s;
+      flex-shrink: 0;
+    }
+    #signOutChip:hover {
+      background: rgba(74,158,204,0.12);
+      box-shadow: 0 4px 14px rgba(74,158,204,0.2);
+    }
+    #signOutChip .chip-user {
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─── Auto-login overlay ─── */
+    #autoLoginOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(180deg, #f0f8ff 0%, #e8f4fb 100%);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    #autoLoginOverlay .al-spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(74,158,204,0.18);
+      border-top-color: var(--sky-bright, #5BB8E8);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #autoLoginOverlay p {
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--sky-deep, #1a5f84);
+      font-weight: 500;
+    }
+
     /* ═══════════════════════════════════════════
    ANNOUNCEMENT BANNER
 ═══════════════════════════════════════════ */
@@ -1544,6 +1624,12 @@
   <div class="page-wrapper">
 
     <!-- ─── Header ─── -->
+    <!-- Auto-login full-screen overlay -->
+    <div id="autoLoginOverlay">
+      <div class="al-spinner"></div>
+      <p id="autoLoginMsg">Signing in…</p>
+    </div>
+
     <header>
       <div class="header-inner">
         <img src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png" alt="Left Logo" class="header-logo left-logo" onerror="this.style.display='none'" />
@@ -1551,7 +1637,12 @@
           <div class="header-eyebrow">ISKCON Magadi Main Road</div>
           <h1>ISKCON New Rajapur Jagannatha Dham</h1>
         </div>
-        <img src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png" alt="Right Logo" class="header-logo right-logo" onerror="this.style.display='none'" />
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+          <img src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png" alt="Right Logo" class="header-logo right-logo" onerror="this.style.display='none'" />
+          <button id="signOutChip" onclick="signOut()" title="Clear saved login & sign out">
+            <span>👤</span><span class="chip-user" id="chipUserId"></span><span>✕</span>
+          </button>
+        </div>
       </div>
       <p class="header-subtitle">Welcome to the Attendance Portal!!!!!</p>
     </header>
@@ -1595,6 +1686,11 @@
               </label>
               <input type="password" id="pass" name="pass" placeholder="Enter your password" required autocomplete="current-password">
             </div>
+
+            <label class="remember-row">
+              <input type="checkbox" id="rememberMe">
+              <span>Remember me on this device</span>
+            </label>
 
             <button
               id="loginBtn"
@@ -1672,23 +1768,39 @@
         btnText.textContent = 'Login →';
       }
 
+      function onLoginSuccess(userId, role) {
+        currentOwnerId   = userId;
+        currentUserId    = userId;
+        currentUserRole  = role;
+        // ── Cache credentials only when "Remember me" is checked ──
+        try {
+          var rememberCb = document.getElementById('rememberMe');
+          if (rememberCb && rememberCb.checked) {
+            localStorage.setItem('nrjd_att_creds', JSON.stringify({ id: userId, pass: pass }));
+          } else {
+            localStorage.removeItem('nrjd_att_creds'); // clear any old cached creds
+          }
+        } catch (e) { /* storage unavailable – ignore */ }
+        showSignOutChip(userId);
+        document.getElementById('loginSection').style.display = 'none';
+        hideAutoLoginOverlay();
+        loadOwnerDashboard();
+      }
+
       function runLegacyLoginFallback() {
         google.script.run
           .withSuccessHandler(function(status) {
             resetLoginButton();
-
             if (status === 'success') {
-              currentOwnerId = id;
-              currentUserId = id;
-              currentUserRole = 'owner';
-              document.getElementById('loginSection').style.display = 'none';
-              loadOwnerDashboard();
+              onLoginSuccess(id, 'owner');
             } else {
+              hideAutoLoginOverlay();
               alert(status);
             }
           })
           .withFailureHandler(function(err) {
             resetLoginButton();
+            hideAutoLoginOverlay();
             alert('Login failed: ' + ((err && err.message) ? err.message : 'Unknown server error'));
           })
           .checkCredentials(id, pass);
@@ -1698,14 +1810,11 @@
         google.script.run
           .withSuccessHandler(function(result) {
             resetLoginButton();
-
             if (result && result.status === 'success') {
-              currentOwnerId = id;
-              currentUserId = id;
-              currentUserRole = (result.role || 'owner').toString().toLowerCase() === 'admin' ? 'admin' : 'owner';
-              document.getElementById('loginSection').style.display = 'none';
-              loadOwnerDashboard();
+              var role = (result.role || 'owner').toString().toLowerCase() === 'admin' ? 'admin' : 'owner';
+              onLoginSuccess(id, role);
             } else if (result && result.status) {
+              hideAutoLoginOverlay();
               alert(result.status);
             } else {
               runLegacyLoginFallback();
@@ -1719,6 +1828,55 @@
         runLegacyLoginFallback();
       }
     }
+
+    /* ─── Show sign-out chip in header ─── */
+    function showSignOutChip(userId) {
+      var chip = document.getElementById('signOutChip');
+      var label = document.getElementById('chipUserId');
+      if (chip) { chip.style.display = 'flex'; }
+      if (label) { label.textContent = userId; }
+    }
+
+    /* ─── Sign out: clear cache and reload ─── */
+    function signOut() {
+      if (!confirm('Sign out and clear saved login for this device?')) return;
+      try { localStorage.removeItem('nrjd_att_creds'); } catch (e) {}
+      location.reload();
+    }
+
+    /* ─── Auto-login overlay helpers ─── */
+    function showAutoLoginOverlay(userId) {
+      var overlay = document.getElementById('autoLoginOverlay');
+      var msg     = document.getElementById('autoLoginMsg');
+      if (overlay) { overlay.style.display = 'flex'; }
+      if (msg)     { msg.textContent = 'Welcome back, ' + userId + '…'; }
+    }
+    function hideAutoLoginOverlay() {
+      var overlay = document.getElementById('autoLoginOverlay');
+      if (overlay) { overlay.style.display = 'none'; }
+    }
+
+    /* ─── Auto-login on page load if credentials are cached ─── */
+    document.addEventListener('DOMContentLoaded', function() {
+      var stored;
+      try { stored = localStorage.getItem('nrjd_att_creds'); } catch (e) {}
+      if (!stored) return;
+      var creds;
+      try { creds = JSON.parse(stored); } catch (e) { return; }
+      if (!creds || !creds.id || !creds.pass) return;
+
+      // Pre-fill form fields and tick the checkbox so saving is preserved
+      var idField   = document.getElementById('id');
+      var passField = document.getElementById('pass');
+      var rememberCb = document.getElementById('rememberMe');
+      if (idField)    { idField.value    = creds.id; }
+      if (passField)  { passField.value  = creds.pass; }
+      if (rememberCb) { rememberCb.checked = true; }
+
+      showAutoLoginOverlay(creds.id);
+      // Small delay so the overlay paints before the GAS round-trip starts
+      setTimeout(function() { login(); }, 120);
+    });
 
     /* ─── OWNER DASHBOARD ─── */
     function loadOwnerDashboard() {
