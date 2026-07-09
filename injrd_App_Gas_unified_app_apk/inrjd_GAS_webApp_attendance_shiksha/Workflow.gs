@@ -8,16 +8,9 @@ var WORKFLOW_SHEETS = {
   RECOMMENDATIONS: 'shiksha_recommendations'
 };
 
-var CAMPAIGN_HEADERS = [
-  'CAMPAIGN_ID',
-  'SHIKSHA_DATE',
-  'TARGET_LEVEL',
-  'MESSAGE',
-  'STATUS',
-  'REQUESTED_BY',
-  'REQUESTED_AT',
-  'UPDATED_AT'
-];
+// Campaign sheet mirrors tab3 (participants) structure with SCD2 data
+// Headers will be synced from tab3 at runtime by addToCampaigns()
+var CAMPAIGN_HEADERS = [];
 
 var RECOMMENDATION_HEADERS = [
   'REC_ID',
@@ -69,6 +62,27 @@ function _ensureWorkflowSheet_(sheetName, headers) {
   }
 
   return sheet;
+}
+
+/**
+ * Adds a new participant record to the shiksha_campaigns sheet using tab3 structure.
+ * Called after a row is added to tab3 (participants) via SCD2 logic in submitShikshaData/submitBioForm.
+ * The campaigns sheet mirrors tab3 with all columns for tracking.
+ * @param {Array<string>} headers - Tab3 column headers
+ * @param {Array} rowData - Tab3 row data (same structure as newRow appended to tab3)
+ * @return {void}
+ */
+function addToCampaigns(headers, rowData) {
+  if (!headers || !rowData || headers.length === 0) {
+    logInfo_('Workflow.addToCampaigns', 'SKIPPED: headers=' + (headers ? headers.length : 0) + ', rowData=' + (rowData ? rowData.length : 0));
+    return;
+  }
+  
+  logInfo_('Workflow.addToCampaigns', 'Called with ' + headers.length + ' headers and ' + rowData.length + ' data columns');
+  
+  var sheet = _ensureWorkflowSheet_(WORKFLOW_SHEETS.CAMPAIGNS, headers);
+  sheet.appendRow(rowData);
+  logInfo_('Workflow.addToCampaigns', 'Row appended to campaigns sheet');
 }
 
 function _nowIso_() {

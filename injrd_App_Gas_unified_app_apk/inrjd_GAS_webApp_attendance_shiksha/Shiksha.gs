@@ -260,8 +260,25 @@ function submitBioForm(bioformData) {
   if (idxIp >= 0) newRow[idxIp] = bioformData.IP_ADDRESS || '';
   if (idxActive >= 0) newRow[idxActive] = 'Y';
 
-  sheet.appendRow(newRow);
+  // Add to tab3 (participants) first - this is critical
+  try {
+    sheet.appendRow(newRow);
+    logInfo_('Shiksha.submitBioForm', 'ADDED to tab3: ' + (bioformData.fname || 'unknown') + ' | Shiksha Code: ' + newShikshaCode);
+  } catch(e) {
+    logInfo_('Shiksha.submitBioForm', 'ERROR adding to tab3: ' + e.message);
+    return 'ERROR: Could not save to tab3 - ' + e.message;
+  }
+  
   updateTab2ShikshaCode(bioformData.programKey || '', bioformData.fname || '', newShikshaCode);
+  
+  // Auto-add to shiksha_campaigns sheet with all tab3 columns (SCD2 tracking)
+  try {
+    addToCampaigns(headers, newRow);
+    logInfo_('Shiksha.submitBioForm', 'ADDED to campaigns: ' + (bioformData.fname || 'unknown'));
+  } catch(e) {
+    logInfo_('Shiksha.submitBioForm', 'WARNING: Could not add to campaigns sheet: ' + e.message);
+  }
+  
   logInfo_('Shiksha.submitBioForm', 'Bio-data submitted for ' + (bioformData.fname || 'unknown'));
   return 'Form submitted successfully! Generated Shiksha Code: ' + newShikshaCode;
 }
@@ -365,7 +382,19 @@ function submitShikshaData(formData) {
   if (idxLang >= 0) newRow[idxLang] = formData.PREFERRED_LANGUAGE || '';
   if (idxSub >= 0) newRow[idxSub] = formData.SUB_AREA || '';
   if (idxSikshaStatus >= 0) newRow[idxSikshaStatus] = formData.CURRENT_LEVEL || '';
-  if (idxDate >= 0) newRow[idxDate] = formData.DATE || '';
+  if (idxDate >= 0) {
+    // Use form-submitted date if available, otherwise use server's current date
+    var submissionDate = (formData.DATE || '').toString().trim();
+    if (!submissionDate) {
+      // Format today's date as YYYY-MM-DD
+      var today = new Date();
+      var yyyy = today.getFullYear();
+      var mm = String(today.getMonth() + 1).padStart(2, '0');
+      var dd = String(today.getDate()).padStart(2, '0');
+      submissionDate = yyyy + '-' + mm + '-' + dd;
+    }
+    newRow[idxDate] = submissionDate;
+  }
   if (idxA >= 0) newRow[idxA] = formData.A_CODE || '';
   if (idxB >= 0) newRow[idxB] = formData.B_CODE || '';
   if (idxC >= 0) newRow[idxC] = formData.C_CODE || '';
@@ -384,7 +413,23 @@ function submitShikshaData(formData) {
   if (idxIp >= 0) newRow[idxIp] = formData.IP_ADDRESS || '';
   if (idxActive >= 0) newRow[idxActive] = 'Y';
 
-  sheet.appendRow(newRow);
+  // Add to tab3 (participants) first - this is critical
+  try {
+    sheet.appendRow(newRow);
+    logInfo_('Shiksha.submitShikshaData', 'ADDED to tab3: ' + (formData.NAME || 'unknown') + ' | Shiksha Code: ' + formData.SHIKSHA_CODE);
+  } catch(e) {
+    logInfo_('Shiksha.submitShikshaData', 'ERROR adding to tab3: ' + e.message);
+    return 'ERROR: Could not save to tab3 - ' + e.message;
+  }
+  
+  // Auto-add to shiksha_campaigns sheet with all tab3 columns (SCD2 tracking)
+  try {
+    addToCampaigns(headers, newRow);
+    logInfo_('Shiksha.submitShikshaData', 'ADDED to campaigns: ' + (formData.NAME || 'unknown'));
+  } catch(e) {
+    logInfo_('Shiksha.submitShikshaData', 'WARNING: Could not add to campaigns sheet: ' + e.message);
+  }
+  
   logInfo_('Shiksha.submitShikshaData', 'Shiksha data submitted for ' + (formData.NAME || 'unknown'));
   return 'Data submitted✅, Hare Krishna!!!😊';
 }

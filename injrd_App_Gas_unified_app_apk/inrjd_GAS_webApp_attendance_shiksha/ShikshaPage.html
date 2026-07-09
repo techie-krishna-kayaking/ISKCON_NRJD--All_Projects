@@ -664,8 +664,11 @@
           <option value="Srila Guru Charana Ashraya">Sri Guru Charana Ashraya</option>
         </select>
 
-        <label for="date">Date:*</label>
-        <input type="date" id="date" required />
+        <!-- Date field hidden - auto-captured on submission -->
+        <div style="display: none;">
+          <label for="date">Date:*</label>
+          <input type="date" id="date" required />
+        </div>
 
         <fieldset>
           <legend>A-F Level Codes</legend>
@@ -1122,6 +1125,16 @@
         } catch(e){}
       }
 
+      // Auto-populate date field with today's date (YYYY-MM-DD format)
+      var dateField = document.getElementById('date');
+      if (dateField && !dateField.value) {
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        dateField.value = yyyy + '-' + mm + '-' + dd;
+      }
+
       // ticks
       var pkTick = document.getElementById('program-key-status'); if (pkTick) { pkTick.classList.add('valid'); pkTick.classList.remove('invalid'); }
       var scTick = document.getElementById('aadhar-number-status'); if (scTick) { scTick.classList.add('valid'); scTick.classList.remove('invalid'); }
@@ -1486,8 +1499,17 @@ function submitShikshaForm() {
       Array.from(document.querySelectorAll('.back-btn')).forEach(function(b){ b.style.display = 'none'; });
       document.getElementById('proposed-level').disabled = true;
 
-      // Check for certify prefill token from URL
-      var urlParams = <?= JSON.stringify(urlParams || {}) ?>;
+      // Parse URL parameters from window.location
+      var urlParams = {};
+      var search = window.location.search.substring(1);
+      if (search) {
+        var pairs = search.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split('=');
+          urlParams[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        }
+      }
+      
       var certifyToken = urlParams.certify || '';
       var certifyMode = urlParams.mode || ''; // 'shiksha' or 'biodata'
       _certifyActive = !!certifyToken;

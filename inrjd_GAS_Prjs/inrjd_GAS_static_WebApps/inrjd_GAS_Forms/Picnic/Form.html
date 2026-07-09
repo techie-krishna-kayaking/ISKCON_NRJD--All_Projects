@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* ==========================================
+   SPIRITUAL PICNIC REGISTRATION FORM STYLES
+   Professional & Beautiful Design - OPTIMIZED FOR MOBILE
+   ========================================== */
+
+    /* ==========================================
+   CUSTOM PROPERTIES & ROOT VARIABLES
+   ========================================== */
+    :root {
+      /* Color Palette */
+      --primary-color: #ff6b35;
+      --primary-dark: #e55a28;
+      --primary-light: #ff8c5a;
+      --secondary-color: #004e89;
+      --secondary-dark: #003a64;
+      --accent-color: #f77f00;
+      --success-color: #06a77d;
+      --error-color: #dc3545;
+      --warning-color: #ffc107;
+
+      /* Neutrals */
+      --white: #ffffff;
+      --light-bg: #f8f9fa;
+      --border-color: #e1e8ed;
+      --text-primary: #2c3e50;
+      --text-secondary: #6c757d;
+      --text-muted: #95a5a6;
+
+      /* Shadows */
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+      /* Spacing */
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2rem;
+      --spacing-xl: 3rem;
+
+      /* Border Radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+
+      /* Transitions */
+      --transition-fast: 0.2s ease;
+      --transition-medium: 0.3s ease;
+      --transition-slow: 0.5s ease;
+    }
+
+    /* ==========================================
+   GLOBAL RESET & BASE STYLES
+   ========================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-primary);
+      /* FIXED: Simplified static background instead of animated gradient */
+      background: linear-gradient(135deg, #f8fbff 0%, #fff5eb 50%, #e8f4f8 100%);
+      min-height: 100vh;
+      padding: var(--spacing-md);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* REMOVED: Animated gradient that was causing flickering */
+    /* REMOVED: body::before pseudo-element with animation */
+    /* REMOVED: body::after particles animation */
+
+    /* ==========================================
+   CONTAINER
+   ========================================== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.98);
+      /* FIXED: Removed backdrop-filter for better performance */
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 60px rgba(255, 107, 53, 0.2);
+      border: 2px solid rgba(255, 140, 66, 0.2);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      animation: containerFadeIn 0.8s ease-out;
+      /* REMOVED: glowPulse infinite animation */
+    }
+
+    @keyframes containerFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================
+   HEADER IMAGE SECTION
+   ========================================== */
+    .header-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      max-height: 200px;
+      border-bottom: 4px solid var(--primary-color);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ==========================================
+   TITLE & SUBTITLE
+   ========================================== */
+    h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--secondary-color);
+      text-align: center;
+      margin: var(--spacing-lg) var(--spacing-md) var(--spacing-sm);
+      position: relative;
+      padding-bottom: var(--spacing-sm);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      border-radius: 2px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: var(--spacing-lg);
+      padding: 0 var(--spacing-md);
+      font-weight: 500;
+    }
+
+    /* ==========================================
+   SUCCESS MESSAGE
+   ========================================== */
+    .success-message {
+      display: none;
+      background: linear-gradient(135deg, #06a77d 0%, #04c997 100%);
+      color: var(--white);
+      padding: var(--spacing-md);
+      margin: var(--spacing-md);
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+      animation: successSlideIn 0.5s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .success-message::before {
+      content: '✓';
+      position: absolute;
+      left: var(--spacing-md);
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    @keyframes successSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================
+   FORM STYLING
+   ========================================== */
+    #registrationForm {
+      padding: 0 var(--spacing-md) var(--spacing-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+      /* FIXED: Removed staggered animations that could cause flicker */
+    }
+
+    /* ==========================================
+   LABELS
+   ========================================== */
+    label {
+      display: block;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+      font-size: 0.95rem;
+      transition: color var(--transition-fast);
+    }
+
+    label.required::after {
+      content: ' *';
+      color: var(--error-color);
+      font-weight: bold;
+    }
+
+    /* ==========================================
+   INPUT FIELDS
+   ========================================== */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      color: var(--text-primary);
+      transition: all var(--transition-medium);
+      font-family: inherit;
+      outline: none;
+    }
+
+    input[type="text"]:hover,
+    input[type="email"]:hover,
+    input[type="number"]:hover,
+    textarea:hover {
+      border-color: var(--primary-light);
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+      transform: translateY(-2px);
+    }
+
+    input.invalid,
+    textarea.invalid {
+      border-color: var(--error-color);
+      animation: inputShake 0.4s ease;
+    }
+
+    @keyframes inputShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-8px);
+      }
+
+      75% {
+        transform: translateX(8px);
+      }
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Placeholder Styling */
+    ::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    /* ==========================================
+   RADIO BUTTONS
+   ========================================== */
+    .radio-group {
+      display: flex;
+      gap: var(--spacing-md);
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      flex: 1;
+      min-width: 120px;
+      position: relative;
+    }
+
+    .radio-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .radio-option label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 1.25rem;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      cursor: pointer;
+      transition: all var(--transition-medium);
+      font-weight: 600;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      margin: 0;
+      z-index: 1;
+    }
+
+    .radio-option label::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      opacity: 0;
+      transition: opacity var(--transition-medium);
+      z-index: -1;
+    }
+
+    .radio-option label::after {
+      display: none !important;
+    }
+
+    .radio-option input[type="radio"]:checked+label {
+      border-color: var(--primary-color);
+      color: var(--white);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .radio-option input[type="radio"]:checked+label::before {
+      opacity: 1;
+    }
+
+    .radio-option label:hover {
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ==========================================
+   CHECKBOX
+   ========================================== */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+      background: var(--light-bg);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border-color);
+      transition: all var(--transition-medium);
+    }
+
+    .checkbox-group:hover {
+      border-color: var(--primary-light);
+      background: #fff;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: var(--primary-color);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .checkbox-label {
+      flex: 1;
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .read-link {
+      color: var(--primary-color);
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+      transition: color var(--transition-fast);
+    }
+
+    .read-link:hover {
+      color: var(--primary-dark);
+    }
+
+    /* ==========================================
+   FILE UPLOAD
+   ========================================== */
+    .file-upload {
+      border: 3px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-medium);
+      background: var(--light-bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-upload::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(247, 127, 0, 0.05));
+      opacity: 0;
+      transition: opacity var(--transition-medium);
+    }
+
+    .file-upload:hover {
+      border-color: var(--primary-color);
+      background: var(--white);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .file-upload:hover::before {
+      opacity: 1;
+    }
+
+    .file-upload.dragover {
+      border-color: var(--primary-color);
+      background: rgba(255, 107, 53, 0.05);
+      transform: scale(1.02);
+    }
+
+    .file-upload p {
+      color: var(--text-secondary);
+      margin: 0;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+    }
+
+    .file-name {
+      margin-top: var(--spacing-sm);
+      font-weight: 600;
+      color: var(--success-color);
+      position: relative;
+      z-index: 1;
+    }
+
+    .pdf-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 107, 53, 0.1);
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+    }
+
+    .pdf-link:hover {
+      background: rgba(255, 107, 53, 0.2);
+      transform: translateX(4px);
+    }
+
+    /* ==========================================
+   ERROR MESSAGES
+   ========================================== */
+    .error {
+      display: none;
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: var(--spacing-xs);
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+      background: rgba(220, 53, 69, 0.1);
+      border-left: 3px solid var(--error-color);
+      border-radius: var(--radius-sm);
+    }
+
+    .error.show {
+      display: block;
+      animation: errorSlideIn 0.3s ease-out;
+    }
+
+    @keyframes errorSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================
+   LOADING SPINNER
+   ========================================== */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: var(--spacing-lg);
+      margin: var(--spacing-lg) 0;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto;
+      border: 4px solid var(--border-color);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading p {
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: var(--spacing-sm);
+    }
+
+    /* ==========================================
+   SUBMIT BUTTON
+   ========================================== */
+    #submitBtn {
+      width: 100%;
+      padding: 1.125rem 2rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--white);
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-medium);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #submitBtn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    #submitBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    #submitBtn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    #submitBtn:active {
+      transform: translateY(-1px);
+    }
+
+    #submitBtn:disabled {
+      background: linear-gradient(135deg, var(--text-muted) 0%, #b0b0b0 100%);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ==========================================
+   FOOTER
+   ========================================== */
+    .footer {
+      background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+      color: var(--white);
+      text-align: center;
+      padding: var(--spacing-md);
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ==========================================
+   MODAL STYLES
+   ========================================== */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      /* FIXED: Removed backdrop-filter for better performance */
+      animation: modalFadeIn 0.3s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background: var(--white);
+      margin: 5% auto;
+      max-width: 800px;
+      width: 90%;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      animation: modalSlideIn 0.4s ease-out;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+      color: var(--white);
+      padding: var(--spacing-lg);
+      border-bottom: 4px solid var(--primary-color);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .modal-body {
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      flex: 1;
+      line-height: 1.8;
+    }
+
+    .modal-body ol {
+      padding-left: var(--spacing-lg);
+      counter-reset: item;
+    }
+
+    .modal-body ol li {
+      margin-bottom: var(--spacing-md);
+      color: var(--text-primary);
+      position: relative;
+      padding-left: var(--spacing-sm);
+    }
+
+    .modal-body ol li::marker {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    .modal-body p {
+      color: var(--text-primary);
+      line-height: 1.8;
+    }
+
+    .modal-footer {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: var(--light-bg);
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .close-btn {
+      padding: 0.875rem 2.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-medium);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .close-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .close-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ==========================================
+   RESPONSIVE DESIGN - TABLET
+   ========================================== */
+    @media screen and (max-width: 768px) {
+      :root {
+        --spacing-sm: 0.875rem;
+        --spacing-md: 1.25rem;
+        --spacing-lg: 1.75rem;
+        --spacing-xl: 2.5rem;
+      }
+
+      body {
+        padding: var(--spacing-sm);
+      }
+
+      .container {
+        border-radius: var(--radius-lg);
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        margin: var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
+      }
+
+      #registrationForm {
+        padding: 0 var(--spacing-sm) var(--spacing-md);
+      }
+
+      .radio-group {
+        flex-direction: column;
+      }
+
+      .radio-option {
+        min-width: 100%;
+      }
+
+      .modal-content {
+        margin: 10% auto;
+        width: 95%;
+        max-height: 80vh;
+      }
+
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding: var(--spacing-md);
+      }
+    }
+
+    /* ==========================================
+   RESPONSIVE DESIGN - MOBILE
+   ========================================== */
+    @media screen and (max-width: 480px) {
+      :root {
+        --spacing-xs: 0.375rem;
+        --spacing-sm: 0.75rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+      }
+
+      html {
+        font-size: 14px;
+      }
+
+      body {
+        padding: 0.5rem;
+      }
+
+      .container {
+        border-radius: var(--radius-md);
+      }
+
+      .header-image {
+        max-height: 150px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin: var(--spacing-md) var(--spacing-sm) var(--spacing-xs);
+      }
+
+      h1::after {
+        width: 60px;
+        height: 3px;
+      }
+
+      .subtitle {
+        font-size: 0.875rem;
+        margin-bottom: var(--spacing-md);
+      }
+
+      #registrationForm {
+        padding: 0 var(--spacing-sm) var(--spacing-md);
+      }
+
+      .form-group {
+        margin-bottom: var(--spacing-md);
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="number"],
+      textarea {
+        padding: 0.75rem 0.875rem;
+        font-size: 1rem;
+      }
+
+      textarea {
+        min-height: 100px;
+      }
+
+      .radio-option label {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+      }
+
+      .checkbox-group {
+        padding: var(--spacing-sm);
+      }
+
+      .checkbox-label {
+        font-size: 0.875rem;
+      }
+
+      .file-upload {
+        padding: var(--spacing-md);
+      }
+
+      .file-upload p {
+        font-size: 0.875rem;
+      }
+
+      #submitBtn {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+      }
+
+      .footer {
+        padding: var(--spacing-sm);
+        font-size: 0.875rem;
+      }
+
+      .modal-content {
+        margin: 5% auto;
+        width: 98%;
+        max-height: 90vh;
+        border-radius: var(--radius-md);
+      }
+
+      .modal-header {
+        padding: var(--spacing-md) var(--spacing-sm);
+      }
+
+      .modal-header h2 {
+        font-size: 1.25rem;
+      }
+
+      .modal-body {
+        padding: var(--spacing-md) var(--spacing-sm);
+        font-size: 0.9rem;
+      }
+
+      .modal-body ol {
+        padding-left: var(--spacing-md);
+      }
+
+      .modal-body ol li {
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .modal-footer {
+        padding: var(--spacing-sm);
+      }
+
+      .close-btn {
+        padding: 0.75rem 2rem;
+        font-size: 0.95rem;
+      }
+    }
+
+    /* ==========================================
+   RESPONSIVE DESIGN - LARGE SCREENS
+   ========================================== */
+    @media screen and (min-width: 1200px) {
+      .container {
+        max-width: 1000px;
+      }
+
+      h1 {
+        font-size: 2.75rem;
+      }
+
+      .modal-content {
+        max-width: 900px;
+      }
+    }
+
+    /* ==========================================
+   ACCESSIBILITY IMPROVEMENTS
+   ========================================== */
+    *:focus-visible {
+      outline: 3px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ==========================================
+   PRINT STYLES
+   ========================================== */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .container {
+        box-shadow: none;
+        border: 1px solid #000;
+      }
+
+      .header-image,
+      #submitBtn,
+      .loading,
+      .footer {
+        display: none;
+      }
+
+      .form-group {
+        page-break-inside: avoid;
+      }
+    }
+
+    .about-section {
+      margin: var(--spacing-lg) var(--spacing-md) var(--spacing-xl);
+      padding: 0;
+      background: linear-gradient(135deg, #fff9f0 0%, #ffe8d1 100%);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      border: 2px solid rgba(255, 140, 66, 0.2);
+    }
+
+    .about-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+      padding: var(--spacing-lg);
+      color: var(--white);
+    }
+
+    .about-title {
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      margin: 0 0 var(--spacing-md) 0;
+      font-weight: 700;
+      line-height: 1.3;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .trip-timing {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      margin-top: var(--spacing-sm);
+    }
+
+    .timing-item {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 0.5rem 1rem;
+      flex: 1;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: black
+    }
+
+    .about-intro {
+      padding: var(--spacing-lg);
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      margin: 0;
+      background: var(--white);
+      border-bottom: 2px dashed rgba(255, 140, 66, 0.3);
+    }
+
+    .program-section {
+      padding: var(--spacing-lg);
+      background: linear-gradient(to bottom, #ffffff 0%, #fff9f0 100%);
+    }
+
+    .program-title {
+      font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+      color: var(--secondary-color);
+      margin: 0 0 var(--spacing-md) 0;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .day-program {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: var(--spacing-md);
+      box-shadow: var(--shadow-sm);
+      border: 2px solid rgba(255, 140, 66, 0.15);
+      transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+    }
+
+    .day-program:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .day-header {
+      background: linear-gradient(90deg, var(--secondary-color) 0%, #0066a8 100%);
+      padding: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--white);
+    }
+
+    .day-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .day-date {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .activity-list {
+      list-style: none;
+      padding: var(--spacing-md);
+      margin: 0;
+
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .activity-list li {
+      flex: 0 0 calc(33.333% - 1rem);
+      box-sizing: border-box;
+
+      padding: 1rem;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+
+    .activity-list li:hover {
+      background: rgba(255, 140, 66, 0.05);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .activity-list li:last-child {
+      border-bottom: none;
+    }
+
+    .objective-section {
+      padding: var(--spacing-lg);
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      border-top: 3px solid var(--primary-color);
+    }
+
+    .objective-title {
+      font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+      color: var(--secondary-color);
+      margin: 0 0 var(--spacing-md) 0;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .objective-text {
+      color: var(--text-primary);
+      font-size: 1rem;
+      line-height: 1.8;
+      margin: 0;
+      background: var(--white);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--accent-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Responsive Design for About Section */
+    @media screen and (max-width: 768px) {
+
+      .trip-meta,
+      .trip-timing {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+      }
+
+      .meta-item,
+      .timing-item {
+        width: 100%;
+      }
+
+      .day-header {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        text-align: center;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .about-section {
+        margin: var(--spacing-md) var(--spacing-sm);
+      }
+
+      .about-header,
+      .about-intro,
+      .program-section,
+      .objective-section {
+        padding: var(--spacing-md) var(--spacing-sm);
+      }
+
+      .activity-list li {
+        font-size: 0.9rem;
+        padding-left: 1.8rem;
+      }
+    }
+
+    /* ==========================================
+   CUSTOM HEADER SECTION
+   ========================================== */
+    .header-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 1.5rem 2rem;
+      /* FIXED: Static gradient instead of animated */
+      background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 50%, #60a5fa 100%);
+      border-bottom: 4px solid var(--primary-color);
+    }
+
+    .header-logo-left,
+    .header-logo-right {
+      flex-shrink: 0;
+    }
+
+    .header-logo-left img,
+    .header-logo-right img {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid #d4a574;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
+    .lang-toggle {
+      position: relative;
+      display: flex;
+      background: #f1f1f1;
+      border-radius: 40px;
+      padding: 5px;
+      width: 320px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .toggle-indicator {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: calc(33.333% - 10px);
+      height: calc(100% - 10px);
+      background: linear-gradient(135deg, #ff8c42, #ff6b35);
+      border-radius: 30px;
+      transition: transform 0.35s cubic-bezier(.68, -0.55, .27, 1.55);
+    }
+
+    .toggle-btn {
+      flex: 1;
+      border: none;
+      background: none;
+      padding: 10px 0;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 2;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-btn.active {
+      color: white;
+    }
+
+
+    /* FIXED: Better language content handling */
+    .lang-content {
+      display: none;
+    }
+
+    .lang-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+
+    /* ==========================================
+   DROPDOWN/SELECT STYLING
+   ========================================== */
+    select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      color: var(--text-primary);
+      transition: all var(--transition-medium);
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 12px;
+    }
+
+    select:hover {
+      border-color: var(--primary-light);
+    }
+
+    select:focus {
+      border-color: var(--primary-color);
+      box-shadow:
+        0 0 0 4px rgba(255, 107, 53, 0.15),
+        0 8px 20px rgba(255, 140, 66, 0.3);
+      transform: translateY(-2px);
+      background-color: rgba(255, 250, 240, 0.8);
+    }
+
+    select.invalid {
+      border-color: var(--error-color);
+      animation: inputShake 0.4s ease;
+    }
+
+    .header-content {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-org {
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 0.3rem 0;
+      letter-spacing: 0.5px;
+    }
+
+    .header-founder {
+      font-size: clamp(0.75rem, 1.8vw, 1rem);
+      color: #2c3e50;
+      margin: 0 0 0.8rem 0;
+      font-weight: 500;
+    }
+
+    .header-title {
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .title-spiritual,
+    .title-picnic {
+      display: inline;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .title-spiritual {
+      color: #ff8c42;
+    }
+
+    .title-picnic {
+      color: #000000;
+    }
+
+    /* Responsive Header */
+    @media screen and (max-width: 768px) {
+      .header-section {
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      .header-logo-left img,
+      .header-logo-right img {
+        width: 100px;
+        height: 100px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .header-section {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .header-logo-left,
+      .header-logo-right {
+        display: none;
+      }
+
+      .header-org {
+        font-size: 1rem;
+      }
+
+      .header-founder {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="header-logo-left">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2v5i6DrHXxH49E3AawPUIwtaHt0BhcfC6ww&s" alt="Logo">
+      </div>
+
+      <div class="header-content">
+        <h3 class="header-org">International Society for Krishna Consciousness</h3>
+        <p class="header-founder">Founder - Acharya : His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</p>
+        <p class="header-founder">ISKCON Magadi Road - New Rajapur Jagannath Dham
+          2nd Floor, #39, Priyadarshini Layout, ISKCON Magadi Main Road, next to BEL, off Magadi Main Road, 2nd Stage,
+          IInd Phase, Bharat Nagar, Bengaluru, Karnataka 560091</p>
+        <h2 class="header-title">
+          <span class="title-spiritual">SPIRITUAL</span>
+          <span class="title-picnic">PICNIC</span>
+        </h2>
+      </div>
+
+      <div class="header-logo-right">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLzpC8vLtuANJVUKzGjJj-n2ufyyHoaJ1-cg&s" alt="Logo">
+      </div>
+    </div>
+
+    <h1>Spiritual Picnic Registration</h1>
+    <p class="subtitle">Please fill all required fields marked with *</p>
+    <!-- About This Trip Section
+    <div class="lang-switcher">
+      <div class="lang-toggle">
+        <div class="toggle-indicator"></div>
+
+        <button class="toggle-btn active" data-lang="en">English</button>
+        <button class="toggle-btn" data-lang="hi">हिंदी</button>
+        <button class="toggle-btn" data-lang="kn">ಕನ್ನಡ</button>
+      </div>
+    </div>
+
+
+    <div id="about-en" class="about-section lang-content">
+      <div class="about-header">
+        <h2 class="about-title">🌄 One-Day Spiritual Picnic to Devarayana Durga</h2>
+        <div class="trip-timing">
+          <span class="timing-item"><strong>📅 Dates:</strong> 22nd February</span>
+          <span class="timing-item">🚌 <strong>Departure:</strong> Morning from ISKCON NRJD Bangalore</span>
+          <span class="timing-item">🏠 <strong>Return:</strong> Same day evening</span>
+        </div>
+      </div>
+
+      <div class="program-section">
+        <h3 class="program-title">Join us for a spiritually refreshing one-day outing featuring:</h3>
+
+        <div class="day-program">
+          <ul class="activity-list">
+            <li>🎶 Kirtan</li>
+            <li>🛕 Temple darshan</li>
+            <li>🥾 Trekking</li>
+            <li>📖 Spiritual class</li>
+            <li>🎭 Drama</li>
+            <li>🤝 Group activities</li>
+            <li>🍛 Prasadam & devotee association</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="objective-section">
+        <h3 class="objective-title">🎯 Objective of the Picnic</h3>
+        <p class="objective-text">
+          This picnic offers a beautiful blend of devotion, learning, nature, and fellowship—designed to rejuvenate
+          spiritually and strengthen community bonds. Hare Krishna 🙏
+        </p>
+      </div>
+    </div>
+
+    <div id="about-kn" class="about-section lang-content" style="display:none">
+      <div class="about-header">
+        <h2 class="about-title">🌄 ಒಂದು ದಿನದ ಆಧ್ಯಾತ್ಮಿಕ ಪಿಕ್ನಿಕ್ – Devarayana Durga</h2>
+        <div class="trip-timing">
+          <span class="timing-item"><strong>📅 ದಿನಾಂಕ:</strong> 22 ಫೆಬ್ರವರಿ</span>
+          <span class="timing-item">🚌 <strong>ಪ್ರಾರಂಭ ಸ್ಥಳ:</strong> ISKCON NRJD Bangalore (ಬೆಳಗ್ಗೆ)</span>
+          <span class="timing-item">🏠 <strong>ಮರುಪ್ರಯಾಣ:</strong> ಅದೇ ದಿನ ಸಂಜೆ</span>
+        </div>
+      </div>
+
+      <div class="program-section">
+        <h3 class="program-title">ಈ ಒಂದು ದಿನದ ಪಿಕ್ನಿಕ್‌ನಲ್ಲಿ ಆಧ್ಯಾತ್ಮಿಕ ಮತ್ತು ಪ್ರಕೃತಿ ಸೌಂದರ್ಯದ ಸಂಯೋಜನೆಯ ಅನುಭವವನ್ನು
+          ಪಡೆಯಿರಿ:</h3>
+
+        <div class="day-program">
+          <ul class="activity-list">
+            <li>🎶 ಭಜನೆ / ಕೀರ್ತನೆ</li>
+            <li>🛕 ದೇವಸ್ಥಾನ ದರ್ಶನ</li>
+            <li>🥾 ಟ್ರೆಕ್ಕಿಂಗ್</li>
+            <li>📖 ಆಧ್ಯಾತ್ಮಿಕ ಉಪನ್ಯಾಸ</li>
+            <li>🎭 ನಾಟಕ</li>
+            <li>🤝 ಗುಂಪು ಚಟುವಟಿಕೆಗಳು</li>
+            <li>🍛 ಪ್ರಸಾದ ಮತ್ತು ಭಕ್ತರ ಸಂಗತಿ</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="objective-section">
+        <h3 class="objective-title">🎯ಪಿಕ್ನಿಕ್ ಉದ್ದೇಶ</h3>
+        <p class="objective-text">
+          ಈ ಪ್ರವಾಸವು ದಿನನಿತ್ಯದ ಜೀವನದಿಂದ ಆಧ್ಯಾತ್ಮಿಕ ವಿಶ್ರಾಂತಿ ನೀಡುವುದರ ಜೊತೆಗೆ ಕೃಷ್ಣ ಚೈತನ್ಯದಲ್ಲಿ ಪ್ರೇರಣೆಯನ್ನು ಉಂಟುಮಾಡಲು
+          ಮತ್ತು ಭಕ್ತರ ನಡುವಿನ ಬಾಂಧವ್ಯವನ್ನು ಬಲಪಡಿಸಲು ಉದ್ದೇಶಿಸಿದೆ. ಹರೇ ಕೃಷ್ಣ🙏
+        </p>
+      </div>
+    </div>
+
+    <div id="about-hi" class="about-section lang-content" style="display:none">
+      <div class="about-header">
+        <h2 class="about-title">🌄 एक दिवसीय आध्यात्मिक पिकनिक – Devarayana Durga</h2>
+        <div class="trip-timing">
+          <span class="timing-item"><strong>📅 तारीख:</strong> 22 फ़रवरी</span>
+          <span class="timing-item">🚌 <strong>प्रस्थान स्थल:</strong> ISKCON NRJD Bangalore(सुबह)</span>
+          <span class="timing-item">🏠 <strong>वापसी:</strong> उसी दिन शाम</span>
+        </div>
+      </div>
+
+      <div class="program-section">
+        <h3 class="program-title">इस एक दिवसीय पिकनिक में भक्ति, प्रकृति और आध्यात्मिक संगति का सुंदर अनुभव प्राप्त
+          करें:</h3>
+
+        <div class="day-program">
+          <ul class="activity-list">
+            <li>🎶 कीर्तन</li>
+            <li>🛕 मंदिर दर्शन</li>
+            <li>🥾 ट्रेकिंग</li>
+            <li>📖 आध्यात्मिक प्रवचन</li>
+            <li>🎭 नाट्य प्रस्तुति</li>
+            <li>🤝 सामूहिक गतिविधियाँ</li>
+            <li>🍛 प्रसाद एवं भक्तों का संग</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="objective-section">
+        <h3 class="objective-title">🎯 पिकनिक का उद्देश्य</h3>
+        <p class="objective-text">
+          इस यात्रा का उद्देश्य दैनिक जीवन से आध्यात्मिक ताज़गी प्रदान करना, कृष्ण चेतना को प्रोत्साहित करना तथा भक्तों
+          के बीच आपसी संबंधों को सुदृढ़ करना है। हरे कृष्ण 🙏
+        </p>
+      </div>
+    </div> -->
+
+    <div class="success-message" id="successMessage"></div>
+
+    <form id="registrationForm">
+      <!-- Name -->
+      <div class="form-group">
+        <label class="required" for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name">
+        <div class="error" id="nameError">Please enter your full name</div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="required" for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="your.email@example.com">
+        <div class="error" id="emailError">Please enter a valid email address</div>
+      </div>
+
+      <!-- WhatsApp Phone -->
+      <div class="form-group">
+        <label class="required" for="waphno">WhatsApp Phone Number</label>
+        <input type="text" id="waphno" name="waphno" placeholder="10 digit number" maxlength="10">
+        <div class="error" id="waphnoError">Please enter a valid 10-digit phone number</div>
+      </div>
+
+      <!-- Gender -->
+      <div class="form-group">
+        <label class="required">Gender</label>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="male" name="gender" value="Male">
+            <label for="male">Male</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="female" name="gender" value="Female">
+            <label for="female">Female</label>
+          </div>
+        </div>
+        <div class="error" id="genderError">Please select your gender</div>
+      </div>
+
+      <!-- Age -->
+      <!-- Age Category -->
+      <div class="form-group">
+        <label class="required" for="age">Age Category</label>
+        <select id="age" name="age">
+          <option value="">Select your age category</option>
+          <option value="Infant">0-5 Years</option>
+          <option value="Kids">5-12 Years</option>
+          <option value="Teen">13-18 Years</option>
+          <option value="Youth">18-32 Years</option>
+          <option value="Adult">33-60 Years</option>
+          <option value="Senior Citizen">60+ Years</option>
+        </select>
+        <div class="error" id="ageError">Please select your age category</div>
+      </div>
+
+      <!-- Address -->
+      <div class="form-group">
+        <label for="address">Address</label>
+        <textarea id="address" name="address" placeholder="Enter your complete address (minimum 20 characters)"></textarea>
+        <div class="error" id="addressError">Address must be at least 20 characters</div>
+      </div>
+
+      <!-- PIN Code -->
+      <div class="form-group">
+        <label class="required" for="pincode">Area PIN Code</label>
+        <input type="text" id="pincode" name="pincode" placeholder="6 digit PIN code" maxlength="6">
+        <div class="error" id="pincodeError">Please enter a valid 6-digit PIN code</div>
+      </div>
+
+      <!-- Local Coordinator -->
+      <div class="form-group">
+        <label class="required" for="coordinator">Local Coordinator</label>
+        <input type="text" id="coordinator" name="coordinator" placeholder="Enter coordinator name">
+        <div class="error" id="coordinatorError">Please enter the coordinator name</div>
+      </div>
+
+      <!-- Emergency Number -->
+      <div class="form-group">
+        <label class="required" for="emergencyno">Emergency Contact Number</label>
+        <input type="text" id="emergencyno" name="emergencyno" placeholder="10 digit number" maxlength="10">
+        <div class="error" id="emergencynoError">Please enter a valid 10-digit emergency contact number</div>
+      </div>
+
+      <!-- Policy Consent -->
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="policy" name="policy">
+          <label for="policy" class="checkbox-label required">
+            I give consent to ISKCON NRJD to use this information to contact me or my family
+            <span class="read-link" id="readDeclaration">(Read Declaration)</span>
+          </label>
+        </div>
+        <div class="error" id="policyError">Please accept the policy to continue</div>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px;">Submitting your registration...</p>
+      </div>
+
+      <button type="submit" id="submitBtn">Submit Registration</button>
+    </form>
+
+    <div class="footer">
+      &copy; 2026| ISKCON NRJD (Magadi Main Road) | Designed & Developed by INRJD Tech Team.
+    </div>
+  </div>
+
+  <!-- Declaration Modal -->
+  <div id="declarationModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Declaration Statement by Spiritual Picnic Participants</h2>
+      </div>
+      <div class="modal-body">
+        <ol>
+          <li>This spiritual picnic is organized by a group of devotees out of their goodwill. The temple to which the
+            devotees in the organizing team are associated, or the ISKCON organization in general, is not responsible
+            for this picnic, or any issues / incidents that may occur during the Picnic.</li>
+
+          <li>Throughout the duration of the picnic, the participants must always exercise absolute care and caution in
+            terms of taking care of their health, and their personal belongings. The Organizing team will not be
+            responsible for any complaints from participants in this matter (sickness, lost / missing belongings, etc.).
+            While the organizing team will strive to provide basic support in these areas, they will not take ownership
+            for these incidents, if they occur.</li>
+
+          <li>All participants are requested to carry the necessary items for the picnic – we will be providing an
+            indicative list of items.</li>
+
+          <li>Participants must always be punctual by adhering to timely reporting, on both days and at the various
+            places. It will not be fair and feasible to keep the other participants waiting if you are late for some
+            reason. In such instances, if you are left behind, you will need to manage the alternate travel arrangements
+            (including the costs) to reach the next destination on your own.</li>
+
+          <li>Throughout the trip, participants are requested to not argue or fight with any of the locals (including
+            the priests in each temple, shopkeepers, etc.). Example - If you wish to donate at any temple, you may
+            donate and move ahead, instead of any instigation. Similarly, if you are negotiating the price for buying an
+            item, specify your walk-away price and walk away at that price point, if the shopkeeper is not convinced.
+            The organizing team will not take any responsibility if you get involved in any altercation.</li>
+
+          <li>The Organizing team strives to make the picnic as comfortable, joyful, and spiritually enriching as
+            possible, for all the participants – right from accommodation, food, travel, itinerary, etc. In case of any
+            shortcomings / things that do not meet expectations, we request your kind consideration and adjustment to
+            the situation with other participants and the Organizing team. We thank you upfront for your kind
+            cooperation in this matter.</li>
+        </ol>
+        <p style="margin-top: 20px; font-weight: bold;">
+          I hereby confirm that I have read the above rules and I agree with them. I also confirm that I am solely
+          responsible for any issues / incidents that I may face during this spiritual picnic. I confirm that no one
+          else (including the members of the organizing team) will be held responsible for any such issues / incidents.
+          I hereby confirm my acceptance of these rules. Thank you.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="close-btn" id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // const buttons = document.querySelectorAll('.toggle-btn');
+  // const sections = document.querySelectorAll('.lang-content');
+  // const indicator = document.querySelector('.toggle-indicator');
+
+  // function showLanguage(lang) {
+  //   sections.forEach(section => {
+  //     section.style.display = 'none';
+  //   });
+
+  //   const activeSection = document.getElementById('about-' + lang);
+  //   if (activeSection) {
+  //     activeSection.style.display = 'block';
+  //   }
+
+  //   buttons.forEach((btn, index) => {
+  //     btn.classList.remove('active');
+  //     if (btn.dataset.lang === lang) {
+  //       btn.classList.add('active');
+  //       indicator.style.transform = `translateX(${index * 100}%)`;
+  //     }
+  //   });
+
+  //   localStorage.setItem('selectedLang', lang);
+  // }
+
+  // buttons.forEach(button => {
+  //   button.addEventListener('click', () => {
+  //     showLanguage(button.dataset.lang);
+  //   });
+  // });
+
+  // const savedLang = localStorage.getItem('selectedLang') || 'en';
+  // showLanguage(savedLang);
+
+    // Get device info
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      if (/mobile/i.test(ua)) return 'Mobile';
+      if (/tablet/i.test(ua)) return 'Tablet';
+      return 'Desktop';
+    }
+    
+    function getBrowserInfo() {
+      const ua = navigator.userAgent;
+      if (ua.indexOf('Firefox') > -1) return 'Firefox';
+      if (ua.indexOf('Chrome') > -1) return 'Chrome';
+      if (ua.indexOf('Safari') > -1) return 'Safari';
+      if (ua.indexOf('Edge') > -1) return 'Edge';
+      return 'Other';
+    }
+    
+    async function getIPAddress() {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+      } catch (error) {
+        console.log('IP fetch error:', error);
+        return 'N/A';
+      }
+    }
+      
+    const modal = document.getElementById('declarationModal');
+    const readLink = document.getElementById('readDeclaration');
+    const closeBtn = document.getElementById('closeModal');
+    
+    readLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.style.display = 'block';
+    });
+    
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+    
+    // Validation functions
+    function validateEmail(email) {
+      return email.includes('@') && email.length > 3;
+    }
+    
+    function validatePhone(phone) {
+      return /^\d{10}$/.test(phone);
+    }
+    
+    function validatePincode(pincode) {
+      return /^\d{6}$/.test(pincode);
+    }
+    
+    function showError(fieldId, show = true) {
+    const error = document.getElementById(fieldId + 'Error');
+    const field = document.getElementById(fieldId);
+
+    if (!error) return; // 🔒 safety guard
+
+    if (show) {
+      error.classList.add('show');
+      if (field) field.classList.add('invalid');
+    } else {
+      error.classList.remove('show');
+      if (field) field.classList.remove('invalid');
+    }
+  }
+
+    
+    // Form submission
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  let isValid = true;
+
+  // Validate Name
+  const name = document.getElementById('name').value.trim();
+  if (!name) {
+    showError('name');
+    isValid = false;
+  } else {
+    showError('name', false);
+  }
+
+  // Validate Email
+  const email = document.getElementById('email').value.trim();
+  if (!validateEmail(email)) {
+    showError('email');
+    isValid = false;
+  } else {
+    showError('email', false);
+  }
+
+  // Validate WhatsApp Phone
+  const waphno = document.getElementById('waphno').value.trim();
+  if (!validatePhone(waphno)) {
+    showError('waphno');
+    isValid = false;
+  } else {
+    showError('waphno', false);
+  }
+
+  // Validate Gender
+  const gender = document.querySelector('input[name="gender"]:checked');
+  if (!gender) {
+    showError('gender');
+    isValid = false;
+  } else {
+    showError('gender', false);
+  }
+
+  // Validate Age Category
+  const age = document.getElementById('age').value;
+  if (!age) {
+    showError('age');
+    isValid = false;
+  } else {
+    showError('age', false);
+  }
+
+  // Validate PIN Code
+  const pincode = document.getElementById('pincode').value.trim();
+  if (!validatePincode(pincode)) {
+    showError('pincode');
+    isValid = false;
+  } else {
+    showError('pincode', false);
+  }
+
+  // Validate Coordinator
+  const coordinator = document.getElementById('coordinator').value.trim();
+  if (!coordinator) {
+    showError('coordinator');
+    isValid = false;
+  } else {
+    showError('coordinator', false);
+  }
+
+  // Validate Emergency Number
+  const emergencyno = document.getElementById('emergencyno').value.trim();
+  if (!validatePhone(emergencyno)) {
+    showError('emergencyno');
+    isValid = false;
+  } else {
+    showError('emergencyno', false);
+  }
+
+  // Validate Policy
+  const policy = document.getElementById('policy').checked;
+  if (!policy) {
+    showError('policy');
+    isValid = false;
+  } else {
+    showError('policy', false);
+  }
+
+  if (!isValid) {
+    alert('Please fill all required fields correctly');
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('submitBtn').disabled = true;
+
+  try {
+    const ipAddress = await getIPAddress();
+    submitFormData(ipAddress);
+  } catch (error) {
+    alert('Error: ' + error.message);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+  }
+});
+
+    function submitFormData(ipAddress) {
+
+  const formData = {
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    waphno: document.getElementById('waphno').value.trim(),
+    gender: document.querySelector('input[name="gender"]:checked').value,
+    age: document.getElementById('age').value,
+    address: document.getElementById('address').value.trim(),
+    pincode: document.getElementById('pincode').value.trim(),
+    coordinator: document.getElementById('coordinator').value.trim(),
+    emergencyno: document.getElementById('emergencyno').value.trim(),
+    policy: document.getElementById('policy').checked,
+    device: getDeviceInfo(),
+    browser: getBrowserInfo(),
+    ipadd: ipAddress
+  };
+
+  google.script.run
+    .withSuccessHandler(function(response) {
+      document.getElementById('loading').style.display = 'none';
+
+      if (response.success) {
+        alert(response.message);
+        document.getElementById('registrationForm').reset();
+        window.scrollTo(0, 0);
+      } else {
+        alert('Error: ' + response.message);
+      }
+
+      document.getElementById('submitBtn').disabled = false;
+    })
+    .withFailureHandler(function(error) {
+      document.getElementById('loading').style.display = 'none';
+      alert('Submission failed: ' + error.message);
+      document.getElementById('submitBtn').disabled = false;
+    })
+    .submitForm(formData);
+}
+  </script>
+</body>
+
+</html>
