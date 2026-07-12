@@ -1,0 +1,9 @@
+project folder - inrjd_VideoEditingTool
+where is gitignore in this?
+I want to add the input, output,raw_data folder in the ignore list. 
+there should be empty folder for raw_data, input, output.
+
+
+
+
+push the code to this repo - https://github.com/techie-krishna-kayaking/inrjd_VideoEditingTool.git
