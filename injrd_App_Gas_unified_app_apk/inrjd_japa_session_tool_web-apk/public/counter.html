@@ -127,13 +127,15 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        flex: 0 1 auto;
       }
       #badge {
-        width: 40px;
-        height: 40px;
+        width: clamp(48px, 9vw, 64px);
+        height: clamp(48px, 9vw, 64px);
         border-radius: 50%;
         object-fit: cover;
         box-shadow: 0 3px 12px rgba(212, 134, 15, 0.3);
+        flex-shrink: 0;
       }
       #brand-text {
         display: flex;
@@ -142,14 +144,14 @@
       }
       #brand-name {
         font-family: var(--f-sacred);
-        font-size: 0.65rem;
+        font-size: clamp(0.62rem, 1.4vw, 0.82rem);
         font-weight: 700;
         color: #c57514;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
       #brand-sub {
-        font-size: 0.5rem;
+        font-size: clamp(0.48rem, 0.9vw, 0.62rem);
         color: #8f6b45;
       }
       #device-time {
@@ -540,6 +542,7 @@
         font-size: 0.6rem;
         font-weight: 700;
         transition: color 0.2s;
+        text-transform: uppercase;
       }
       .nav-item.active { color: var(--saffron); }
       .nav-icon { font-size: 1.4rem; }
@@ -615,23 +618,23 @@
     <div id="bottom-nav">
       <a href="prayers.html" class="nav-item">
         <div class="nav-icon">🙏</div>
-        <div>Prayers</div>
+        <div class="nav-label">Prayers</div>
       </a>
       <a href="attendance.html" class="nav-item">
         <div class="nav-icon">🎤</div>
-        <div>Attendance</div>
+        <div class="nav-label">Attendance</div>
       </a>
       <a href="index.html" class="nav-item">
         <div class="nav-icon">📿</div>
-        <div>Session</div>
+        <div class="nav-label">Session</div>
       </a>
       <a href="counter.html" class="nav-item active">
         <div class="nav-icon">🔢</div>
-        <div>Counter</div>
+        <div class="nav-label">Counter</div>
       </a>
       <a href="stopwatch.html" class="nav-item">
         <div class="nav-icon">⏱️</div>
-        <div>Stopwatch</div>
+        <div class="nav-label">Stopwatch</div>
       </a>
     </div>
 
@@ -832,6 +835,37 @@
         switchMode(MODE_ORDER[nextIdx], direction);
       }
 
+      // Play a soft, mild button click sound
+      function playButtonSound() {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const now = audioContext.currentTime;
+          const duration = 0.12;
+          
+          // Create oscillator for soft click tone
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          
+          // Connect nodes
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          
+          // Soft, high-pitched tone that decays quickly
+          osc.frequency.setValueAtTime(1200, now);
+          osc.frequency.exponentialRampToValueAtTime(600, now + duration);
+          
+          // Gentle volume envelope (very soft - 0.15 max)
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.02, now + duration);
+          
+          // Play the sound
+          osc.start(now);
+          osc.stop(now + duration);
+        } catch (e) {
+          // Audio context not available - fail silently
+        }
+      }
+
       function increment() {
         const s = state[mode];
         const roundTarget = getRoundTarget();
@@ -842,6 +876,7 @@
         }
         saveState();
         render();
+        playButtonSound();
         const btn = document.getElementById("plus-btn");
         btn.classList.remove("tapped");
         void btn.offsetWidth;
@@ -859,6 +894,7 @@
         }
         saveState();
         render();
+        playButtonSound();
       }
 
       function resetThis() {

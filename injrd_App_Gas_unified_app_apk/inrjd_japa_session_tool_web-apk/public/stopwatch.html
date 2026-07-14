@@ -154,13 +154,14 @@
       #brand { display: flex; align-items: center; gap: clamp(8px,2vw,12px); margin-right: auto; }
       #topbar > div:last-child { margin-left: auto; }
       #badge {
-        width: clamp(34px,8vw,46px); height: clamp(34px,8vw,46px);
+        width: clamp(48px, 9vw, 64px);
+        height: clamp(48px, 9vw, 64px);
         object-fit: cover; border-radius: 50%; flex-shrink: 0;
         box-shadow: 0 4px 18px rgba(212,134,15,0.4);
       }
       #b-name {
         font-family: var(--f-sacred);
-        font-size: clamp(0.55rem,1.4vw,0.82rem);
+        font-size: clamp(0.62rem, 1.4vw, 0.82rem);
         font-weight: 700; color: var(--gold);
         letter-spacing: 0.12em; text-transform: uppercase;
       }
@@ -360,29 +361,6 @@
       }
 
       /* ─────────────────────────────── BOTTOM NAV ─────────────────────────────── */
-      /* ─ Activity Status Bar ─ */
-      #notif-bar {
-        position: fixed;
-        bottom: calc(60px + var(--sb));
-        left: 0; right: 0;
-        height: 28px;
-        background: rgba(253, 246, 236, 0.94);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border-top: 1px solid rgba(212, 134, 15, 0.18);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        z-index: 99;
-        font-size: 0.68rem;
-        font-weight: 600;
-        color: #b07840;
-        letter-spacing: 0.03em;
-      }
-      .nb-item { opacity: 0.45; transition: opacity 0.3s, color 0.3s; white-space: nowrap; }
-      .nb-item.nb-on { opacity: 1; color: #d48608; }
-      .nb-sep { opacity: 0.22; font-size: 0.5rem; }
 
       #bottom-nav {
         position: fixed;
@@ -683,15 +661,7 @@
         var el=swRunning?(performance.now()-swStart+swElapsed):swElapsed;
         try{localStorage.setItem('nrjd_sw_status',JSON.stringify({running:swRunning,elapsed:el}));}catch{}
       }
-      function refreshNotifBar(){
-        var el=swRunning?(performance.now()-swStart+swElapsed):swElapsed;
-        var sess=_tryLS('nrjd_session_status'),ctr=_tryLS('nrjd_counter_status');
-        var nbs=document.getElementById('nb-sw'),nbp=document.getElementById('nb-sess'),nbc=document.getElementById('nb-ctr');
-        if(nbs){nbs.textContent='⏱ '+(el>999?_fmtSec(Math.floor(el/1000)):'—');nbs.classList.toggle('nb-on',swRunning);}
-        if(nbp){nbp.textContent='📿 '+(sess&&sess.left!=null?_fmtSec(sess.left):'—');nbp.classList.toggle('nb-on',!!(sess&&sess.running));}
-        if(nbc){nbc.textContent='🔢 '+(ctr?ctr.rounds+'×'+ctr.target:'—');nbc.classList.toggle('nb-on',!!(ctr&&(ctr.rounds>0||ctr.bead>0)));}
-      }
-      setInterval(refreshNotifBar,1000);
+
       window.addEventListener('pagehide',function(){try{var s=_tryLS('nrjd_sw_status')||{};s.running=false;localStorage.setItem('nrjd_sw_status',JSON.stringify(s));}catch{}});
 
       /* ── Events ─────────────────────────────────────── */
@@ -712,18 +682,8 @@
 
       /* ── Init ────────────────────────────────────────── */
       loadImgs();
-      refreshNotifBar();
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
     </script>
-
-    <!-- ACTIVITY STATUS BAR -->
-    <div id="notif-bar" aria-label="Activity status">
-      <span class="nb-item" id="nb-sw">⏱ —</span>
-      <span class="nb-sep">●</span>
-      <span class="nb-item" id="nb-sess">📿 —</span>
-      <span class="nb-sep">●</span>
-      <span class="nb-item" id="nb-ctr">🔢 —</span>
-    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <div id="bottom-nav">

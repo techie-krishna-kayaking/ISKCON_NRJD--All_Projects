@@ -345,15 +345,13 @@
       }
       #brand {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        gap: 4px;
+        gap: 10px;
         flex: 0 1 auto;
       }
       #badge {
-        width: clamp(50px, 10vw, 70px);
-        height: clamp(50px, 10vw, 70px);
+        width: clamp(48px, 9vw, 64px);
+        height: clamp(48px, 9vw, 64px);
         object-fit: cover;
         border-radius: 50%;
         flex-shrink: 0;
@@ -367,14 +365,14 @@
       }
       #b-name {
         font-family: var(--f-sacred);
-        font-size: clamp(0.58rem, 1.5vw, 0.88rem);
+        font-size: clamp(0.62rem, 1.4vw, 0.82rem);
         font-weight: 700;
         color: var(--gold);
         letter-spacing: 0.13em;
         text-transform: uppercase;
       }
       #b-sub {
-        font-size: clamp(0.44rem, 1.1vw, 0.62rem);
+        font-size: clamp(0.48rem, 0.9vw, 0.62rem);
         font-weight: 500;
         color: var(--ink-soft);
         letter-spacing: 0.06em;
@@ -2289,22 +2287,12 @@
       /* ── Activity Notification Bar ────────────────────────── */
       function _tryLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}}
       function _fmtSec(s){var ss=(s||0)|0;return Math.floor(ss/60)+':'+String(ss%60).padStart(2,'0');}
-      function refreshNotifBar(){
-        var sw=_tryLS('nrjd_sw_status'),ctr=_tryLS('nrjd_counter_status');
-        var nbs=document.getElementById('nb-sw'),nbp=document.getElementById('nb-sess'),nbc=document.getElementById('nb-ctr');
-        if(nbs){nbs.textContent='⏱ '+(sw&&sw.elapsed>999?_fmtSec(Math.floor(sw.elapsed/1000)):'—');nbs.classList.toggle('nb-on',!!(sw&&sw.running));}
-        if(nbp){nbp.textContent='📿 '+_fmtSec(left);nbp.classList.toggle('nb-on',running);}
-        if(nbc){nbc.textContent='🔢 '+(ctr?ctr.rounds+'×'+ctr.target:'—');nbc.classList.toggle('nb-on',!!(ctr&&(ctr.rounds>0||ctr.bead>0)));}
-      }
-      setInterval(refreshNotifBar,1000);
-      window.addEventListener('pagehide',function(){try{localStorage.setItem('nrjd_session_status',JSON.stringify({running:false,left:left,total:total}));}catch{};});
 
       /* ── Init ────────────────────────────────────────────── */
       watermark();
       particles();
       ui();
       renderRunCount();
-      refreshNotifBar();
       buildMantraWords(); // build mantra display
       setInterval(tickMantra, WORD_MS); // start word bounce
       loadImgs();
@@ -2312,15 +2300,6 @@
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("sw.js").catch(() => {});
     </script>
-
-    <!-- ACTIVITY STATUS BAR -->
-    <div id="notif-bar" aria-label="Activity status">
-      <span class="nb-item" id="nb-sw">⏱ —</span>
-      <span class="nb-sep">●</span>
-      <span class="nb-item" id="nb-sess">📿 —</span>
-      <span class="nb-sep">●</span>
-      <span class="nb-item" id="nb-ctr">🔢 —</span>
-    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <div id="bottom-nav">
