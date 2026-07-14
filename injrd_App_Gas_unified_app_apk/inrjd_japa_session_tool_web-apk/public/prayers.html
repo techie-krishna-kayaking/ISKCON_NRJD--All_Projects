@@ -51,17 +51,11 @@
       #app {
         height: 100%;
         display: grid;
-        grid-template-rows: calc(66px + var(--st)) 1fr calc(60px + var(--sb));
+        grid-template-rows: 1fr calc(60px + var(--sb));
       }
 
       #topbar {
-        padding: calc(var(--st) + 10px) 14px 10px;
-        background: linear-gradient(165deg, rgba(255, 250, 240, 0.92), rgba(250, 236, 213, 0.9));
-        border-bottom: 1px solid var(--glass-border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        backdrop-filter: blur(8px);
+        display: none;
       }
 
       #brand {
@@ -71,11 +65,12 @@
       }
 
       #badge {
-        width: 40px;
-        height: 40px;
+        width: clamp(48px, 9vw, 64px);
+        height: clamp(48px, 9vw, 64px);
         border-radius: 50%;
         object-fit: cover;
         box-shadow: 0 3px 12px rgba(212, 134, 15, 0.3);
+        flex-shrink: 0;
       }
 
       #brand-text {
@@ -86,7 +81,7 @@
 
       #brand-name {
         font-family: var(--f-sacred);
-        font-size: 0.65rem;
+        font-size: clamp(0.62rem, 1.4vw, 0.82rem);
         font-weight: 700;
         color: #c57514;
         letter-spacing: 0.08em;
@@ -94,7 +89,7 @@
       }
 
       #brand-sub {
-        font-size: 0.52rem;
+        font-size: clamp(0.48rem, 0.9vw, 0.62rem);
         color: var(--ink-soft);
       }
 
@@ -109,10 +104,14 @@
 
       #iframe-wrap {
         min-height: 0;
+        overflow: hidden;
+        position: relative;
         background: linear-gradient(180deg, #fff9ef 0%, #fdf6ec 100%);
       }
 
       #gas-frame {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
         border: none;
@@ -142,6 +141,7 @@
         font-size: 0.52rem;
         font-weight: 700;
         letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
 
       .nav-icon {
@@ -156,48 +156,77 @@
   </head>
   <body>
     <div id="app">
-      <header id="topbar">
-        <div id="brand">
-          <img id="badge" src="logo.jpeg" alt="ISKCON Logo" />
-          <div id="brand-text">
-            <div id="brand-name">ISKCON NRJD</div>
-            <div id="brand-sub">Japa Session Tool</div>
-          </div>
-        </div>
-        <div id="screen-tag">Prayers</div>
-      </header>
-
       <main id="iframe-wrap">
         <iframe
           id="gas-frame"
           title="Prayers"
           src="https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+          allow="fullscreen"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
         ></iframe>
       </main>
 
-      <nav id="bottom-nav">
+      <div id="bottom-nav">
         <a href="prayers.html" class="nav-item active">
           <div class="nav-icon">🙏</div>
-          <div>Prayers</div>
+          <div class="nav-label">Prayers</div>
         </a>
         <a href="attendance.html" class="nav-item">
           <div class="nav-icon">🎤</div>
-          <div>Attendance</div>
+          <div class="nav-label">Attendance</div>
         </a>
         <a href="index.html" class="nav-item">
           <div class="nav-icon">📿</div>
-          <div>Session</div>
+          <div class="nav-label">Session</div>
         </a>
         <a href="counter.html" class="nav-item">
           <div class="nav-icon">🔢</div>
-          <div>Counter</div>
+          <div class="nav-label">Counter</div>
         </a>
         <a href="stopwatch.html" class="nav-item">
           <div class="nav-icon">⏱️</div>
-          <div>Stopwatch</div>
+          <div class="nav-label">Stopwatch</div>
         </a>
-      </nav>
+      </div>
     </div>
+
+    <script>
+      const iframe = document.getElementById('gas-frame');
+      const baseUrl = 'https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec';
+      let isNavigating = false;
+
+      // Track when page is attempting to unload (iframe navigation)
+      window.addEventListener('beforeunload', (e) => {
+        isNavigating = true;
+      });
+
+      // Detect if iframe navigation is trying to break out
+      // We'll capture this by detecting when the page location changes
+      let lastLocation = window.location.href;
+      setInterval(() => {
+        if (window.location.href !== lastLocation && window.location.href.includes('script.google.com')) {
+          // The page is trying to navigate to the GAS app directly
+          // Redirect back and update iframe instead
+          window.history.back();
+          lastLocation = window.location.href;
+          isNavigating = false;
+        }
+      }, 100);
+
+      // Handle iframe loads
+      iframe.addEventListener('load', () => {
+        try {
+          console.log('Prayers iframe loaded');
+          isNavigating = false;
+        } catch (e) {
+          // Cross-origin - expected
+        }
+      });
+
+      // When detecting navigation in iframe, update src instead
+      iframe.addEventListener('unload', () => {
+        console.log('Iframe unloading - updating content');
+      });
+    </script>
   </body>
 </html>

@@ -9,8 +9,83 @@
  */
 
 const http = require("http");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
+
+/* ─────────────────────────────────────────────────────────────
+   GAS PROXY — fetch GAS URLs server-side, strip iframe-blocking headers
+   so they can be embedded in iframes without X-Frame-Options issues
+───────────────────────────────────────────────────────────── */
+const GAS_URLS = {
+  prayers:    "https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec",
+  attendance: "https://script.google.com/macros/s/AKfycbzI_UTo16Sovo1bGKQDy1LOviEKrQNOkhkHa5jQK25dgMYaK3U3xGaUkNJQw3KRVL1W/exec",
+};
+
+function proxyGAS(targetUrl, res, hops) {
+  if (hops > 8) { res.writeHead(502); res.end("Too many redirects"); return; }
+  const parsed = new URL(targetUrl);
+  const mod = parsed.protocol === "https:" ? https : http;
+  const opts = {
+    hostname: parsed.hostname,
+    path: parsed.pathname + parsed.search,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel) AppleWebKit/537.36 Chrome/109 Mobile Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,*/*;q=0.9",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+  };
+  mod.get(opts, (up) => {
+    if (up.statusCode >= 300 && up.statusCode < 400 && up.headers.location) {
+      up.resume();
+      const next = up.headers.location.startsWith("http")
+        ? up.headers.location
+        : new URL(up.headers.location, targetUrl).href;
+      return proxyGAS(next, res, hops + 1);
+    }
+    const hdrs = {};
+    for (const [k, v] of Object.entries(up.headers)) {
+      const lk = k.toLowerCase();
+      if (lk === "x-frame-options") continue;
+      if (lk === "content-security-policy") continue;
+      if (lk === "transfer-encoding") continue;
+      if (lk === "content-length") continue; // we may modify body
+      hdrs[k] = v;
+    }
+    const isHtml = (up.headers["content-type"] || "").includes("text/html");
+    if (isHtml) {
+      // Collect full response; inject base href + MutationObserver to fix relative URLs
+      // and rewrite GAS's inner sandboxFrame through our proxy
+      const baseTag = `<base href="https://script.google.com/">`;
+      const observe = `<script>(function(){` +
+        `var _orig=window.location.protocol+'//'+window.location.host;` +
+        `var _ob=new MutationObserver(function(ms){` +
+        `ms.forEach(function(m){m.addedNodes.forEach(function(n){` +
+        `if(n.nodeName==='IFRAME'&&n.src&&n.src.includes('googleusercontent.com')){` +
+        `n.src=_orig+'/proxy/gas-inner?url='+encodeURIComponent(n.src);}` +
+        `});});});` +
+        `_ob.observe(document,{childList:true,subtree:true});` +
+        `})();</script>`;
+      const chunks = [];
+      up.on("data", (c) => chunks.push(c));
+      up.on("end", () => {
+        let html = Buffer.concat(chunks).toString("utf8");
+        if (html.includes("<head>")) {
+          html = html.replace("<head>", "<head>" + baseTag + observe);
+        } else if (html.includes("</head>")) {
+          html = html.replace("</head>", baseTag + observe + "</head>");
+        } else {
+          html = baseTag + observe + html;
+        }
+        res.writeHead(up.statusCode, { ...hdrs, "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+      });
+    } else {
+      res.writeHead(up.statusCode, hdrs);
+      up.pipe(res);
+    }
+  }).on("error", (e) => { res.writeHead(502); res.end("Proxy error: " + e.message); });
+}
 
 const PORT = process.env.PORT || 3000;
 const PROJECT = __dirname; // project root (where server.js lives)
@@ -182,6 +257,22 @@ const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   const rawUrl = decodeURIComponent(req.url.split("?")[0]);
+
+  /* ── GAS Proxy — serve GAS pages without iframe-blocking headers ── */
+  if (rawUrl.startsWith("/proxy/")) {
+    const key = rawUrl.replace("/proxy/", "").split("/")[0];
+    // Inner GAS sandbox frame (script.googleusercontent.com)
+    if (key === "gas-inner") {
+      const innerUrl = new URL(req.url, "http://localhost").searchParams.get("url");
+      if (!innerUrl || !innerUrl.includes("googleusercontent.com")) {
+        res.writeHead(403); res.end("Forbidden"); return;
+      }
+      return proxyGAS(decodeURIComponent(innerUrl), res, 0);
+    }
+    const gasUrl = GAS_URLS[key];
+    if (!gasUrl) { res.writeHead(404); res.end("Unknown proxy route"); return; }
+    return proxyGAS(gasUrl, res, 0);
+  }
 
   /* ── API: list images live ─────────────────────────────── */
   if (rawUrl.startsWith("/api/images")) {
