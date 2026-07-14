@@ -298,8 +298,8 @@
         inset: 0;
         z-index: 10;
         display: grid;
-        grid-template-rows: auto auto 1fr auto;
-        grid-template-areas: "topbar" "mantra" "runcount" "ctrls";
+        grid-template-rows: auto auto 1fr auto auto;
+        grid-template-areas: "topbar" "mantra" "." "ctrls" "runcount";
         padding: calc(var(--st) + clamp(8px, 2vw, 14px))
           calc(var(--sr) + clamp(12px, 3vw, 20px))
           calc(var(--sb) + 104px)
@@ -762,6 +762,7 @@
         gap: clamp(6px, 1.5vw, 10px);
         pointer-events: auto;
         animation: fadeUp 0.6s var(--ease) 0.28s both;
+        margin-top: 16px;
       }
       @keyframes fadeUp {
         from {
@@ -777,10 +778,11 @@
       /* ─ RUN COUNTER ─ */
       #run-counter {
         grid-area: runcount;
-        align-self: center;
+        align-self: start;
         justify-self: center;
+        margin-top: 20px;
         font-family: var(--f-sacred);
-        font-size: clamp(1.05rem, 2.8vw, 1.4rem);
+        font-size: clamp(0.52rem, 1.4vw, 0.7rem);
         font-weight: 700;
         color: var(--gold);
         letter-spacing: 0.06em;
@@ -789,7 +791,7 @@
         -webkit-backdrop-filter: blur(14px);
         border: 1px solid rgba(212, 134, 15, 0.28);
         border-radius: 100px;
-        padding: 9px 24px;
+        padding: 4px 12px;
         box-shadow: 0 4px 22px rgba(120, 60, 0, 0.13),
           inset 0 1px 0 rgba(255, 255, 255, 0.65);
         pointer-events: none;
@@ -1516,7 +1518,7 @@
             🔔 Next
           </button>
         </div>
-        <button class="pill-solo" id="btn-settings" aria-label="Settings (S)">
+        <button class="pill-solo" id="btn-settings" aria-label="Settings (S)" style="display:none">
           ⚙ Settings
         </button>
       </div>
