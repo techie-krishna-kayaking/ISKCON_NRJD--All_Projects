@@ -192,15 +192,34 @@
 
     <script>
       const iframe = document.getElementById('gas-frame');
-      const baseUrl = 'https://script.google.com/macros/s/AKfycbzI_UTo16Sovo1bGKQDy1LOviEKrQNOkhkHa5jQK25dgMYaK3U3xGaUkNJQw3KRVL1W/exec';
-      
-      // Monitor for navigation attempts
-      iframe.addEventListener('load', () => {
+
+      // Intercept top-level navigation triggered by the GAS iframe.
+      if (window.navigation) {
+        navigation.addEventListener('navigate', (e) => {
+          const url = e.destination.url;
+          if (url.includes('script.google.com') || url.includes('googleusercontent.com')) {
+            e.preventDefault();
+            iframe.src = url;
+          }
+        });
+      } else {
         try {
-          console.log('Iframe loaded');
-        } catch (e) {
-          // Cross-origin - expected for GAS apps
-        }
+          const _locProto = Object.getOwnPropertyDescriptor(window, 'location');
+          Object.defineProperty(window, 'location', {
+            get: () => _locProto ? _locProto.get.call(window) : location,
+            set: (url) => {
+              if (url && (String(url).includes('script.google.com') || String(url).includes('googleusercontent.com'))) {
+                iframe.src = url;
+              } else {
+                if (_locProto && _locProto.set) _locProto.set.call(window, url);
+              }
+            }
+          });
+        } catch (err) { /* non-configurable in some environments */ }
+      }
+
+      iframe.addEventListener('load', () => {
+        console.log('Attendance iframe loaded:', iframe.src);
       });
     </script>
   </body>
