@@ -192,40 +192,46 @@
 
     <script>
       const iframe = document.getElementById('gas-frame');
-      const baseUrl = 'https://script.google.com/macros/s/AKfycbwx9Gdxw9GshzqyojCrlPLaF-AClhjqdj_SaN5ZxhZn_jQWoMoJjRkB-UdmXX0o7k99Tg/exec';
-      let isNavigating = false;
 
-      // Track when page is attempting to unload (iframe navigation)
-      window.addEventListener('beforeunload', (e) => {
-        isNavigating = true;
-      });
-
-      // Detect if iframe navigation is trying to break out
-      // We'll capture this by detecting when the page location changes
-      let lastLocation = window.location.href;
-      setInterval(() => {
-        if (window.location.href !== lastLocation && window.location.href.includes('script.google.com')) {
-          // The page is trying to navigate to the GAS app directly
-          // Redirect back and update iframe instead
-          window.history.back();
-          lastLocation = window.location.href;
-          isNavigating = false;
-        }
-      }, 100);
-
-      // Handle iframe loads
-      iframe.addEventListener('load', () => {
+      // Intercept top-level navigation triggered by the GAS iframe.
+      // When a prayer button is clicked, GAS tries to navigate the top-level
+      // window (via allow-top-navigation-by-user-activation). We catch that
+      // navigation and redirect the URL back into the iframe src instead,
+      // keeping prayers.html — and the bottom nav — alive.
+      if (window.navigation) {
+        // Modern Navigation API (Chrome 102+ / Android WebView API 32+)
+        navigation.addEventListener('navigate', (e) => {
+          const url = e.destination.url;
+          if (url.includes('script.google.com') || url.includes('googleusercontent.com')) {
+            e.preventDefault();
+            iframe.src = url;
+          }
+        });
+      } else {
+        // Fallback: catch beforeunload, save target, return to this page
+        // and load the target URL in the iframe.
+        window.addEventListener('beforeunload', () => {
+          sessionStorage.setItem('gas_redirect', window.__gasRedirectUrl || '');
+        });
+        // Override location setter to intercept GAS navigation
+        const _locProto = Object.getOwnPropertyDescriptor(window, 'location');
         try {
-          console.log('Prayers iframe loaded');
-          isNavigating = false;
-        } catch (e) {
-          // Cross-origin - expected
-        }
-      });
+          Object.defineProperty(window, 'location', {
+            get: () => _locProto ? _locProto.get.call(window) : location,
+            set: (url) => {
+              if (url && (String(url).includes('script.google.com') || String(url).includes('googleusercontent.com'))) {
+                iframe.src = url;
+              } else {
+                window.__gasRedirectUrl = url;
+                if (_locProto && _locProto.set) _locProto.set.call(window, url);
+              }
+            }
+          });
+        } catch (err) { /* non-configurable in some environments */ }
+      }
 
-      // When detecting navigation in iframe, update src instead
-      iframe.addEventListener('unload', () => {
-        console.log('Iframe unloading - updating content');
+      iframe.addEventListener('load', () => {
+        console.log('Prayers iframe loaded:', iframe.src);
       });
     </script>
   </body>
