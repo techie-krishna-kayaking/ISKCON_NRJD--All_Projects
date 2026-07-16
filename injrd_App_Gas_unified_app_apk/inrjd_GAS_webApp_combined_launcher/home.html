@@ -29,10 +29,67 @@
       background: radial-gradient(circle at top right, #ffe9c7 0%, transparent 42%),
                   linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
       color: var(--text);
+      padding: 0;
+    }
+
+    .header {
+      padding: 18px 14px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff7eb 0%, #ffe8c8 100%);
+      border-bottom: 1px solid #f0d4a8;
+      box-shadow: 0 2px 10px rgba(180, 120, 40, 0.1);
+      position: relative;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f5b041 0%, #e67e22 45%, #f39c12 100%);
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .header-title-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #b8600a;
+      margin-bottom: 6px;
+    }
+
+    .header-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid #f0d4a8;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(180, 120, 40, 0.16);
+      flex-shrink: 0;
+    }
+
+    .page-wrap {
       padding: 24px;
+      display: flex;
+      justify-content: center;
     }
 
     .shell {
@@ -44,7 +101,7 @@
       padding: 28px;
     }
 
-    .title {
+    .page-title {
       margin: 0;
       font-family: 'Cinzel', serif;
       letter-spacing: 0.06em;
@@ -84,6 +141,10 @@
       border-left-color: var(--accent-2);
     }
 
+    .app-btn:nth-child(3) {
+      border-left-color: #8b3a00;
+    }
+
     .app-btn:hover {
       transform: translateY(-2px);
       border-color: #d9be96;
@@ -91,6 +152,30 @@
     }
 
     @media (max-width: 520px) {
+      .header {
+        padding: 14px 10px;
+      }
+
+      .header-inner {
+        gap: 8px;
+      }
+
+      .header-logo {
+        width: 40px;
+        height: 40px;
+        padding: 3px;
+      }
+
+      .header-eyebrow {
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
+        margin-bottom: 4px;
+      }
+
+      .page-wrap {
+        padding: 16px;
+      }
+
       .shell {
         padding: 20px;
         border-radius: 16px;
@@ -103,14 +188,38 @@
   </style>
 </head>
 <body>
+  <header class="header">
+    <div class="header-inner">
+      <img
+        src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+        alt="ISKCON Logo"
+        class="header-logo"
+      >
+
+      <div class="header-title-wrap">
+        <div class="page-title">ISKCON NRJD Web Apps</div>
+        <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+        <div class="subtitle">New Rajapur Jagannatha Dhama</div>
+      </div>
+
+      <img
+        src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+        alt="Jagannatha Logo"
+        class="header-logo"
+      >
+    </div>
+  </header>
+
+  <div class="page-wrap">
   <main class="shell">
-    <h1 class="title">ISKCON NRJD Web Apps</h1>
     <p class="subtitle">Select an app to continue</p>
 
     <div class="grid">
       <a class="app-btn" href="<?= morningUrl ?>">1. Morning Announcement</a>
       <a class="app-btn" href="<?= purushotamUrl ?>">2. Purushotam Month Prayers</a>
+      <a class="app-btn" href="<?= (typeof aratiUrl !== 'undefined' && aratiUrl) ? aratiUrl : '?page=arati' ?>">3. Arati Plates</a>
     </div>
   </main>
+  </div>
 </body>
 </html>

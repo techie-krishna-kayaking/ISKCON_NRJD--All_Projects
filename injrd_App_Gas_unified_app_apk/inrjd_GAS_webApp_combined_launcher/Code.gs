@@ -5,6 +5,10 @@ function doGet(e) {
     return renderMorningPage();
   }
 
+  if (page === 'arati') {
+    return renderAratiPage();
+  }
+
   if (page === 'purushotam') {
     const requestedLang = (e && e.parameter && e.parameter.lang) || 'en';
     const lang = getAvailableLanguageOrDefault(requestedLang);
@@ -17,11 +21,23 @@ function doGet(e) {
 function renderHomePage() {
   const template = HtmlService.createTemplateFromFile('home');
   template.morningUrl = buildAppUrl({ page: 'morning' });
+  template.aratiUrl = buildAppUrl({ page: 'arati' });
   template.purushotamUrl = buildAppUrl({ page: 'purushotam' });
 
   return template
     .evaluate()
     .setTitle('ISKCON NRJD Prayer Apps')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function renderAratiPage() {
+  const template = HtmlService.createTemplateFromFile('index_arati');
+  template.homeUrl = buildAppUrl({ page: 'home' });
+
+  return template
+    .evaluate()
+    .setTitle('ISKCON NRJD Arati Plates')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
