@@ -844,6 +844,32 @@
         return _audioCtx;
       }
 
+      let _audioUnlocked = false;
+      function unlockAudio() {
+        try {
+          const audioCtx = _getAudioCtx();
+          const warmup = () => {
+            // Tiny inaudible warm-up to fully activate the audio pipeline on Android WebView.
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.00001, audioCtx.currentTime);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.01);
+            _audioUnlocked = true;
+          };
+
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume().then(warmup).catch(() => {});
+          } else {
+            warmup();
+          }
+        } catch (e) {
+          // Ignore and keep app functional even if audio APIs are unavailable.
+        }
+      }
+
       // Play a soft, mild button click sound
       function playButtonSound() {
         try {
@@ -851,18 +877,24 @@
           // Android WebView suspends AudioContext until explicitly resumed after a touch
           const doPlay = () => {
             const now = audioCtx.currentTime;
-            const duration = 0.12;
+            const duration = 0.15;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(1200, now);
-            osc.frequency.exponentialRampToValueAtTime(600, now + duration);
-            gain.gain.setValueAtTime(0.15, now);
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(1100, now);
+            osc.frequency.exponentialRampToValueAtTime(520, now + duration);
+            gain.gain.setValueAtTime(0.22, now);
             gain.gain.exponentialRampToValueAtTime(0.02, now + duration);
             osc.start(now);
             osc.stop(now + duration);
           };
+
+          if (!_audioUnlocked) {
+            unlockAudio();
+          }
+
           if (audioCtx.state === 'suspended') {
             audioCtx.resume().then(doPlay).catch(() => {});
           } else {
@@ -1026,6 +1058,18 @@
       document.getElementById("plus-btn").addEventListener("click", increment);
       document.getElementById("minus-btn").addEventListener("click", decrement);
       document.getElementById("reset-this").addEventListener("click", resetThis);
+
+      // First user gesture must unlock audio on many Android WebView builds.
+      ["pointerdown", "touchstart"].forEach((evt) => {
+        document.addEventListener(evt, unlockAudio, { once: true, passive: true });
+      });
+
+      // Some devices re-suspend audio when app is backgrounded.
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          unlockAudio();
+        }
+      });
 
       // Counter target settings via gear button
       const settingsBtn = document.getElementById("btn-settings");
