@@ -12,7 +12,7 @@ import java.util.Map;
 public class MainActivity extends BridgeActivity {
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         // Override WebViewClient to strip X-Frame-Options so GAS pages
         // can be embedded in iframes within the app.
