@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nandotsava 2026 Desk App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-main: #fff7d1;
+        --bg-card: #fff3b0;
+        --bg-card-2: #ffe066;
+        --text-main: #2c2200;
+        --text-dim: #5e4b00;
+        --accent: #b8860b;
+        --accent-dark: #8c6b00;
+        --success: #1f8a2f;
+        --danger: #b00020;
+        --white: #ffffff;
+        --border: #e5c452;
+        --shadow: 0 8px 24px rgba(140, 107, 0, 0.16);
+        --font-display: "Cinzel", Georgia, serif;
+        --font-body: "Jost", "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Verdana, Tahoma, sans-serif;
+        color: var(--text-main);
+        background: radial-gradient(circle at 20% 20%, #fffce8 0%, var(--bg-main) 45%, #ffe999 100%);
+      }
+
+      .app-header {
+        padding: 32px 20px 22px;
+        text-align: center;
+        position: relative;
+        background: linear-gradient(180deg, rgba(255, 243, 176, 0.9) 0%, rgba(255, 247, 209, 0.75) 100%);
+        border-bottom: 1px solid rgba(229, 196, 82, 0.45);
+      }
+
+      .app-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent 0%, #b8860b 20%, #ffd43b 45%, #e5c452 70%, transparent 100%);
+      }
+
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        max-width: 1220px;
+        margin: 0 auto;
+      }
+
+      .header-eyebrow {
+        font-size: 11px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8c6b00;
+        opacity: 0.85;
+        margin-bottom: 8px;
+      }
+
+      .app-header h1 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(24px, 3.6vw, 46px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: 2px;
+        background: linear-gradient(145deg, #7a5f00 0%, #b8860b 28%, #9a7400 56%, #c8a84b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header-logo {
+        width: clamp(46px, 6vw, 70px);
+        height: clamp(46px, 6vw, 70px);
+        object-fit: contain;
+        border-radius: 50%;
+        border: 2px solid rgba(200, 168, 75, 0.7);
+        background: rgba(255, 255, 255, 0.7);
+        padding: 4px;
+        flex-shrink: 0;
+      }
+
+      .header-subtitle {
+        margin-top: 9px;
+        font-size: 13px;
+        color: #6e5600;
+        letter-spacing: 1.1px;
+      }
+
+      .announcement {
+        margin: 18px auto 0;
+        width: min(960px, calc(100% - 30px));
+        border: 1px solid rgba(229, 196, 82, 0.55);
+        border-radius: 999px;
+        padding: 10px 18px;
+        background: rgba(255, 255, 255, 0.66);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 6px 20px rgba(140, 107, 0, 0.12);
+        overflow: hidden;
+      }
+
+      .announcement span {
+        flex-shrink: 0;
+      }
+
+      .announcement marquee {
+        color: #7a5f00;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #ffe066, #ffd43b 60%, #ffec99);
+        border: 2px solid #f0c419;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .sub {
+        margin-top: 6px;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      .grid-two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.12s ease, opacity 0.12s ease;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary {
+        background: linear-gradient(180deg, #d4a800, #b8860b);
+        color: #fff;
+      }
+
+      .btn-user {
+        background: linear-gradient(180deg, #f3c900, #d9a900);
+        color: #2c2200;
+      }
+
+      .btn-green {
+        background: linear-gradient(180deg, #26a53a, #1f8a2f);
+        color: #fff;
+      }
+
+      .btn-disabled,
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #d8b54a;
+        border-radius: 10px;
+        padding: 9px;
+        font-size: 14px;
+        background: #fffdf2;
+      }
+
+      label {
+        font-size: 12px;
+        color: var(--text-dim);
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 700;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .status {
+        margin-top: 10px;
+        font-weight: 700;
+        min-height: 18px;
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .status.ok {
+        color: var(--success);
+      }
+
+      .pill {
+        display: inline-block;
+        background: var(--bg-card-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px 10px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 10px;
+        border: 1px solid #e0bd4f;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 1000px;
+        background: #fffbe6;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #f0d57c;
+        padding: 8px;
+        font-size: 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #ffe066;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .suggestions {
+        margin-top: 4px;
+      }
+
+      .suggestion-btn {
+        font-size: 11px;
+        background: #fff4bf;
+        border: 1px solid #e2c35a;
+        border-radius: 999px;
+        margin: 2px 4px 2px 0;
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 10px;
+      }
+
+      .summary-box {
+        background: #fff7d1;
+        border: 1px solid #e5c452;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .summary-box .num {
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .summary-box .meta {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-dim);
+        font-weight: 700;
+      }
+
+      .events {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .events .btn {
+        width: 100%;
+      }
+
+      .app-footer {
+        padding: 24px 14px;
+        text-align: center;
+        border-top: 1px solid rgba(229, 196, 82, 0.55);
+        background: linear-gradient(0deg, rgba(255, 236, 153, 0.25), transparent);
+        margin-top: 18px;
+      }
+
+      .footer-brand {
+        font-family: var(--font-display);
+        font-size: clamp(17px, 2.2vw, 22px);
+        font-style: italic;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, #8c6b00, #b8860b, #c8a84b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 6px;
+      }
+
+      .app-footer p {
+        font-size: 12px;
+        color: #7a6508;
+      }
+
+      @media (max-width: 900px) {
+        .grid-two,
+        .summary-grid,
+        .events {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="app-header">
+        <div class="header-inner">
+          <img src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png" alt="Left Logo" class="header-logo" />
+          <div class="header-title-wrap">
+            <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+            <h1>Nandotsava 2026 - Check-in & Attendance</h1>
+          </div>
+          <img
+            src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+            alt="Right Logo"
+            class="header-logo"
+          />
+        </div>
+        <p class="header-subtitle">Multi-user desk app with duplicate protection (no overwrite) and live search.</p>
+        <div class="announcement">
+          <span>📊</span>
+          <marquee behavior="scroll" direction="left" scrollamount="4"
+            >Hare Krishna • Main Desk + Competition Desk Real-time Flow • No Overwrite Mode • Hare Krishna</marquee
+          >
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="row">
+          <button id="btnMainUser" class="btn btn-primary">MAIN USER (Main Desk)</button>
+          <button id="btnDeskUser" class="btn btn-user">USER (Competition Desk)</button>
+        </div>
+        <div id="globalStatus" class="status"></div>
+      </div>
+
+      <div id="mainUserSection" class="hidden">
+        <div class="card">
+          <div class="row" style="align-items: end;">
+            <div style="max-width: 220px; width: 100%;">
+              <label>Main User Code</label>
+              <input type="password" id="mainCode" placeholder="Enter code" />
+            </div>
+            <div>
+              <button id="btnUnlockMain" class="btn btn-primary">Unlock</button>
+            </div>
+          </div>
+          <div id="mainCodeStatus" class="status"></div>
+        </div>
+
+        <div id="mainPanel" class="hidden">
+          <div class="card">
+            <div class="row" style="margin-top: 2px;">
+              <div style="flex: 1; min-width: 180px;">
+                <label>Filter School Code</label>
+                <select id="filterSchoolCode"></select>
+              </div>
+              <div style="flex: 1; min-width: 220px;">
+                <label>Filter School Name</label>
+                <select id="filterSchoolName"></select>
+              </div>
+              <div style="flex: 1; min-width: 220px;">
+                <label>Filter Competition</label>
+                <select id="filterCompetition"></select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top: 10px;">
+              <div style="max-width: 220px; width: 100%;">
+                <label>Search Column</label>
+                <select id="searchColumn"></select>
+              </div>
+              <div style="flex: 1; min-width: 240px;">
+                <label>Search Text</label>
+                <input id="searchText" placeholder="Start typing..." />
+                <div id="suggestions" class="suggestions"></div>
+              </div>
+              <div>
+                <button id="btnSearch" class="btn btn-primary" style="margin-top: 18px;">Search</button>
+              </div>
+            </div>
+
+            <div id="mainSearchStatus" class="status"></div>
+          </div>
+
+          <div class="card">
+            <div class="summary-grid">
+              <div class="summary-box">
+                <div>Main Counter Footfall (Finalist)</div>
+                <div class="num" id="finalistsFootfall">0/0</div>
+                <div class="meta" id="finalistsPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Main Counter Footfall (Fancy Dress)</div>
+                <div class="num" id="fancyDressFootfall">0/0</div>
+                <div class="meta" id="fancyDressPercent">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight: 800; margin-bottom: 8px;">Search Results</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Sheet</th>
+                    <th>SchoolCode</th>
+                    <th>SchoolName</th>
+                    <th>Group</th>
+                    <th>COMPETITION</th>
+                    <th>NAME</th>
+                    <th>CLASS</th>
+                    <th>SECTION</th>
+                    <th>PHNO</th>
+                    <th>COUPON</th>
+                    <th>TIMESTAMP</th>
+                    <th>Save Coupon</th>
+                  </tr>
+                </thead>
+                <tbody id="mainResultBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="grid-two">
+            <div class="card">
+              <div style="font-weight: 800; margin-bottom: 8px;">School-wise Footfall</div>
+              <div id="schoolWiseStats"></div>
+            </div>
+            <div class="card">
+              <div style="font-weight: 800; margin-bottom: 8px;">Competition-wise Footfall</div>
+              <div id="competitionWiseStats"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="deskUserSection" class="hidden">
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px;">Choose Event</div>
+          <div id="eventButtons" class="events"></div>
+          <div class="sub" id="refreshNote"></div>
+          <div id="deskStatus" class="status"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px;" id="eventTitle">Participants (timestamp ascending)</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sheet</th>
+                  <th>NAME</th>
+                  <th>School</th>
+                  <th>Class</th>
+                  <th>Competition</th>
+                  <th>Coupon</th>
+                  <th>Main Desk Timestamp</th>
+                  <th>Attendance</th>
+                  <th>Performance Queue</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="deskResultBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <footer class="app-footer">
+        <div class="footer-brand">ISKCON Magadi Main Road</div>
+        <p>&copy; 2026 Iskcon NRJD Website. All rights reserved. | Designed &amp; Developed by INRJD Tech Team</p>
+      </footer>
+    </div>
+
+    <script>
+      const state = {
+        config: null,
+        unlockedMain: false,
+        currentMainResults: [],
+        currentEventKey: "",
+        refreshTimer: null,
+      };
+
+      function setStatus(elId, message, isError) {
+        const el = document.getElementById(elId);
+        el.textContent = message || "";
+        el.className = "status " + (message ? (isError ? "error" : "ok") : "");
+      }
+
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function callServer(fn, payload) {
+        return new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler((err) => reject(new Error(err && err.message ? err.message : "Server error")))[fn](payload);
+        });
+      }
+
+      async function init() {
+        bindButtons();
+        try {
+          state.config = await callServer("getBootstrapData", {});
+          populateSearchColumns();
+          populateEvents();
+          await loadFilterOptions();
+          setStatus("globalStatus", "", false);
+        } catch (e) {
+          setStatus("globalStatus", e.message || "Initialization failed.", true);
+        }
+      }
+
+      function bindButtons() {
+        document.getElementById("btnMainUser").addEventListener("click", showMainUserSection);
+        document.getElementById("btnDeskUser").addEventListener("click", showDeskUserSection);
+        document.getElementById("btnUnlockMain").addEventListener("click", unlockMainUser);
+        document.getElementById("mainCode").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            unlockMainUser();
+          }
+        });
+        document.getElementById("btnSearch").addEventListener("click", runSearch);
+        document.getElementById("searchText").addEventListener("input", debounce(runSearch, 250));
+        document.getElementById("searchText").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            runSearch();
+          }
+        });
+        document.getElementById("searchColumn").addEventListener("change", runSearch);
+        document.getElementById("filterSchoolCode").addEventListener("change", runSearch);
+        document.getElementById("filterSchoolName").addEventListener("change", runSearch);
+        document.getElementById("filterCompetition").addEventListener("change", runSearch);
+      }
+
+      function populateSearchColumns() {
+        const el = document.getElementById("searchColumn");
+        const cols = ["ALL"].concat((state.config && state.config.searchableColumns) || []);
+        el.innerHTML = cols.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      }
+
+      function populateEvents() {
+        const holder = document.getElementById("eventButtons");
+        const events = (state.config && state.config.events) || [];
+        holder.innerHTML = events
+          .map((e) => `<button class="btn btn-user" data-event-key="${escapeHtml(e.key)}">${escapeHtml(e.label)}</button>`)
+          .join("");
+
+        holder.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            state.currentEventKey = btn.getAttribute("data-event-key") || "";
+            document.getElementById("eventTitle").textContent = `Participants - ${btn.textContent} (timestamp ascending)`;
+            await loadEventParticipants();
+            startAutoRefresh();
+          });
+        });
+
+        const sec = (state.config && state.config.autoRefreshSeconds) || 10;
+        document.getElementById("refreshNote").textContent = `Auto refresh every ${sec} seconds.`;
+      }
+
+      async function loadFilterOptions() {
+        try {
+          const options = await callServer("getFilterOptions", {});
+          fillSelect("filterSchoolCode", options.schoolCodes || []);
+          fillSelect("filterSchoolName", options.schoolNames || []);
+          fillSelect("filterCompetition", options.competitions || []);
+        } catch (e) {
+          setStatus("mainSearchStatus", "Could not load filter options: " + e.message, true);
+        }
+      }
+
+      function fillSelect(id, values) {
+        const el = document.getElementById(id);
+        el.innerHTML = `<option value="">All</option>` +
+          values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      }
+
+      function showMainUserSection() {
+        document.getElementById("mainUserSection").classList.remove("hidden");
+        document.getElementById("deskUserSection").classList.add("hidden");
+        stopAutoRefresh();
+      }
+
+      function showDeskUserSection() {
+        document.getElementById("deskUserSection").classList.remove("hidden");
+        document.getElementById("mainUserSection").classList.add("hidden");
+      }
+
+      async function unlockMainUser() {
+        const code = document.getElementById("mainCode").value.trim();
+        if (!code) {
+          setStatus("mainCodeStatus", "Please enter code.", true);
+          return;
+        }
+
+        try {
+          const ok = await callServer("verifyMainUserCode", code);
+          if (!ok) {
+            state.unlockedMain = false;
+            document.getElementById("mainPanel").classList.add("hidden");
+            setStatus("mainCodeStatus", "Invalid code.", true);
+            return;
+          }
+
+          state.unlockedMain = true;
+          document.getElementById("mainPanel").classList.remove("hidden");
+          setStatus("mainCodeStatus", "Code verified.", false);
+          await refreshDashboardStats();
+          await runSearch();
+        } catch (e) {
+          setStatus("mainCodeStatus", e.message || "Verification failed.", true);
+        }
+      }
+
+      async function refreshDashboardStats() {
+        try {
+          const stats = await callServer("getDashboardStats", {});
+          renderStats(stats);
+        } catch (e) {
+          setStatus("mainSearchStatus", "Stats load failed: " + e.message, true);
+        }
+      }
+
+      function renderStats(stats) {
+        const sheetStats = stats.sheetStats || {};
+        const finalists = sheetStats.finalists || {};
+        const fancyDress = sheetStats.fancyDress || {};
+
+        const finalistsFootfall = Number(finalists.footfall || 0);
+        const finalistsTotal = Number(finalists.total || 0);
+        const finalistsPercentage = Number(finalists.percentage || 0);
+
+        const fancyDressFootfall = Number(fancyDress.footfall || 0);
+        const fancyDressTotal = Number(fancyDress.total || 0);
+        const fancyDressPercentage = Number(fancyDress.percentage || 0);
+
+        document.getElementById("finalistsFootfall").textContent = finalistsFootfall + "/" + finalistsTotal;
+        document.getElementById("finalistsPercent").textContent = finalistsPercentage + "%";
+
+        document.getElementById("fancyDressFootfall").textContent = fancyDressFootfall + "/" + fancyDressTotal;
+        document.getElementById("fancyDressPercent").textContent = fancyDressPercentage + "%";
+
+        document.getElementById("schoolWiseStats").innerHTML = (stats.schoolWise || [])
+          .slice(0, 50)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .join("");
+
+        document.getElementById("competitionWiseStats").innerHTML = (stats.competitionWise || [])
+          .slice(0, 50)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .join("");
+      }
+
+      async function runSearch() {
+        if (!state.unlockedMain) return;
+
+        const payload = {
+          query: document.getElementById("searchText").value || "",
+          column: document.getElementById("searchColumn").value || "ALL",
+          schoolCode: document.getElementById("filterSchoolCode").value || "",
+          schoolName: document.getElementById("filterSchoolName").value || "",
+          competition: document.getElementById("filterCompetition").value || "",
+          limit: 200,
+        };
+
+        try {
+          const res = await callServer("searchParticipants", payload);
+          state.currentMainResults = res.results || [];
+          renderMainResults();
+          renderSuggestions(res.suggestions || []);
+          setStatus("mainSearchStatus", `Found ${res.totalMatched || 0} records.`, false);
+        } catch (e) {
+          setStatus("mainSearchStatus", "Search failed: " + e.message, true);
+        }
+      }
+
+      function renderSuggestions(suggestions) {
+        const holder = document.getElementById("suggestions");
+        holder.innerHTML = suggestions
+          .map((s) => `<button class="suggestion-btn" data-sugg="${escapeHtml(s)}">${escapeHtml(s)}</button>`)
+          .join("");
+
+        holder.querySelectorAll("button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document.getElementById("searchText").value = btn.getAttribute("data-sugg") || "";
+            runSearch();
+          });
+        });
+      }
+
+      function renderMainResults() {
+        const body = document.getElementById("mainResultBody");
+        if (!state.currentMainResults.length) {
+          body.innerHTML = `<tr><td colspan="12">No data</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = state.currentMainResults
+          .map((r, i) => {
+            const canEdit = r.canSaveCoupon;
+            const saveCell = canEdit
+              ? `<div style="display:flex;gap:4px;min-width:160px;"><input id="coupon_${i}" placeholder="Coupon" style="min-width:90px;" onkeydown="if(event.key==='Enter'){event.preventDefault();saveCoupon(${i});}" /><button class="btn btn-primary" onclick="saveCoupon(${i})">Save</button></div>`
+              : `<span style="color:#1f8a2f;font-weight:700;">Saved</span>`;
+
+            return `<tr>
+              <td>${escapeHtml(r.sheetName)}</td>
+              <td>${escapeHtml(r.schoolCode)}</td>
+              <td>${escapeHtml(r.schoolName)}</td>
+              <td>${escapeHtml(r.group)}</td>
+              <td>${escapeHtml(r.competition)}</td>
+              <td>${escapeHtml(r.name)}</td>
+              <td>${escapeHtml(r.className)}</td>
+              <td>${escapeHtml(r.section)}</td>
+              <td>${escapeHtml(r.phno)}</td>
+              <td>${escapeHtml(r.coupon)}</td>
+              <td>${escapeHtml(r.timestamp)}</td>
+              <td>${saveCell}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      async function saveCoupon(index) {
+        const row = state.currentMainResults[index];
+        if (!row) return;
+        const coupon = (document.getElementById(`coupon_${index}`) || {}).value || "";
+
+        if (!coupon.trim()) {
+          setStatus("mainSearchStatus", "Coupon is required.", true);
+          return;
+        }
+
+        try {
+          const res = await callServer("saveCouponAndTimestamp", {
+            sheetName: row.sheetName,
+            rowNumber: row.rowNumber,
+            coupon,
+          });
+
+          if (!res.ok) {
+            setStatus("mainSearchStatus", res.message || "Could not save coupon.", true);
+            return;
+          }
+
+          setStatus("mainSearchStatus", res.message + " Timestamp: " + (res.timestamp || ""), false);
+          if (res.stats) renderStats(res.stats);
+          await runSearch();
+        } catch (e) {
+          setStatus("mainSearchStatus", "Save failed: " + e.message, true);
+        }
+      }
+
+      async function loadEventParticipants() {
+        if (!state.currentEventKey) return;
+
+        try {
+          const res = await callServer("getEventParticipants", state.currentEventKey);
+          renderDeskResults(res.participants || []);
+          setStatus("deskStatus", `Loaded ${(res.participants || []).length} participants.`, false);
+        } catch (e) {
+          setStatus("deskStatus", "Load failed: " + e.message, true);
+        }
+      }
+
+      function renderDeskResults(rows) {
+        const body = document.getElementById("deskResultBody");
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="10">No participants yet.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = rows
+          .map((r, i) => {
+            const action = r.canMarkAttendance
+              ? `<button class="btn btn-green" onclick="markAttendance(${i})">Mark</button>`
+              : `<span style="color:#1f8a2f;font-weight:700;">Done</span>`;
+
+            return `<tr>
+              <td>${escapeHtml(r.sheetName)}</td>
+              <td>${escapeHtml(r.name)}</td>
+              <td>${escapeHtml(r.schoolName)} (${escapeHtml(r.schoolCode)})</td>
+              <td>${escapeHtml(r.className)}-${escapeHtml(r.section)}</td>
+              <td>${escapeHtml(r.competition)}</td>
+              <td>${escapeHtml(r.coupon)}</td>
+              <td>${escapeHtml(r.timestamp)}</td>
+              <td>${escapeHtml(r.attendance)}</td>
+              <td><input id="queue_${i}" value="${escapeHtml(r.queue)}" placeholder="Queue" ${r.canMarkAttendance ? "" : "disabled"} /></td>
+              <td>${action}</td>
+            </tr>`;
+          })
+          .join("");
+
+        state._deskRows = rows;
+      }
+
+      async function markAttendance(index) {
+        const row = (state._deskRows || [])[index];
+        if (!row) return;
+
+        const queueInput = document.getElementById(`queue_${index}`);
+        const queue = queueInput ? queueInput.value : "";
+
+        try {
+          const res = await callServer("markAttendance", {
+            sheetName: row.sheetName,
+            rowNumber: row.rowNumber,
+            queue,
+          });
+
+          if (!res.ok) {
+            setStatus("deskStatus", res.message || "Attendance failed.", true);
+            return;
+          }
+
+          setStatus("deskStatus", res.message + " " + (res.attendanceTime || ""), false);
+          await loadEventParticipants();
+        } catch (e) {
+          setStatus("deskStatus", "Attendance failed: " + e.message, true);
+        }
+      }
+
+      function startAutoRefresh() {
+        stopAutoRefresh();
+        const sec = (state.config && state.config.autoRefreshSeconds) || 10;
+        state.refreshTimer = setInterval(() => {
+          loadEventParticipants();
+        }, sec * 1000);
+      }
+
+      function stopAutoRefresh() {
+        if (state.refreshTimer) {
+          clearInterval(state.refreshTimer);
+          state.refreshTimer = null;
+        }
+      }
+
+      function debounce(fn, waitMs) {
+        let t = null;
+        return function () {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, arguments), waitMs);
+        };
+      }
+
+      window.saveCoupon = saveCoupon;
+      window.markAttendance = markAttendance;
+
+      init();
+    </script>
+  </body>
+</html>
