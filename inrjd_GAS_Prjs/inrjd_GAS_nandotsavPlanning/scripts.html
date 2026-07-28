@@ -1,7 +1,7 @@
 <script>
 
 // ─── TAB SWITCHING ──────────────────────────────────────────────────────────
-function switchTab(tabName) {
+function switchTab(tabName, clickedBtn) {
   document.querySelectorAll('.tab-btn').forEach(function(btn) {
     btn.classList.remove('active');
   });
@@ -9,16 +9,20 @@ function switchTab(tabName) {
     tab.classList.remove('active');
   });
 
-  event.target.classList.add('active');
+  if (clickedBtn) {
+    clickedBtn.classList.add('active');
+  }
   document.getElementById('tab-' + tabName).classList.add('active');
 }
 
 // ─── GLOBAL DATA STORE ──────────────────────────────────────────────────────
 var allSchoolData = [];
+var allProgramData = [];
 
 // ─── LOAD DATA ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   loadSchoolData();
+  loadProgramPlanningData();
 });
 
 function loadSchoolData() {
@@ -96,16 +100,16 @@ function buildTableRow(s) {
   var row = '<tr id="row-' + s.rowIndex + '">';
 
   // S.No.
-  row += '<td class="td-sno"><span class="sno-badge">' + escapeHtml(String(s.sno)) + '</span></td>';
+  row += '<td class="td-sno" data-label="#"><span class="sno-badge">' + escapeHtml(String(s.sno)) + '</span></td>';
 
   // School name
-  row += '<td class="td-school">' + escapeHtml(s.school) + '</td>';
+  row += '<td class="td-school" data-label="School">' + escapeHtml(s.school) + '</td>';
 
   // Contact
-  row += '<td class="td-contact">' + escapeHtml(s.contactName) + '</td>';
+  row += '<td class="td-contact" data-label="Contact">' + escapeHtml(s.contactName) + '</td>';
 
   // Phone - call + whatsapp buttons
-  row += '<td class="td-action td-phone-actions">';
+  row += '<td class="td-action td-phone-actions" data-label="Phone">';
   if (normalizedPhone) {
     row += '<div class="phone-action-group">';
     row += '<a class="btn-call" href="' + phoneLink + '" title="Call" aria-label="Call">';
@@ -122,16 +126,16 @@ function buildTableRow(s) {
 
   // Location
   if (mapsLink) {
-    row += '<td class="td-action"><a class="btn-location" href="' + escapeHtml(mapsLink) + '" target="_blank" title="Get Directions">🗺️</a></td>';
+    row += '<td class="td-action" data-label="Location"><a class="btn-location" href="' + escapeHtml(mapsLink) + '" target="_blank" title="Get Directions">🗺️</a></td>';
   } else {
-    row += '<td class="td-action">—</td>';
+    row += '<td class="td-action" data-label="Location">—</td>';
   }
 
   // Initial Visit Date (editable)
-  row += '<td><input type="date" class="tbl-input" id="visit-' + s.rowIndex + '" value="' + escapeHtml(s.initialVisitDate) + '"></td>';
+  row += '<td data-label="Initial Visit"><input type="date" class="tbl-input" id="visit-' + s.rowIndex + '" value="' + escapeHtml(s.initialVisitDate) + '"></td>';
 
   // Comments (expandable per row)
-  row += '<td class="comments-cell">';
+  row += '<td class="comments-cell" data-label="Comments">';
   row += '<button type="button" class="comment-toggle" onclick="toggleComments(' + s.rowIndex + ')" id="comment-toggle-' + s.rowIndex + '">💬 ' + escapeHtml(commentsPreview) + '</button>';
   row += '<div class="comment-panel" id="comment-panel-' + s.rowIndex + '">';
   row += '<div class="comment-history" id="comment-history-' + s.rowIndex + '">' + formatCommentsForDisplay(s.comments) + '</div>';
@@ -140,15 +144,155 @@ function buildTableRow(s) {
   row += '</td>';
 
   // Prelims Date (editable)
-  row += '<td><input type="date" class="tbl-input prelims-date-input" id="prelims-' + s.rowIndex + '" value="' + escapeHtml(s.prelimsDate) + '" onchange="handlePrelimsDateChange(' + s.rowIndex + ')"></td>';
+  row += '<td data-label="Prelims"><input type="date" class="tbl-input prelims-date-input" id="prelims-' + s.rowIndex + '" value="' + escapeHtml(s.prelimsDate) + '" onchange="handlePrelimsDateChange(' + s.rowIndex + ')"></td>';
 
   // Volunteers (editable)
-  row += '<td><input type="text" class="tbl-input" id="volunteers-' + s.rowIndex + '" value="' + escapeHtml(s.volunteers) + '" placeholder="Names..."></td>';
+  row += '<td data-label="Volunteers"><input type="text" class="tbl-input" id="volunteers-' + s.rowIndex + '" value="' + escapeHtml(s.volunteers) + '" placeholder="Names..."></td>';
 
   // Save button
-  row += '<td class="td-action"><button class="btn-save-sm" onclick="saveRecord(' + s.rowIndex + ')" id="btn-' + s.rowIndex + '" title="Save">💾</button></td>';
+  row += '<td class="td-action" data-label="Save"><button class="btn-save-sm" onclick="saveRecord(' + s.rowIndex + ')" id="btn-' + s.rowIndex + '" title="Save">💾</button></td>';
 
   row += '</tr>';
+  return row;
+}
+
+// ─── PROGRAM PLANNING LOAD / RENDER ───────────────────────────────────────
+function loadProgramPlanningData() {
+  var loadingEl = document.getElementById('programLoading');
+  var listEl = document.getElementById('program-list');
+  if (!loadingEl || !listEl) return;
+
+  loadingEl.style.display = 'block';
+  listEl.innerHTML = '';
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+      allProgramData = data || [];
+      renderProgramPlanning(allProgramData);
+    })
+    .withFailureHandler(function(err) {
+      loadingEl.style.display = 'none';
+      listEl.innerHTML =
+        '<p style="text-align:center;color:red;">❌ Error loading data: ' + err.message + '</p>';
+    })
+    .getClassFollowupData();
+}
+
+function filterProgramPlanning() {
+  var searchEl = document.getElementById('programSearchInput');
+  if (!searchEl) return;
+
+  var query = searchEl.value.toLowerCase();
+  if (!query) {
+    renderProgramPlanning(allProgramData);
+    return;
+  }
+
+  var filtered = allProgramData.filter(function(item) {
+    return (item.school && item.school.toLowerCase().indexOf(query) !== -1) ||
+           (item.contactName && item.contactName.toLowerCase().indexOf(query) !== -1);
+  });
+
+  renderProgramPlanning(filtered);
+}
+
+function renderProgramPlanning(data) {
+  var loadingEl = document.getElementById('programLoading');
+  var container = document.getElementById('program-list');
+  if (!loadingEl || !container) return;
+
+  loadingEl.style.display = 'none';
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:#888;">No program planning records found.</p>';
+    return;
+  }
+
+  var html = '<div class="table-wrap"><table class="school-table">';
+  html += '<thead><tr>';
+  html += '<th>#</th>';
+  html += '<th>🏫 School</th>';
+  html += '<th>👤 Contact</th>';
+  html += '<th>📞</th>';
+  html += '<th>📍</th>';
+  html += '<th>📚 Class Type</th>';
+  html += '<th>🔁 Frequency</th>';
+  html += '<th>🙋 Volunteers</th>';
+  html += '<th>💬 Comments</th>';
+  html += '<th>💾</th>';
+  html += '</tr></thead>';
+  html += '<tbody>';
+
+  data.forEach(function(item) {
+    html += buildProgramPlanningRow(item);
+  });
+
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function buildProgramPlanningRow(item) {
+  var normalizedPhone = normalizePhoneNumber(item.contactNumber);
+  var phoneLink = normalizedPhone ? 'tel:+' + normalizedPhone : '#';
+  var whatsappLink = normalizedPhone ? 'https://wa.me/' + normalizedPhone : '#';
+  var mapsLink = item.location || '';
+  var commentsPreview = getLatestCommentPreview(item.comments);
+
+  var row = '<tr id="program-row-' + item.rowIndex + '">';
+  row += '<td class="td-sno" data-label="#"><span class="sno-badge">' + escapeHtml(String(item.sno)) + '</span></td>';
+  row += '<td class="td-school" data-label="School">' + escapeHtml(item.school) + '</td>';
+  row += '<td class="td-contact" data-label="Contact">' + escapeHtml(item.contactName) + '</td>';
+
+  row += '<td class="td-action td-phone-actions" data-label="Phone">';
+  if (normalizedPhone) {
+    row += '<div class="phone-action-group">';
+    row += '<a class="btn-call" href="' + phoneLink + '" title="Call" aria-label="Call">';
+    row += '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.11.37 2.3.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.28.2 2.47.57 3.58a1 1 0 0 1-.24 1.01l-2.21 2.2z"/></svg>';
+    row += '</a>';
+    row += '<a class="btn-whatsapp" href="' + whatsappLink + '" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="WhatsApp">';
+    row += '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.601 2.326A7.854 7.854 0 0 0 8 0C3.582 0 0 3.582 0 8c0 1.4.365 2.762 1.057 3.965L0 16l4.153-1.089A7.94 7.94 0 0 0 8 16c4.418 0 8-3.582 8-8a7.96 7.96 0 0 0-2.399-5.674zM8 14.629a6.63 6.63 0 0 1-3.372-.92l-.242-.145-2.464.646.658-2.404-.157-.248a6.61 6.61 0 0 1-1.014-3.558c0-3.659 2.972-6.631 6.63-6.631a6.58 6.58 0 0 1 4.687 1.944A6.58 6.58 0 0 1 14.629 8c0 3.658-2.97 6.629-6.629 6.629zm3.63-4.968c-.199-.1-1.173-.578-1.355-.644-.182-.066-.314-.1-.446.1-.132.198-.512.644-.628.776-.116.132-.232.149-.43.05-.198-.1-.835-.308-1.59-.982-.587-.523-.984-1.168-1.1-1.366-.115-.198-.012-.305.087-.404.09-.09.198-.232.297-.347.1-.116.132-.198.198-.33.066-.132.033-.248-.017-.347-.05-.1-.446-1.074-.611-1.47-.161-.387-.324-.334-.446-.34l-.38-.007a.73.73 0 0 0-.528.248c-.182.198-.694.677-.694 1.652 0 .975.71 1.917.81 2.05.099.132 1.394 2.128 3.378 2.985.472.204.84.326 1.127.417.474.151.905.13 1.246.079.38-.056 1.173-.479 1.338-.941.165-.463.165-.859.116-.942-.05-.083-.182-.132-.38-.231z"/></svg>';
+    row += '</a>';
+    row += '</div>';
+  } else {
+    row += '—';
+  }
+  row += '</td>';
+
+  if (mapsLink) {
+    row += '<td class="td-action" data-label="Location"><a class="btn-location" href="' + escapeHtml(mapsLink) + '" target="_blank" title="Get Directions">🗺️</a></td>';
+  } else {
+    row += '<td class="td-action" data-label="Location">—</td>';
+  }
+
+  row += '<td data-label="Class Type">';
+  row += '<div class="class-type-group">';
+  row += '<label class="radio-chip"><input type="radio" name="class-type-' + item.rowIndex + '" value="Secular" ' + (item.classType === 'Secular' ? 'checked' : '') + '> Secular</label>';
+  row += '<label class="radio-chip"><input type="radio" name="class-type-' + item.rowIndex + '" value="BG" ' + (item.classType === 'BG' ? 'checked' : '') + '> BG</label>';
+  row += '</div>';
+  row += '</td>';
+
+  row += '<td data-label="Frequency">';
+  row += '<div class="frequency-group">';
+  row += '<label class="radio-chip"><input type="radio" name="frequency-' + item.rowIndex + '" value="weekly" ' + (item.frequency === 'weekly' ? 'checked' : '') + '> Weekly</label>';
+  row += '<label class="radio-chip"><input type="radio" name="frequency-' + item.rowIndex + '" value="fortnightly" ' + (item.frequency === 'fortnightly' ? 'checked' : '') + '> Fortnightly</label>';
+  row += '<label class="radio-chip"><input type="radio" name="frequency-' + item.rowIndex + '" value="monthly" ' + (item.frequency === 'monthly' ? 'checked' : '') + '> Monthly</label>';
+  row += '<label class="radio-chip"><input type="radio" name="frequency-' + item.rowIndex + '" value="yearly" ' + (item.frequency === 'yearly' ? 'checked' : '') + '> Yearly</label>';
+  row += '</div>';
+  row += '</td>';
+
+  row += '<td data-label="Volunteers"><input type="text" class="tbl-input tbl-input-wide" id="program-volunteers-' + item.rowIndex + '" value="' + escapeHtml(item.volunteers || '') + '" placeholder="Type volunteers..."></td>';
+
+  row += '<td class="comments-cell" data-label="Comments">';
+  row += '<button type="button" class="comment-toggle" onclick="toggleProgramComments(' + item.rowIndex + ')" id="program-comment-toggle-' + item.rowIndex + '">💬 ' + escapeHtml(commentsPreview) + '</button>';
+  row += '<div class="comment-panel" id="program-comment-panel-' + item.rowIndex + '">';
+  row += '<div class="comment-history" id="program-comment-history-' + item.rowIndex + '">' + formatCommentsForDisplay(item.comments) + '</div>';
+  row += '<textarea class="tbl-input comment-input" id="program-comments-' + item.rowIndex + '" placeholder="Add follow-up details (new entry is timestamped automatically)..."></textarea>';
+  row += '</div>';
+  row += '</td>';
+
+  row += '<td class="td-action" data-label="Save"><button class="btn-save-sm" onclick="saveProgramPlanningRecord(' + item.rowIndex + ')" id="program-btn-' + item.rowIndex + '" title="Save">💾</button></td>';
+  row += '</tr>';
+
   return row;
 }
 
@@ -255,6 +399,48 @@ function saveRecord(rowIndex) {
     .updateSchoolRecord(rowIndex, updates);
 }
 
+function saveProgramPlanningRecord(rowIndex) {
+  var btn = document.getElementById('program-btn-' + rowIndex);
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = '⏳';
+
+  var commentInput = document.getElementById('program-comments-' + rowIndex);
+  var newComment = commentInput ? commentInput.value : '';
+  var classType = getSelectedClassType(rowIndex);
+  var frequency = getSelectedFrequency(rowIndex);
+
+  var updates = {
+    classType: classType,
+    frequency: frequency,
+    volunteers: getElementValue('program-volunteers-' + rowIndex),
+    comments: newComment,
+    ipAddress: clientIP,
+    browserInfo: getBrowserInfo(),
+    deviceInfo: getDeviceInfo()
+  };
+
+  google.script.run
+    .withSuccessHandler(function() {
+      if (newComment && String(newComment).trim()) {
+        applyProgramCommentUpdateLocally(rowIndex, newComment);
+      }
+      syncProgramClassTypeLocally(rowIndex, classType);
+      syncProgramFrequencyLocally(rowIndex, frequency);
+      syncProgramVolunteersLocally(rowIndex);
+
+      btn.disabled = false;
+      btn.textContent = '💾';
+      showToast('✅ Program planning saved!');
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false;
+      btn.textContent = '💾';
+      showToast('❌ Error: ' + err.message);
+    })
+    .updateClassFollowupRecord(rowIndex, updates);
+}
+
 function handlePrelimsDateChange(rowIndex) {
   syncPrelimsDateLocally(rowIndex);
   updatePrelimsDateHighlights();
@@ -330,6 +516,12 @@ function toggleComments(rowIndex) {
   panel.classList.toggle('open');
 }
 
+function toggleProgramComments(rowIndex) {
+  var panel = document.getElementById('program-comment-panel-' + rowIndex);
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
 function getLatestCommentPreview(comments) {
   if (!comments) return 'Add / View';
   var firstLine = String(comments).split('\n').map(function(line) {
@@ -390,6 +582,73 @@ function applyCommentUpdateLocally(rowIndex, newComment) {
   if (commentInput) {
     commentInput.value = '';
   }
+}
+
+function applyProgramCommentUpdateLocally(rowIndex, newComment) {
+  var commentInput = document.getElementById('program-comments-' + rowIndex);
+  var historyEl = document.getElementById('program-comment-history-' + rowIndex);
+  var toggleEl = document.getElementById('program-comment-toggle-' + rowIndex);
+  if (!historyEl || !toggleEl) return;
+
+  var stamped = buildStampedCommentClient(String(newComment).trim());
+  if (!stamped.trim()) return;
+
+  var rowData = allProgramData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+
+  if (rowData) {
+    rowData.comments = rowData.comments
+      ? stamped + '\n' + rowData.comments
+      : stamped;
+    toggleEl.textContent = '💬 ' + getLatestCommentPreview(rowData.comments);
+    historyEl.innerHTML = formatCommentsForDisplay(rowData.comments);
+  }
+
+  if (commentInput) {
+    commentInput.value = '';
+  }
+}
+
+function getSelectedClassType(rowIndex) {
+  var selected = document.querySelector('input[name="class-type-' + rowIndex + '"]:checked');
+  return selected ? selected.value : '';
+}
+
+function getSelectedFrequency(rowIndex) {
+  var selected = document.querySelector('input[name="frequency-' + rowIndex + '"]:checked');
+  return selected ? selected.value : '';
+}
+
+function getElementValue(elementId) {
+  var el = document.getElementById(elementId);
+  return el ? el.value : '';
+}
+
+function syncProgramClassTypeLocally(rowIndex, classType) {
+  var rowData = allProgramData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+  if (rowData) {
+    rowData.classType = classType || '';
+  }
+}
+
+function syncProgramFrequencyLocally(rowIndex, frequency) {
+  var rowData = allProgramData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+  if (rowData) {
+    rowData.frequency = frequency || '';
+  }
+}
+
+function syncProgramVolunteersLocally(rowIndex) {
+  var rowData = allProgramData.find(function(item) {
+    return item.rowIndex === rowIndex;
+  });
+  if (!rowData) return;
+  rowData.volunteers = getElementValue('program-volunteers-' + rowIndex);
 }
 
 </script>
