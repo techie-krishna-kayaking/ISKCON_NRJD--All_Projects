@@ -38,8 +38,9 @@
 
 <!-- Tabs -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('schools')">🏫 Schools</button>
-  <button class="tab-btn" onclick="switchTab('rules')">📋 Rules & Regulations</button>
+  <button class="tab-btn active" onclick="switchTab('schools', this)">🏫 Schools</button>
+  <button class="tab-btn" onclick="switchTab('rules', this)">📋 Rules & Regulations</button>
+  <button class="tab-btn" onclick="switchTab('program-planning', this)">🗓️ Program Planning</button>
 </div>
 
 <!-- Schools Tab -->
@@ -54,6 +55,15 @@
 <!-- Rules Tab -->
 <div id="tab-rules" class="tab-content">
   <?!= include('rules'); ?>
+</div>
+
+<!-- Program Planning Tab -->
+<div id="tab-program-planning" class="tab-content">
+  <div class="search-container">
+    <input type="text" id="programSearchInput" placeholder="🔍 Search by school name or contact..." onkeyup="filterProgramPlanning()">
+  </div>
+  <div class="loading" id="programLoading">🎨 Loading program planning data...</div>
+  <div id="program-list" class="school-list"></div>
 </div>
 
 <!-- Toast notification -->

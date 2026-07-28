@@ -4,8 +4,9 @@
  */
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
-const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE'; // Replace with your Google Sheet ID
-const SHEET_NAME = 'Sheet1'; // Replace with your sheet/tab name
+const SHEET_ID = '1VuGYgLN2_5pQPYMm3wUOg2zoAJZEMsHZJV7IkJ_ioHU'; // Replace with your Google Sheet ID
+const SHEET_NAME = 'School'; // Replace with your sheet/tab name
+const CLASS_FOLLOWUP_SHEET_NAME = 'ClassFollowup';
 
 // Column mapping (1-indexed)
 const COL = {
@@ -22,6 +23,22 @@ const COL = {
   IP_ADDRESS: 11,
   BROWSER_INFO: 12,
   DEVICE_INFO: 13
+};
+
+const CLASS_COL = {
+  SNO: 1,
+  SCHOOL: 2,
+  CONTACT_NAME: 3,
+  CONTACT_NUMBER: 4,
+  LOCATION: 5,
+  CLASS_TYPE: 6,
+  FREQUENCY: 7,
+  VOLUNTEERS: 8,
+  COMMENTS: 9,
+  TIMESTAMP: 10,
+  IP: 11,
+  BROWSER: 12,
+  DEVICE: 13
 };
 
 // ─── WEB APP ENTRY ──────────────────────────────────────────────────────────
@@ -131,6 +148,89 @@ function updateSchoolRecord(rowIndex, updates) {
   return { success: true };
 }
 
+/**
+ * Returns all class follow-up records from ClassFollowup sheet.
+ */
+function getClassFollowupData() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = getOrCreateClassFollowupSheet_(ss);
+  const data = sheet.getDataRange().getValues();
+
+  const records = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row[CLASS_COL.SCHOOL - 1]) continue;
+
+    records.push({
+      rowIndex: i + 1,
+      sno: row[CLASS_COL.SNO - 1],
+      school: row[CLASS_COL.SCHOOL - 1],
+      contactName: row[CLASS_COL.CONTACT_NAME - 1] || '',
+      contactNumber: String(row[CLASS_COL.CONTACT_NUMBER - 1] || ''),
+      location: row[CLASS_COL.LOCATION - 1] || '',
+      classType: row[CLASS_COL.CLASS_TYPE - 1] || '',
+      frequency: row[CLASS_COL.FREQUENCY - 1] || '',
+      volunteers: row[CLASS_COL.VOLUNTEERS - 1] || '',
+      comments: row[CLASS_COL.COMMENTS - 1] || '',
+      timestamp: formatTimestamp(row[CLASS_COL.TIMESTAMP - 1]),
+      ipAddress: row[CLASS_COL.IP - 1] || '',
+      browserInfo: row[CLASS_COL.BROWSER - 1] || '',
+      deviceInfo: row[CLASS_COL.DEVICE - 1] || ''
+    });
+  }
+
+  return records;
+}
+
+/**
+ * Updates class follow-up fields for one row.
+ * @param {number} rowIndex 1-indexed row number in ClassFollowup sheet.
+ * @param {object} updates classType, frequency, volunteers, comments, ipAddress, browserInfo, deviceInfo
+ */
+function updateClassFollowupRecord(rowIndex, updates) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = getOrCreateClassFollowupSheet_(ss);
+
+  if (updates.classType !== undefined) {
+    sheet.getRange(rowIndex, CLASS_COL.CLASS_TYPE).setValue(updates.classType || '');
+  }
+
+  if (updates.frequency !== undefined) {
+    sheet.getRange(rowIndex, CLASS_COL.FREQUENCY).setValue(updates.frequency || '');
+  }
+
+  if (updates.volunteers !== undefined) {
+    sheet.getRange(rowIndex, CLASS_COL.VOLUNTEERS).setValue(updates.volunteers || '');
+  }
+
+  if (updates.comments !== undefined) {
+    const commentRange = sheet.getRange(rowIndex, CLASS_COL.COMMENTS);
+    const newComment = String(updates.comments || '').trim();
+    if (newComment) {
+      const existingComments = String(commentRange.getValue() || '').trim();
+      const stampedComment = buildStampedComment_(newComment);
+      const mergedComments = existingComments
+        ? stampedComment + '\n' + existingComments
+        : stampedComment;
+      commentRange.setValue(mergedComments);
+    }
+  }
+
+  sheet.getRange(rowIndex, CLASS_COL.TIMESTAMP).setValue(new Date());
+
+  if (updates.ipAddress) {
+    sheet.getRange(rowIndex, CLASS_COL.IP).setValue(updates.ipAddress);
+  }
+  if (updates.browserInfo) {
+    sheet.getRange(rowIndex, CLASS_COL.BROWSER).setValue(updates.browserInfo);
+  }
+  if (updates.deviceInfo) {
+    sheet.getRange(rowIndex, CLASS_COL.DEVICE).setValue(updates.deviceInfo);
+  }
+
+  return { success: true };
+}
+
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 
 function formatTimestamp(value) {
@@ -161,4 +261,51 @@ function buildStampedComment_(comment) {
   const tz = Session.getScriptTimeZone() || 'Asia/Kolkata';
   const timestamp = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd-HHmmss');
   return timestamp + ' - ' + comment;
+}
+
+function getOrCreateClassFollowupSheet_(ss) {
+  let sheet = ss.getSheetByName(CLASS_FOLLOWUP_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(CLASS_FOLLOWUP_SHEET_NAME);
+  }
+
+  const expectedHeaders = [
+    'S.No.',
+    'School',
+    'Contact Name',
+    'Contact Number',
+    'Location',
+    'ClassType',
+    'Frequency',
+    'Volunteers',
+    'Comments',
+    'timestamp',
+    'ip',
+    'browser',
+    'device'
+  ];
+
+  const maxCols = Math.max(sheet.getLastColumn(), expectedHeaders.length);
+  const existingHeaderValues = sheet.getRange(1, 1, 1, maxCols).getValues()[0];
+
+  // Migrate old layout (without Frequency) by inserting a blank Frequency column after ClassType.
+  if (
+    String(existingHeaderValues[CLASS_COL.CLASS_TYPE - 1] || '').trim() === 'ClassType' &&
+    String(existingHeaderValues[CLASS_COL.FREQUENCY - 1] || '').trim() === 'Volunteers' &&
+    existingHeaderValues.indexOf('Frequency') === -1
+  ) {
+    sheet.insertColumnAfter(CLASS_COL.CLASS_TYPE);
+  }
+
+  const headerRange = sheet.getRange(1, 1, 1, expectedHeaders.length);
+  const headerValues = headerRange.getValues()[0];
+  const isHeaderMissing = expectedHeaders.some(function(h, i) {
+    return String(headerValues[i] || '').trim() !== h;
+  });
+
+  if (isHeaderMissing) {
+    headerRange.setValues([expectedHeaders]);
+  }
+
+  return sheet;
 }
