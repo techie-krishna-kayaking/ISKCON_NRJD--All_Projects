@@ -270,7 +270,7 @@
       table {
         border-collapse: collapse;
         width: 100%;
-        min-width: 1000px;
+        min-width: 920px;
         background: #fffbe6;
       }
 
@@ -290,6 +290,60 @@
         z-index: 1;
       }
 
+      .main-results-table th:nth-child(6),
+      .main-results-table td:nth-child(6) {
+        display: none;
+      }
+
+      .main-results-table th:nth-child(8),
+      .main-results-table td:nth-child(8) {
+        width: 54px;
+        min-width: 54px;
+        max-width: 54px;
+      }
+
+      .main-results-table th:nth-child(9),
+      .main-results-table td:nth-child(9) {
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
+      }
+
+      .main-results-table th:nth-child(14),
+      .main-results-table td:nth-child(14) {
+        width: 120px;
+        min-width: 120px;
+        text-align: center;
+      }
+
+      .main-results-table .btn {
+        white-space: nowrap;
+        font-size: 11px;
+        padding: 8px 10px;
+      }
+
+      .desk-table th:nth-child(5),
+      .desk-table td:nth-child(5) {
+        width: 72px;
+        min-width: 72px;
+        max-width: 72px;
+        white-space: nowrap;
+        font-size: 11px;
+      }
+
+      .desk-table th:nth-child(10),
+      .desk-table td:nth-child(10) {
+        width: 128px;
+        min-width: 128px;
+        text-align: center;
+      }
+
+      .desk-table .btn-green {
+        white-space: nowrap;
+        font-size: 11px;
+        padding: 8px 10px;
+      }
+
       .suggestions {
         margin-top: 4px;
       }
@@ -305,16 +359,20 @@
       }
 
       .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        display: flex;
+        flex-wrap: nowrap;
         gap: 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .summary-box {
+        flex: 1 0 220px;
+        min-width: 220px;
         background: #fff7d1;
         border: 1px solid #e5c452;
         border-radius: 10px;
-        padding: 10px;
+        padding: 8px 10px;
       }
 
       .summary-box .num {
@@ -337,6 +395,26 @@
 
       .events .btn {
         width: 100%;
+      }
+
+      .event-filter-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+        gap: 8px;
+      }
+
+      .event-filter-buttons .btn {
+        width: 100%;
+        text-transform: uppercase;
+      }
+
+      .event-filter-buttons .btn.active {
+        background: linear-gradient(180deg, #b8860b, #8c6b00);
+        color: #ffffff;
+      }
+
+      #deskSelectedEventLabel {
+        text-transform: uppercase;
       }
 
       .desk-table tbody tr.mobile-card-title-row td {
@@ -374,8 +452,8 @@
 
       @media (max-width: 900px) {
         .grid-two,
-        .summary-grid,
-        .events {
+        .events,
+        .event-filter-buttons {
           grid-template-columns: 1fr;
         }
       }
@@ -412,6 +490,11 @@
         }
 
         .events {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
+        .event-filter-buttons {
           grid-template-columns: 1fr 1fr;
           gap: 8px;
         }
@@ -602,7 +685,7 @@
           <div class="card">
             <div style="font-weight: 800; margin-bottom: 8px;">Search Results</div>
             <div class="table-wrap">
-              <table>
+              <table class="main-results-table">
                 <thead>
                   <tr>
                     <th>Sheet</th>
@@ -626,6 +709,47 @@
             </div>
           </div>
 
+          <div class="card">
+            <div class="summary-grid">
+              <div class="summary-box">
+                <div>Total Cumulative Count</div>
+                <div class="num" id="overallFootfall">0/0</div>
+                <div class="meta" id="overallPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Fancy Dress Cumulative Count</div>
+                <div class="num" id="fancyFootfall">0/0</div>
+                <div class="meta" id="fancyPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Music Cumulative Count</div>
+                <div class="num" id="musicFootfall">0/0</div>
+                <div class="meta" id="musicPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Quiz Cumulative Count</div>
+                <div class="num" id="quizFootfall">0/0</div>
+                <div class="meta" id="quizPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Coloring Cumulative Count</div>
+                <div class="num" id="coloringFootfall">0/0</div>
+                <div class="meta" id="coloringPercent">0%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-two">
+            <div class="card">
+              <div style="font-weight: 800; margin-bottom: 8px;">Event-wise Footfall</div>
+              <div id="eventWiseStats"></div>
+            </div>
+            <div class="card">
+              <div style="font-weight: 800; margin-bottom: 8px;">School-wise Footfall</div>
+              <div id="schoolWiseStats"></div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -633,13 +757,10 @@
         <div class="card">
           <div style="font-weight: 800; margin-bottom: 8px;">Competition Desk Filters</div>
           <div class="row" style="margin-top: 2px;">
-            <div style="flex: 1; min-width: 180px;">
-              <label>Filter Group</label>
-              <select id="deskFilterGroup"></select>
-            </div>
-            <div style="flex: 1; min-width: 220px;">
-              <label>Filter Competition</label>
-              <select id="deskFilterCompetition"></select>
+            <div style="flex: 1; min-width: 280px;">
+              <label>Select Desk Event (Group-Competition)</label>
+              <div id="deskEventButtons" class="event-filter-buttons"></div>
+              <div class="sub" id="deskSelectedEventLabel">Selected: All Desk Events</div>
             </div>
             <div style="flex: 1; min-width: 240px;">
               <label>Search by Student Name</label>
@@ -711,8 +832,19 @@
         unlockedMain: false,
         currentMainResults: [],
         deskPendingRows: [],
+        currentDeskEventKey: "",
         refreshTimer: null,
       };
+
+      const DESK_EVENT_BUTTONS = [
+        { key: "g1||coloring", label: "G1-COLORING" },
+        { key: "g1||fancy dress", label: "G1-FANCY DRESS" },
+        { key: "g2||coloring", label: "G2-COLORING" },
+        { key: "g2||fancy dress", label: "G2-FANCY DRESS" },
+        { key: "g3||painting", label: "G3-PAINTING" },
+        { key: "g3||music", label: "G3-MUSIC" },
+        { key: "g4||quiz", label: "G4-QUIZ" },
+      ];
 
       function setStatus(elId, message, isError) {
         const el = document.getElementById(elId);
@@ -740,6 +872,38 @@
       function fillSelect(id, values) {
         const el = document.getElementById(id);
         el.innerHTML = `<option value="">All</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      }
+
+      function renderDeskEventButtons(events) {
+        const holder = document.getElementById("deskEventButtons");
+        const rows = DESK_EVENT_BUTTONS;
+
+        holder.innerHTML = rows
+          .map((e) => `<button class="btn btn-user" data-event-key="${escapeHtml(e.key)}" data-event-label="${escapeHtml(e.label)}">${escapeHtml(e.label)}</button>`)
+          .join("");
+
+        const buttons = holder.querySelectorAll("button");
+        if (!buttons.length) {
+          state.currentDeskEventKey = "";
+          document.getElementById("deskSelectedEventLabel").textContent = "Selected: No events found";
+          return;
+        }
+
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            buttons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            state.currentDeskEventKey = btn.getAttribute("data-event-key") || "";
+            const label = btn.getAttribute("data-event-label") || "";
+            document.getElementById("deskSelectedEventLabel").textContent = "Selected: " + label;
+            await refreshDeskRows();
+          });
+        });
+
+        buttons[0].classList.add("active");
+        state.currentDeskEventKey = buttons[0].getAttribute("data-event-key") || "";
+        document.getElementById("deskSelectedEventLabel").textContent = "Selected: " + (buttons[0].getAttribute("data-event-label") || "");
       }
 
       function debounce(fn, waitMs) {
@@ -770,8 +934,7 @@
           fillSelect("filterSchoolName", options.schoolNames || []);
           fillSelect("filterGroup", options.groups || []);
           fillSelect("filterCompetition", options.competitions || []);
-          fillSelect("deskFilterGroup", options.deskGroups || []);
-          fillSelect("deskFilterCompetition", options.deskCompetitions || []);
+          renderDeskEventButtons();
         } catch (e) {
           setStatus("globalStatus", "Could not load filters: " + e.message, true);
         }
@@ -796,10 +959,58 @@
           state.unlockedMain = true;
           document.getElementById("mainPanel").classList.remove("hidden");
           setStatus("mainCodeStatus", "Code verified.", false);
+          await refreshMainStats();
           await runSearch();
         } catch (e) {
           setStatus("mainCodeStatus", e.message || "Verification failed.", true);
         }
+      }
+
+      async function refreshMainStats() {
+        try {
+          const stats = await callServer("getMainDeskStats", {});
+          renderMainStats(stats || {});
+        } catch (e) {
+          setStatus("mainSearchStatus", "Stats load failed: " + e.message, true);
+        }
+      }
+
+      function renderMainStats(stats) {
+        const overall = stats.overall || {};
+        const categoryTotals = stats.categoryTotals || {};
+        const fancy = categoryTotals.fancyDress || {};
+        const music = categoryTotals.music || {};
+        const quiz = categoryTotals.quiz || {};
+        const coloring = categoryTotals.coloring || {};
+
+        const footfall = Number(overall.footfall || 0);
+        const total = Number(overall.total || 0);
+        const percent = Number(overall.percentage || 0);
+
+        document.getElementById("overallFootfall").textContent = footfall + "/" + total;
+        document.getElementById("overallPercent").textContent = percent + "%";
+
+        document.getElementById("fancyFootfall").textContent = Number(fancy.footfall || 0) + "/" + Number(fancy.total || 0);
+        document.getElementById("fancyPercent").textContent = Number(fancy.percentage || 0) + "%";
+
+        document.getElementById("musicFootfall").textContent = Number(music.footfall || 0) + "/" + Number(music.total || 0);
+        document.getElementById("musicPercent").textContent = Number(music.percentage || 0) + "%";
+
+        document.getElementById("quizFootfall").textContent = Number(quiz.footfall || 0) + "/" + Number(quiz.total || 0);
+        document.getElementById("quizPercent").textContent = Number(quiz.percentage || 0) + "%";
+
+        document.getElementById("coloringFootfall").textContent = Number(coloring.footfall || 0) + "/" + Number(coloring.total || 0);
+        document.getElementById("coloringPercent").textContent = Number(coloring.percentage || 0) + "%";
+
+        document.getElementById("eventWiseStats").innerHTML = (stats.eventWise || [])
+          .slice(0, 200)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .join("");
+
+        document.getElementById("schoolWiseStats").innerHTML = (stats.schoolWise || [])
+          .slice(0, 200)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .join("");
       }
 
       async function runSearch() {
@@ -872,6 +1083,7 @@
           }
 
           setStatus("mainSearchStatus", res.message + " Token: " + (res.token || ""), false);
+          await refreshMainStats();
           await runSearch();
         } catch (e) {
           setStatus("mainSearchStatus", "Failed to generate token: " + e.message, true);
@@ -880,8 +1092,7 @@
 
       async function refreshDeskRows() {
         const payload = {
-          group: document.getElementById("deskFilterGroup").value || "",
-          competition: document.getElementById("deskFilterCompetition").value || "",
+          eventKey: state.currentDeskEventKey || "",
           studentName: document.getElementById("deskSearchName").value || "",
         };
 
@@ -1007,9 +1218,6 @@
 
         document.getElementById("btnDeskSearch").addEventListener("click", refreshDeskRows);
         document.getElementById("deskSearchName").addEventListener("input", debounce(refreshDeskRows, 250));
-        ["deskFilterGroup", "deskFilterCompetition"].forEach((id) => {
-          document.getElementById(id).addEventListener("change", refreshDeskRows);
-        });
       }
 
       async function init() {
