@@ -20,3 +20,8 @@ logs/
 
 #folder
 */output/
+
+# Sheets
+*.xlsx
+*.xls
+*.csv
