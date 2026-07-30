@@ -117,6 +117,7 @@ function getMainDeskStats() {
     const schoolName = (toSafeString_(r.schoolName) || "Unknown") + " (" + (toSafeString_(r.schoolCode) || "NA") + ")";
     const isFootfall = hasFootfall_(r);
     const normalizedCompetition = normalizeText_(r.competition);
+    const normalizedSheetName = normalizeText_(r.sheetName);
 
     if (!eventMap[eventName]) {
       eventMap[eventName] = { name: eventName, total: 0, footfall: 0 };
@@ -133,19 +134,18 @@ function getMainDeskStats() {
       schoolMap[schoolName].footfall += 1;
     }
 
-    if (normalizedCompetition.includes("fancy")) {
+    // Fancy dress and music sheets do not carry COMPETITION in the source workbook,
+    // so category totals must be derived by sheet name for those categories.
+    if (normalizedSheetName === normalizeText_("fancydress")) {
       categoryBuckets.fancyDress.total += 1;
       if (isFootfall) categoryBuckets.fancyDress.footfall += 1;
-    }
-    if (normalizedCompetition.includes("music")) {
+    } else if (normalizedSheetName === normalizeText_("music")) {
       categoryBuckets.music.total += 1;
       if (isFootfall) categoryBuckets.music.footfall += 1;
-    }
-    if (normalizedCompetition.includes("quiz")) {
+    } else if (normalizedCompetition.includes("quiz")) {
       categoryBuckets.quiz.total += 1;
       if (isFootfall) categoryBuckets.quiz.footfall += 1;
-    }
-    if (normalizedCompetition.includes("color")) {
+    } else if (normalizedCompetition.includes("color")) {
       categoryBuckets.coloring.total += 1;
       if (isFootfall) categoryBuckets.coloring.footfall += 1;
     }
@@ -295,8 +295,6 @@ function generateTokenForStudent(payload) {
       }
     }
 
-    const writeInfo = buildSheetWriteInfo_(targets);
-    const ss = getSpreadsheet_();
     writeTokenAndAttendance1_(targets, token, attendance1Time);
 
     return {
@@ -332,13 +330,14 @@ function writeTokenAndAttendance1_(targets, token, attendance1Time) {
     }
 
     info.rows.forEach((rowNum) => {
-      const current = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
-      if (String(current[idxToken] || "").trim() || String(current[idxAttendance1] || "").trim()) {
-        throw new Error("Token already exists for row " + rowNum + " in sheet " + name + ".");
+      // Lock + pre-validation in generateTokenForStudent keeps this safe.
+      // Use single-call write when columns are adjacent for better performance.
+      if (idxAttendance1 === idxToken + 1) {
+        sheet.getRange(rowNum, idxToken + 1, 1, 2).setValues([[token, attendance1Time]]);
+      } else {
+        sheet.getRange(rowNum, idxToken + 1).setValue(token);
+        sheet.getRange(rowNum, idxAttendance1 + 1).setValue(attendance1Time);
       }
-
-      sheet.getRange(rowNum, idxToken + 1).setValue(token);
-      sheet.getRange(rowNum, idxAttendance1 + 1).setValue(attendance1Time);
     });
   });
 }
@@ -531,11 +530,15 @@ function getAllRows_() {
     if (lastRow < 2 || lastCol < 1) return;
 
     const headers = getHeaders_(sheet);
-    const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    const effectiveLastCol = getEffectiveLastCol_(headers);
+    if (effectiveLastCol < 1) return;
+
+    const activeHeaders = headers.slice(0, effectiveLastCol);
+    const values = sheet.getRange(2, 1, lastRow - 1, effectiveLastCol).getValues();
 
     values.forEach((rowValues, idx) => {
       const rowObj = {};
-      headers.forEach((header, i) => {
+      activeHeaders.forEach((header, i) => {
         rowObj[normalizeHeader_(header)] = rowValues[i];
       });
 
@@ -545,7 +548,7 @@ function getAllRows_() {
         schoolCode: toSafeString_(getCanonicalValue_(rowObj, "SCHOOL_CODE")),
         schoolName: toSafeString_(getCanonicalValue_(rowObj, "SCHOOL_NAME")),
         group: toSafeString_(getCanonicalValue_(rowObj, "GROUP")),
-        competition: toSafeString_(getCanonicalValue_(rowObj, "COMPETITION")),
+        competition: getEffectiveCompetition_(sheetName, getCanonicalValue_(rowObj, "COMPETITION")),
         rank: toSafeString_(getCanonicalValue_(rowObj, "RANK")),
         studentName: toSafeString_(getCanonicalValue_(rowObj, "STUDENT_NAME")),
         className: toSafeString_(getCanonicalValue_(rowObj, "CLASS")),
@@ -559,6 +562,13 @@ function getAllRows_() {
   });
 
   return allRows;
+}
+
+function getEffectiveLastCol_(headers) {
+  for (let i = headers.length - 1; i >= 0; i--) {
+    if (toSafeString_(headers[i])) return i + 1;
+  }
+  return 0;
 }
 
 function buildSheetWriteInfo_(rows) {
@@ -684,6 +694,16 @@ function normalizeText_(val) {
 
 function toSafeString_(val) {
   return String(val == null ? "" : val).trim();
+}
+
+function getEffectiveCompetition_(sheetName, rawCompetition) {
+  const comp = toSafeString_(rawCompetition);
+  if (comp) return comp;
+
+  const normalizedSheetName = normalizeText_(sheetName);
+  if (normalizedSheetName === normalizeText_("fancydress")) return "FANCY DRESS";
+  if (normalizedSheetName === normalizeText_("music")) return "MUSIC";
+  return "";
 }
 
 function uniqueSorted_(arr) {

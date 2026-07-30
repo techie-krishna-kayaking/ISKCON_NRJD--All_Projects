@@ -314,6 +314,15 @@
         width: 120px;
         min-width: 120px;
         text-align: center;
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background: #fffbe6;
+      }
+
+      .main-results-table th:nth-child(14) {
+        z-index: 3;
+        background: #ffe066;
       }
 
       .main-results-table .btn {
@@ -336,6 +345,15 @@
         width: 128px;
         min-width: 128px;
         text-align: center;
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background: #fffbe6;
+      }
+
+      .desk-table th:nth-child(10) {
+        z-index: 3;
+        background: #ffe066;
       }
 
       .desk-table .btn-green {
@@ -914,6 +932,15 @@
         };
       }
 
+      function isInternalServerError_(message) {
+        const txt = String(message || "").toLowerCase();
+        return txt.includes("error code internal") || txt.includes("javascript engine reported an unexpected error");
+      }
+
+      function waitMs_(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
       function showMainUserSection() {
         document.getElementById("mainUserSection").classList.remove("hidden");
         document.getElementById("deskUserSection").classList.add("hidden");
@@ -1025,7 +1052,19 @@
         };
 
         try {
-          const res = await callServer("searchParticipants", payload);
+          let res;
+          try {
+            res = await callServer("searchParticipants", payload);
+          } catch (firstErr) {
+            if (!isInternalServerError_(firstErr && firstErr.message)) {
+              throw firstErr;
+            }
+
+            setStatus("mainSearchStatus", "Server temporary issue. Retrying search...", true);
+            await waitMs_(350);
+            res = await callServer("searchParticipants", payload);
+          }
+
           state.currentMainResults = res.results || [];
           renderMainResults();
           setStatus("mainSearchStatus", "Found " + (res.totalMatched || 0) + " records.", false);
