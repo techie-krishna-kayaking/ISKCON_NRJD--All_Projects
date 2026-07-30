@@ -343,6 +343,10 @@
         font-weight: 700;
       }
 
+      .done-row {
+        background: #ddf7dd;
+      }
+
       .app-footer {
         padding: 24px 14px;
         text-align: center;
@@ -572,6 +576,10 @@
                 <label>Filter School Name</label>
                 <select id="filterSchoolName"></select>
               </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label>Filter Group</label>
+                <select id="filterGroup"></select>
+              </div>
               <div style="flex: 1; min-width: 220px;">
                 <label>Filter Competition</label>
                 <select id="filterCompetition"></select>
@@ -579,14 +587,9 @@
             </div>
 
             <div class="row" style="margin-top: 10px;">
-              <div style="max-width: 220px; width: 100%;">
-                <label>Search Column</label>
-                <select id="searchColumn"></select>
-              </div>
               <div style="flex: 1; min-width: 240px;">
-                <label>Search Text</label>
-                <input id="searchText" placeholder="Start typing..." />
-                <div id="suggestions" class="suggestions"></div>
+                <label>Search by Student Name or Phone No</label>
+                <input id="searchText" placeholder="Type name or phone number..." />
               </div>
               <div>
                 <button id="btnSearch" class="btn btn-primary" style="margin-top: 18px;">Search</button>
@@ -594,21 +597,6 @@
             </div>
 
             <div id="mainSearchStatus" class="status"></div>
-          </div>
-
-          <div class="card">
-            <div class="summary-grid">
-              <div class="summary-box">
-                <div>Main Counter Footfall (Finalist)</div>
-                <div class="num" id="finalistsFootfall">0/0</div>
-                <div class="meta" id="finalistsPercent">0%</div>
-              </div>
-              <div class="summary-box">
-                <div>Main Counter Footfall (Fancy Dress)</div>
-                <div class="num" id="fancyDressFootfall">0/0</div>
-                <div class="meta" id="fancyDressPercent">0%</div>
-              </div>
-            </div>
           </div>
 
           <div class="card">
@@ -621,14 +609,16 @@
                     <th>SchoolCode</th>
                     <th>SchoolName</th>
                     <th>Group</th>
-                    <th>COMPETITION</th>
-                    <th>NAME</th>
+                    <th>Competition</th>
+                    <th>Rank</th>
+                    <th>StudentName</th>
                     <th>CLASS</th>
-                    <th>SECTION</th>
-                    <th>PHNO</th>
-                    <th>COUPON</th>
-                    <th>TIMESTAMP</th>
-                    <th>Save Coupon</th>
+                    <th>Sec</th>
+                    <th>PhoneNo</th>
+                    <th>Token</th>
+                    <th>Attendance1</th>
+                    <th>Attendance2</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="mainResultBody"></tbody>
@@ -636,46 +626,74 @@
             </div>
           </div>
 
-          <div class="grid-two">
-            <div class="card">
-              <div style="font-weight: 800; margin-bottom: 8px;">School-wise Footfall</div>
-              <div id="schoolWiseStats"></div>
-            </div>
-            <div class="card">
-              <div style="font-weight: 800; margin-bottom: 8px;">Competition-wise Footfall</div>
-              <div id="competitionWiseStats"></div>
-            </div>
-          </div>
         </div>
       </div>
 
       <div id="deskUserSection" class="hidden">
         <div class="card">
-          <div style="font-weight: 800; margin-bottom: 8px;">Choose Event</div>
-          <div id="eventButtons" class="events"></div>
+          <div style="font-weight: 800; margin-bottom: 8px;">Competition Desk Filters</div>
+          <div class="row" style="margin-top: 2px;">
+            <div style="flex: 1; min-width: 180px;">
+              <label>Filter Group</label>
+              <select id="deskFilterGroup"></select>
+            </div>
+            <div style="flex: 1; min-width: 220px;">
+              <label>Filter Competition</label>
+              <select id="deskFilterCompetition"></select>
+            </div>
+            <div style="flex: 1; min-width: 240px;">
+              <label>Search by Student Name</label>
+              <input id="deskSearchName" placeholder="Type student name..." />
+            </div>
+            <div>
+              <button id="btnDeskSearch" class="btn btn-user" style="margin-top: 18px;">Refresh</button>
+            </div>
+          </div>
           <div class="sub" id="refreshNote"></div>
           <div id="deskStatus" class="status"></div>
         </div>
 
         <div class="card">
-          <div style="font-weight: 800; margin-bottom: 8px;" id="eventTitle">Participants (timestamp ascending)</div>
+          <div style="font-weight: 800; margin-bottom: 8px;">Pending Attendance (Attendance1 ascending)</div>
           <div class="table-wrap">
             <table class="desk-table">
               <thead>
                 <tr>
                   <th>Sheet</th>
-                  <th>NAME</th>
+                  <th>StudentName</th>
                   <th>School</th>
+                  <th>Group</th>
                   <th>Class</th>
                   <th>Competition</th>
-                  <th>Coupon</th>
-                  <th>Main Desk Timestamp</th>
-                  <th>Attendance</th>
-                  <th>Performance Queue</th>
+                  <th>Token</th>
+                  <th>Attendance1</th>
+                  <th>Attendance2</th>
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="deskResultBody"></tbody>
+              <tbody id="deskPendingBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px;">Completed Attendance</div>
+          <div class="table-wrap">
+            <table class="desk-table">
+              <thead>
+                <tr>
+                  <th>Sheet</th>
+                  <th>StudentName</th>
+                  <th>School</th>
+                  <th>Group</th>
+                  <th>Class</th>
+                  <th>Competition</th>
+                  <th>Token</th>
+                  <th>Attendance1</th>
+                  <th>Attendance2</th>
+                </tr>
+              </thead>
+              <tbody id="deskCompletedBody"></tbody>
             </table>
           </div>
         </div>
@@ -692,7 +710,7 @@
         config: null,
         unlockedMain: false,
         currentMainResults: [],
-        currentEventKey: "",
+        deskPendingRows: [],
         refreshTimer: null,
       };
 
@@ -719,84 +737,17 @@
         });
       }
 
-      async function init() {
-        bindButtons();
-        try {
-          state.config = await callServer("getBootstrapData", {});
-          populateSearchColumns();
-          populateEvents();
-          await loadFilterOptions();
-          setStatus("globalStatus", "", false);
-        } catch (e) {
-          setStatus("globalStatus", e.message || "Initialization failed.", true);
-        }
-      }
-
-      function bindButtons() {
-        document.getElementById("btnMainUser").addEventListener("click", showMainUserSection);
-        document.getElementById("btnDeskUser").addEventListener("click", showDeskUserSection);
-        document.getElementById("btnUnlockMain").addEventListener("click", unlockMainUser);
-        document.getElementById("mainCode").addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            unlockMainUser();
-          }
-        });
-        document.getElementById("btnSearch").addEventListener("click", runSearch);
-        document.getElementById("searchText").addEventListener("input", debounce(runSearch, 250));
-        document.getElementById("searchText").addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            runSearch();
-          }
-        });
-        document.getElementById("searchColumn").addEventListener("change", runSearch);
-        document.getElementById("filterSchoolCode").addEventListener("change", runSearch);
-        document.getElementById("filterSchoolName").addEventListener("change", runSearch);
-        document.getElementById("filterCompetition").addEventListener("change", runSearch);
-      }
-
-      function populateSearchColumns() {
-        const el = document.getElementById("searchColumn");
-        const cols = ["ALL"].concat((state.config && state.config.searchableColumns) || []);
-        el.innerHTML = cols.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-      }
-
-      function populateEvents() {
-        const holder = document.getElementById("eventButtons");
-        const events = (state.config && state.config.events) || [];
-        holder.innerHTML = events
-          .map((e) => `<button class="btn btn-user" data-event-key="${escapeHtml(e.key)}">${escapeHtml(e.label)}</button>`)
-          .join("");
-
-        holder.querySelectorAll("button").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            state.currentEventKey = btn.getAttribute("data-event-key") || "";
-            document.getElementById("eventTitle").textContent = `Participants - ${btn.textContent} (timestamp ascending)`;
-            await loadEventParticipants();
-            startAutoRefresh();
-          });
-        });
-
-        const sec = (state.config && state.config.autoRefreshSeconds) || 10;
-        document.getElementById("refreshNote").textContent = `Auto refresh every ${sec} seconds.`;
-      }
-
-      async function loadFilterOptions() {
-        try {
-          const options = await callServer("getFilterOptions", {});
-          fillSelect("filterSchoolCode", options.schoolCodes || []);
-          fillSelect("filterSchoolName", options.schoolNames || []);
-          fillSelect("filterCompetition", options.competitions || []);
-        } catch (e) {
-          setStatus("mainSearchStatus", "Could not load filter options: " + e.message, true);
-        }
-      }
-
       function fillSelect(id, values) {
         const el = document.getElementById(id);
-        el.innerHTML = `<option value="">All</option>` +
-          values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+        el.innerHTML = `<option value="">All</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      }
+
+      function debounce(fn, waitMs) {
+        let t = null;
+        return function () {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, arguments), waitMs);
+        };
       }
 
       function showMainUserSection() {
@@ -805,9 +756,25 @@
         stopAutoRefresh();
       }
 
-      function showDeskUserSection() {
+      async function showDeskUserSection() {
         document.getElementById("deskUserSection").classList.remove("hidden");
         document.getElementById("mainUserSection").classList.add("hidden");
+        await refreshDeskRows();
+        startAutoRefresh();
+      }
+
+      async function loadFilterOptions() {
+        try {
+          const options = await callServer("getFilterOptions", {});
+          fillSelect("filterSchoolCode", options.schoolCodes || []);
+          fillSelect("filterSchoolName", options.schoolNames || []);
+          fillSelect("filterGroup", options.groups || []);
+          fillSelect("filterCompetition", options.competitions || []);
+          fillSelect("deskFilterGroup", options.deskGroups || []);
+          fillSelect("deskFilterCompetition", options.deskCompetitions || []);
+        } catch (e) {
+          setStatus("globalStatus", "Could not load filters: " + e.message, true);
+        }
       }
 
       async function unlockMainUser() {
@@ -829,50 +796,10 @@
           state.unlockedMain = true;
           document.getElementById("mainPanel").classList.remove("hidden");
           setStatus("mainCodeStatus", "Code verified.", false);
-          await refreshDashboardStats();
           await runSearch();
         } catch (e) {
           setStatus("mainCodeStatus", e.message || "Verification failed.", true);
         }
-      }
-
-      async function refreshDashboardStats() {
-        try {
-          const stats = await callServer("getDashboardStats", {});
-          renderStats(stats);
-        } catch (e) {
-          setStatus("mainSearchStatus", "Stats load failed: " + e.message, true);
-        }
-      }
-
-      function renderStats(stats) {
-        const sheetStats = stats.sheetStats || {};
-        const finalists = sheetStats.finalists || {};
-        const fancyDress = sheetStats.fancyDress || {};
-
-        const finalistsFootfall = Number(finalists.footfall || 0);
-        const finalistsTotal = Number(finalists.total || 0);
-        const finalistsPercentage = Number(finalists.percentage || 0);
-
-        const fancyDressFootfall = Number(fancyDress.footfall || 0);
-        const fancyDressTotal = Number(fancyDress.total || 0);
-        const fancyDressPercentage = Number(fancyDress.percentage || 0);
-
-        document.getElementById("finalistsFootfall").textContent = finalistsFootfall + "/" + finalistsTotal;
-        document.getElementById("finalistsPercent").textContent = finalistsPercentage + "%";
-
-        document.getElementById("fancyDressFootfall").textContent = fancyDressFootfall + "/" + fancyDressTotal;
-        document.getElementById("fancyDressPercent").textContent = fancyDressPercentage + "%";
-
-        document.getElementById("schoolWiseStats").innerHTML = (stats.schoolWise || [])
-          .slice(0, 50)
-          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
-          .join("");
-
-        document.getElementById("competitionWiseStats").innerHTML = (stats.competitionWise || [])
-          .slice(0, 50)
-          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
-          .join("");
       }
 
       async function runSearch() {
@@ -880,51 +807,34 @@
 
         const payload = {
           query: document.getElementById("searchText").value || "",
-          column: document.getElementById("searchColumn").value || "ALL",
           schoolCode: document.getElementById("filterSchoolCode").value || "",
           schoolName: document.getElementById("filterSchoolName").value || "",
+          group: document.getElementById("filterGroup").value || "",
           competition: document.getElementById("filterCompetition").value || "",
-          limit: 200,
         };
 
         try {
           const res = await callServer("searchParticipants", payload);
           state.currentMainResults = res.results || [];
           renderMainResults();
-          renderSuggestions(res.suggestions || []);
-          setStatus("mainSearchStatus", `Found ${res.totalMatched || 0} records.`, false);
+          setStatus("mainSearchStatus", "Found " + (res.totalMatched || 0) + " records.", false);
         } catch (e) {
           setStatus("mainSearchStatus", "Search failed: " + e.message, true);
         }
       }
 
-      function renderSuggestions(suggestions) {
-        const holder = document.getElementById("suggestions");
-        holder.innerHTML = suggestions
-          .map((s) => `<button class="suggestion-btn" data-sugg="${escapeHtml(s)}">${escapeHtml(s)}</button>`)
-          .join("");
-
-        holder.querySelectorAll("button").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            document.getElementById("searchText").value = btn.getAttribute("data-sugg") || "";
-            runSearch();
-          });
-        });
-      }
-
       function renderMainResults() {
         const body = document.getElementById("mainResultBody");
         if (!state.currentMainResults.length) {
-          body.innerHTML = `<tr><td colspan="12">No data</td></tr>`;
+          body.innerHTML = `<tr><td colspan="15">No data</td></tr>`;
           return;
         }
 
         body.innerHTML = state.currentMainResults
           .map((r, i) => {
-            const canEdit = r.canSaveCoupon;
-            const saveCell = canEdit
-              ? `<div style="display:flex;gap:4px;min-width:160px;"><input id="coupon_${i}" placeholder="Coupon" style="min-width:90px;" onkeydown="if(event.key==='Enter'){event.preventDefault();saveCoupon(${i});}" /><button class="btn btn-primary" onclick="saveCoupon(${i})">Save</button></div>`
-              : `<span style="color:#1f8a2f;font-weight:700;">Saved</span>`;
+            const action = r.canGenerateToken
+              ? `<button class="btn btn-primary" onclick="generateToken(${i})">Generate Token</button>`
+              : `<span style="color:#1f8a2f;font-weight:700;">Generated</span>`;
 
             return `<tr>
               <td>${escapeHtml(r.sheetName)}</td>
@@ -932,103 +842,117 @@
               <td>${escapeHtml(r.schoolName)}</td>
               <td>${escapeHtml(r.group)}</td>
               <td>${escapeHtml(r.competition)}</td>
-              <td>${escapeHtml(r.name)}</td>
+              <td>${escapeHtml(r.rank)}</td>
+              <td>${escapeHtml(r.studentName)}</td>
               <td>${escapeHtml(r.className)}</td>
-              <td>${escapeHtml(r.section)}</td>
-              <td>${escapeHtml(r.phno)}</td>
-              <td>${escapeHtml(r.coupon)}</td>
-              <td>${escapeHtml(r.timestamp)}</td>
-              <td>${saveCell}</td>
+              <td>${escapeHtml(r.sec)}</td>
+              <td>${escapeHtml(r.phoneNo)}</td>
+              <td>${escapeHtml(r.token)}</td>
+              <td>${escapeHtml(r.attendance1)}</td>
+              <td>${escapeHtml(r.attendance2)}</td>
+              <td>${action}</td>
             </tr>`;
           })
           .join("");
       }
 
-      async function saveCoupon(index) {
+      async function generateToken(index) {
         const row = state.currentMainResults[index];
         if (!row) return;
-        const coupon = (document.getElementById(`coupon_${index}`) || {}).value || "";
-
-        if (!coupon.trim()) {
-          setStatus("mainSearchStatus", "Coupon is required.", true);
-          return;
-        }
 
         try {
-          const res = await callServer("saveCouponAndTimestamp", {
+          const res = await callServer("generateTokenForStudent", {
             sheetName: row.sheetName,
             rowNumber: row.rowNumber,
-            coupon,
           });
 
           if (!res.ok) {
-            setStatus("mainSearchStatus", res.message || "Could not save coupon.", true);
+            setStatus("mainSearchStatus", res.message || "Failed to generate token.", true);
             return;
           }
 
-          setStatus("mainSearchStatus", res.message + " Timestamp: " + (res.timestamp || ""), false);
-          if (res.stats) renderStats(res.stats);
+          setStatus("mainSearchStatus", res.message + " Token: " + (res.token || ""), false);
           await runSearch();
         } catch (e) {
-          setStatus("mainSearchStatus", "Save failed: " + e.message, true);
+          setStatus("mainSearchStatus", "Failed to generate token: " + e.message, true);
         }
       }
 
-      async function loadEventParticipants() {
-        if (!state.currentEventKey) return;
+      async function refreshDeskRows() {
+        const payload = {
+          group: document.getElementById("deskFilterGroup").value || "",
+          competition: document.getElementById("deskFilterCompetition").value || "",
+          studentName: document.getElementById("deskSearchName").value || "",
+        };
 
         try {
-          const res = await callServer("getEventParticipants", state.currentEventKey);
-          renderDeskResults(res.participants || []);
-          setStatus("deskStatus", `Loaded ${(res.participants || []).length} participants.`, false);
+          const res = await callServer("getCompetitionDeskRows", payload);
+          state.deskPendingRows = res.pending || [];
+          renderDeskPending(state.deskPendingRows);
+          renderDeskCompleted(res.completed || []);
+          setStatus("deskStatus", "Pending: " + (res.pending || []).length + " | Completed: " + (res.completed || []).length, false);
         } catch (e) {
           setStatus("deskStatus", "Load failed: " + e.message, true);
         }
       }
 
-      function renderDeskResults(rows) {
-        const body = document.getElementById("deskResultBody");
+      function renderDeskPending(rows) {
+        const body = document.getElementById("deskPendingBody");
         if (!rows.length) {
-          body.innerHTML = `<tr class="no-data-row"><td colspan="10">No participants yet.</td></tr>`;
+          body.innerHTML = `<tr class="no-data-row"><td colspan="10">No pending students.</td></tr>`;
           return;
         }
 
         body.innerHTML = rows
           .map((r, i) => {
-            const action = r.canMarkAttendance
-              ? `<button class="btn btn-green" onclick="markAttendance(${i})">Mark</button>`
-              : `<span style="color:#1f8a2f;font-weight:700;">Done</span>`;
-
             return `<tr>
               <td data-label="Sheet">${escapeHtml(r.sheetName)}</td>
-              <td data-label="Name">${escapeHtml(r.name)}</td>
+              <td data-label="Student">${escapeHtml(r.studentName)}</td>
               <td data-label="School">${escapeHtml(r.schoolName)} (${escapeHtml(r.schoolCode)})</td>
-              <td data-label="Class">${escapeHtml(r.className)}-${escapeHtml(r.section)}</td>
+              <td data-label="Group">${escapeHtml(r.group)}</td>
+              <td data-label="Class">${escapeHtml(r.className)}-${escapeHtml(r.sec)}</td>
               <td data-label="Competition">${escapeHtml(r.competition)}</td>
-              <td data-label="Coupon">${escapeHtml(r.coupon)}</td>
-              <td data-label="Main Time">${escapeHtml(r.timestamp)}</td>
-              <td data-label="Attendance">${escapeHtml(r.attendance)}</td>
-              <td data-label="Queue"><input id="queue_${i}" value="${escapeHtml(r.queue)}" placeholder="Queue" ${r.canMarkAttendance ? "" : "disabled"} /></td>
-              <td data-label="Action">${action}</td>
+              <td data-label="Token">${escapeHtml(r.token)}</td>
+              <td data-label="Attendance1">${escapeHtml(r.attendance1)}</td>
+              <td data-label="Attendance2">${escapeHtml(r.attendance2)}</td>
+              <td data-label="Action"><button class="btn btn-green" onclick="markAttendance2(${i})">Mark Attendance</button></td>
             </tr>`;
           })
           .join("");
-
-        state._deskRows = rows;
       }
 
-      async function markAttendance(index) {
-        const row = (state._deskRows || [])[index];
+      function renderDeskCompleted(rows) {
+        const body = document.getElementById("deskCompletedBody");
+        if (!rows.length) {
+          body.innerHTML = `<tr class="no-data-row"><td colspan="9">No completed students.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = rows
+          .map((r) => {
+            return `<tr class="done-row">
+              <td data-label="Sheet">${escapeHtml(r.sheetName)}</td>
+              <td data-label="Student">${escapeHtml(r.studentName)}</td>
+              <td data-label="School">${escapeHtml(r.schoolName)} (${escapeHtml(r.schoolCode)})</td>
+              <td data-label="Group">${escapeHtml(r.group)}</td>
+              <td data-label="Class">${escapeHtml(r.className)}-${escapeHtml(r.sec)}</td>
+              <td data-label="Competition">${escapeHtml(r.competition)}</td>
+              <td data-label="Token">${escapeHtml(r.token)}</td>
+              <td data-label="Attendance1">${escapeHtml(r.attendance1)}</td>
+              <td data-label="Attendance2">${escapeHtml(r.attendance2)}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      async function markAttendance2(index) {
+        const row = state.deskPendingRows[index];
         if (!row) return;
 
-        const queueInput = document.getElementById(`queue_${index}`);
-        const queue = queueInput ? queueInput.value : "";
-
         try {
-          const res = await callServer("markAttendance", {
+          const res = await callServer("markAttendance2", {
             sheetName: row.sheetName,
             rowNumber: row.rowNumber,
-            queue,
           });
 
           if (!res.ok) {
@@ -1036,8 +960,8 @@
             return;
           }
 
-          setStatus("deskStatus", res.message + " " + (res.attendanceTime || ""), false);
-          await loadEventParticipants();
+          setStatus("deskStatus", res.message + " " + (res.attendance2 || ""), false);
+          await refreshDeskRows();
         } catch (e) {
           setStatus("deskStatus", "Attendance failed: " + e.message, true);
         }
@@ -1045,29 +969,64 @@
 
       function startAutoRefresh() {
         stopAutoRefresh();
-        const sec = (state.config && state.config.autoRefreshSeconds) || 10;
+        const sec = (state.config && state.config.autoRefreshSeconds) || 5;
         state.refreshTimer = setInterval(() => {
-          loadEventParticipants();
+          refreshDeskRows();
         }, sec * 1000);
       }
 
       function stopAutoRefresh() {
-        if (state.refreshTimer) {
-          clearInterval(state.refreshTimer);
-          state.refreshTimer = null;
+        if (!state.refreshTimer) return;
+        clearInterval(state.refreshTimer);
+        state.refreshTimer = null;
+      }
+
+      function bindButtons() {
+        document.getElementById("btnMainUser").addEventListener("click", showMainUserSection);
+        document.getElementById("btnDeskUser").addEventListener("click", showDeskUserSection);
+        document.getElementById("btnUnlockMain").addEventListener("click", unlockMainUser);
+        document.getElementById("mainCode").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            unlockMainUser();
+          }
+        });
+
+        document.getElementById("btnSearch").addEventListener("click", runSearch);
+        document.getElementById("searchText").addEventListener("input", debounce(runSearch, 250));
+        document.getElementById("searchText").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            runSearch();
+          }
+        });
+
+        ["filterSchoolCode", "filterSchoolName", "filterGroup", "filterCompetition"].forEach((id) => {
+          document.getElementById(id).addEventListener("change", runSearch);
+        });
+
+        document.getElementById("btnDeskSearch").addEventListener("click", refreshDeskRows);
+        document.getElementById("deskSearchName").addEventListener("input", debounce(refreshDeskRows, 250));
+        ["deskFilterGroup", "deskFilterCompetition"].forEach((id) => {
+          document.getElementById(id).addEventListener("change", refreshDeskRows);
+        });
+      }
+
+      async function init() {
+        bindButtons();
+        try {
+          state.config = await callServer("getBootstrapData", {});
+          await loadFilterOptions();
+          const sec = (state.config && state.config.autoRefreshSeconds) || 5;
+          document.getElementById("refreshNote").textContent = "Auto refresh every " + sec + " seconds.";
+          setStatus("globalStatus", "", false);
+        } catch (e) {
+          setStatus("globalStatus", e.message || "Initialization failed.", true);
         }
       }
 
-      function debounce(fn, waitMs) {
-        let t = null;
-        return function () {
-          clearTimeout(t);
-          t = setTimeout(() => fn.apply(this, arguments), waitMs);
-        };
-      }
-
-      window.saveCoupon = saveCoupon;
-      window.markAttendance = markAttendance;
+      window.generateToken = generateToken;
+      window.markAttendance2 = markAttendance2;
 
       init();
     </script>
