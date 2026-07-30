@@ -39,16 +39,16 @@ function verifyMainUserCode(code) {
 }
 
 function getFilterOptions() {
-  const mainRows = getMainRows_();
   const allRows = getAllRows_();
 
   return {
-    schoolCodes: uniqueSorted_(mainRows.map((r) => r.schoolCode).filter(Boolean)),
-    schoolNames: uniqueSorted_(mainRows.map((r) => r.schoolName).filter(Boolean)),
-    groups: uniqueSorted_(mainRows.map((r) => r.group).filter(Boolean)),
-    competitions: uniqueSorted_(mainRows.map((r) => r.competition).filter(Boolean)),
+    schoolCodes: uniqueSorted_(allRows.map((r) => r.schoolCode).filter(Boolean)),
+    schoolNames: uniqueSorted_(allRows.map((r) => r.schoolName).filter(Boolean)),
+    groups: uniqueSorted_(allRows.map((r) => r.group).filter(Boolean)),
+    competitions: uniqueSorted_(allRows.map((r) => r.competition).filter(Boolean)),
     deskGroups: uniqueSorted_(allRows.map((r) => r.group).filter(Boolean)),
     deskCompetitions: uniqueSorted_(allRows.map((r) => r.competition).filter(Boolean)),
+    deskEvents: buildDeskEventOptions_(allRows),
   };
 }
 
@@ -60,7 +60,7 @@ function searchParticipants(payload) {
   const filterGroup = normalizeText_(safePayload.group);
   const filterCompetition = normalizeText_(safePayload.competition);
 
-  const rows = getMainRows_().filter((row) => {
+  const rows = getAllRows_().filter((row) => {
     if (filterSchoolCode && !normalizeText_(row.schoolCode).includes(filterSchoolCode)) return false;
     if (filterSchoolName && !normalizeText_(row.schoolName).includes(filterSchoolName)) return false;
     if (filterGroup && normalizeText_(row.group) !== filterGroup) return false;
@@ -97,10 +97,90 @@ function searchParticipants(payload) {
   };
 }
 
+function getMainDeskStats() {
+  const rows = getAllRows_();
+  const overallTotal = rows.length;
+  const overallFootfall = rows.filter((r) => hasFootfall_(r)).length;
+
+  const categoryBuckets = {
+    fancyDress: { name: "Fancy Dress", total: 0, footfall: 0 },
+    music: { name: "Music", total: 0, footfall: 0 },
+    quiz: { name: "Quiz", total: 0, footfall: 0 },
+    coloring: { name: "Coloring", total: 0, footfall: 0 },
+  };
+
+  const eventMap = {};
+  const schoolMap = {};
+
+  rows.forEach((r) => {
+    const eventName = (toSafeString_(r.group) || "NA") + "-" + (toSafeString_(r.competition) || "NA");
+    const schoolName = (toSafeString_(r.schoolName) || "Unknown") + " (" + (toSafeString_(r.schoolCode) || "NA") + ")";
+    const isFootfall = hasFootfall_(r);
+    const normalizedCompetition = normalizeText_(r.competition);
+
+    if (!eventMap[eventName]) {
+      eventMap[eventName] = { name: eventName, total: 0, footfall: 0 };
+    }
+    if (!schoolMap[schoolName]) {
+      schoolMap[schoolName] = { name: schoolName, total: 0, footfall: 0 };
+    }
+
+    eventMap[eventName].total += 1;
+    schoolMap[schoolName].total += 1;
+
+    if (isFootfall) {
+      eventMap[eventName].footfall += 1;
+      schoolMap[schoolName].footfall += 1;
+    }
+
+    if (normalizedCompetition.includes("fancy")) {
+      categoryBuckets.fancyDress.total += 1;
+      if (isFootfall) categoryBuckets.fancyDress.footfall += 1;
+    }
+    if (normalizedCompetition.includes("music")) {
+      categoryBuckets.music.total += 1;
+      if (isFootfall) categoryBuckets.music.footfall += 1;
+    }
+    if (normalizedCompetition.includes("quiz")) {
+      categoryBuckets.quiz.total += 1;
+      if (isFootfall) categoryBuckets.quiz.footfall += 1;
+    }
+    if (normalizedCompetition.includes("color")) {
+      categoryBuckets.coloring.total += 1;
+      if (isFootfall) categoryBuckets.coloring.footfall += 1;
+    }
+  });
+
+  const eventWise = Object.keys(eventMap)
+    .map((k) => eventMap[k])
+    .sort((a, b) => b.footfall - a.footfall || b.total - a.total || a.name.localeCompare(b.name));
+
+  const schoolWise = Object.keys(schoolMap)
+    .map((k) => schoolMap[k])
+    .sort((a, b) => b.footfall - a.footfall || b.total - a.total || a.name.localeCompare(b.name));
+
+  return {
+    overall: {
+      total: overallTotal,
+      footfall: overallFootfall,
+      percentage: overallTotal ? Math.round((overallFootfall / overallTotal) * 100) : 0,
+    },
+    categoryTotals: {
+      fancyDress: addPercentage_(categoryBuckets.fancyDress),
+      music: addPercentage_(categoryBuckets.music),
+      quiz: addPercentage_(categoryBuckets.quiz),
+      coloring: addPercentage_(categoryBuckets.coloring),
+    },
+    eventWise,
+    schoolWise,
+  };
+}
+
 function generateTokenForStudent(payload) {
   const safePayload = payload || {};
   const sheetName = String(safePayload.sheetName || "").trim();
   const rowNumber = Number(safePayload.rowNumber);
+  const normalizedSheetName = normalizeText_(sheetName);
 
   if (!sheetName || !rowNumber) {
     return { ok: false, message: "Sheet name and row number are required." };
@@ -120,6 +200,66 @@ function generateTokenForStudent(payload) {
       return { ok: false, message: "Token already generated for this participant." };
     }
 
+    const attendance1Time = formatNow_();
+
+    // Music sheet: one token per school, shared by all rows of that school.
+    if (normalizedSheetName === normalizeText_("Music")) {
+      const schoolKey = normalizeText_(targetRow.schoolCode || targetRow.schoolName);
+      if (!schoolKey) {
+        return { ok: false, message: "SchoolCode/SchoolName is required for Music token generation." };
+      }
+
+      const targets = allRows.filter((r) => {
+        return (
+          normalizeText_(r.sheetName) === normalizedSheetName &&
+          normalizeText_(r.schoolCode || r.schoolName) === schoolKey
+        );
+      });
+
+      const alreadyGenerated = targets.find((r) => r.token || r.attendance1);
+      if (alreadyGenerated) {
+        return {
+          ok: false,
+          message: "Music token already generated for this school: " + (alreadyGenerated.token || ""),
+        };
+      }
+
+      const musicRows = allRows.filter((r) => normalizeText_(r.sheetName) === normalizedSheetName);
+      const token = buildNextMusicToken_(musicRows);
+
+      writeTokenAndAttendance1_(targets, token, attendance1Time);
+
+      return {
+        ok: true,
+        message: "Music school token generated for " + targets.length + " students.",
+        token,
+        attendance1: attendance1Time,
+        updatedRows: targets.length,
+      };
+    }
+
+    // Fancy dress sheet: token format <group>_F_### and row-wise generation.
+    if (normalizedSheetName === normalizeText_("fancydress")) {
+      const groupToken = extractGroupToken_(targetRow.group);
+      if (!groupToken) {
+        return { ok: false, message: "Invalid group format. Expected values like G1, G2, G3, G4." };
+      }
+
+      const fancyRows = allRows.filter((r) => normalizeText_(r.sheetName) === normalizedSheetName);
+      const token = buildNextTokenWithPrefix_(groupToken.toUpperCase() + "_F_", fancyRows);
+      const targets = [targetRow];
+
+      writeTokenAndAttendance1_(targets, token, attendance1Time);
+
+      return {
+        ok: true,
+        message: "Fancy dress token generated successfully.",
+        token,
+        attendance1: attendance1Time,
+        updatedRows: 1,
+      };
+    }
+
     const groupToken = extractGroupToken_(targetRow.group);
     if (!groupToken) {
       return { ok: false, message: "Invalid group format. Expected values like G1, G2, G3, G4." };
@@ -131,8 +271,10 @@ function generateTokenForStudent(payload) {
     }
 
     const isTeamEvent = isTeamEvent_(targetRow.competition);
-    const token = buildNextToken_(groupToken, competitionInitial, allRows);
-    const attendance1Time = formatNow_();
+    const token = buildNextTokenWithPrefix_(
+      groupToken.toUpperCase() + "_" + competitionInitial.toUpperCase() + "_",
+      allRows
+    );
 
     let targets = [targetRow];
     if (isTeamEvent) {
@@ -155,29 +297,7 @@ function generateTokenForStudent(payload) {
 
     const writeInfo = buildSheetWriteInfo_(targets);
     const ss = getSpreadsheet_();
-
-    Object.keys(writeInfo).forEach((name) => {
-      const info = writeInfo[name];
-      const sheet = ss.getSheetByName(name);
-      if (!sheet || !info.rows.length) return;
-
-      const headers = getHeaders_(sheet);
-      const idxToken = findHeaderIndexByCanonical_(headers, "TOKEN");
-      const idxAttendance1 = findHeaderIndexByCanonical_(headers, "ATTENDANCE1");
-      if (idxToken < 0 || idxAttendance1 < 0) {
-        throw new Error("TOKEN or ATTENDANCE1 column missing in sheet: " + name);
-      }
-
-      info.rows.forEach((rowNum) => {
-        const current = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
-        if (String(current[idxToken] || "").trim() || String(current[idxAttendance1] || "").trim()) {
-          throw new Error("Token already exists for row " + rowNum + " in sheet " + name + ".");
-        }
-
-        sheet.getRange(rowNum, idxToken + 1).setValue(token);
-        sheet.getRange(rowNum, idxAttendance1 + 1).setValue(attendance1Time);
-      });
-    });
+    writeTokenAndAttendance1_(targets, token, attendance1Time);
 
     return {
       ok: true,
@@ -195,10 +315,40 @@ function generateTokenForStudent(payload) {
   }
 }
 
+function writeTokenAndAttendance1_(targets, token, attendance1Time) {
+  const writeInfo = buildSheetWriteInfo_(targets);
+  const ss = getSpreadsheet_();
+
+  Object.keys(writeInfo).forEach((name) => {
+    const info = writeInfo[name];
+    const sheet = ss.getSheetByName(name);
+    if (!sheet || !info.rows.length) return;
+
+    const headers = getHeaders_(sheet);
+    const idxToken = findHeaderIndexByCanonical_(headers, "TOKEN");
+    const idxAttendance1 = findHeaderIndexByCanonical_(headers, "ATTENDANCE1");
+    if (idxToken < 0 || idxAttendance1 < 0) {
+      throw new Error("TOKEN or ATTENDANCE1 column missing in sheet: " + name);
+    }
+
+    info.rows.forEach((rowNum) => {
+      const current = sheet.getRange(rowNum, 1, 1, headers.length).getValues()[0];
+      if (String(current[idxToken] || "").trim() || String(current[idxAttendance1] || "").trim()) {
+        throw new Error("Token already exists for row " + rowNum + " in sheet " + name + ".");
+      }
+
+      sheet.getRange(rowNum, idxToken + 1).setValue(token);
+      sheet.getRange(rowNum, idxAttendance1 + 1).setValue(attendance1Time);
+    });
+  });
+}
+
 function getCompetitionDeskRows(payload) {
   const safePayload = payload || {};
-  const filterGroup = normalizeText_(safePayload.group);
-  const filterCompetition = normalizeText_(safePayload.competition);
+  const selectedEventKey = normalizeText_(safePayload.eventKey);
+  const parsedEvent = parseDeskEventKey_(selectedEventKey);
+  const filterGroup = parsedEvent.group;
+  const filterCompetition = parsedEvent.competition;
   const searchName = normalizeText_(safePayload.studentName);
 
   const rows = getAllRows_()
@@ -244,6 +394,57 @@ function getCompetitionDeskRows(payload) {
     completed,
     total: rows.length,
   };
+}
+
+function buildDeskEventOptions_(rows) {
+  const map = {};
+
+  rows.forEach((r) => {
+    const group = toSafeString_(r.group);
+    const competition = toSafeString_(r.competition);
+    if (!group || !competition) return;
+
+    const key = normalizeText_(group) + "||" + normalizeText_(competition);
+    if (map[key]) return;
+
+    map[key] = {
+      key,
+      label: group + "-" + competition,
+      group,
+      competition,
+    };
+  });
+
+  return Object.keys(map)
+    .map((k) => map[k])
+    .sort((a, b) => {
+      const ga = extractGroupOrder_(a.group);
+      const gb = extractGroupOrder_(b.group);
+      if (ga !== gb) return ga - gb;
+      return a.competition.localeCompare(b.competition, undefined, { sensitivity: "base" });
+    });
+}
+
+function parseDeskEventKey_(eventKey) {
+  const txt = String(eventKey || "");
+  const parts = txt.split("||");
+  if (parts.length !== 2) {
+    return { group: "", competition: "" };
+  }
+  return {
+    group: normalizeText_(parts[0]),
+    competition: normalizeText_(parts[1]),
+  };
+}
+
+function extractGroupOrder_(groupText) {
+  const m = String(groupText || "")
+    .trim()
+    .toUpperCase()
+    .match(/G\s*([0-9]+)/);
+  if (!m) return Number.MAX_SAFE_INTEGER;
+  const n = parseInt(m[1], 10);
+  return isNaN(n) ? Number.MAX_SAFE_INTEGER : n;
 }
 
 function markAttendance2(payload) {
@@ -395,8 +596,7 @@ function getCanonicalValue_(rowObj, canonicalName) {
   return "";
 }
 
-function buildNextToken_(groupToken, competitionInitial, rows) {
-  const prefix = groupToken.toUpperCase() + "_" + competitionInitial.toUpperCase() + "_";
+function buildNextTokenWithPrefix_(prefix, rows) {
   const regex = new RegExp("^" + prefix + "(\\d+)$", "i");
 
   let maxNum = 0;
@@ -413,6 +613,24 @@ function buildNextToken_(groupToken, competitionInitial, rows) {
 
   const next = String(maxNum + 1).padStart(3, "0");
   return prefix + next;
+}
+
+function buildNextMusicToken_(rows) {
+  let maxNum = 0;
+  rows.forEach((r) => {
+    const token = String(r.token || "").trim();
+    if (!token) return;
+
+    const match = token.match(/^M_?(\d+)$/i);
+    if (!match) return;
+
+    const n = parseInt(match[1], 10);
+    if (!isNaN(n) && n > maxNum) {
+      maxNum = n;
+    }
+  });
+
+  return "M_" + String(maxNum + 1).padStart(3, "0");
 }
 
 function isTeamEvent_(competition) {
@@ -474,4 +692,17 @@ function uniqueSorted_(arr) {
     seen[String(x)] = true;
   });
   return Object.keys(seen).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+}
+
+function hasFootfall_(row) {
+  return !!toSafeString_(row.token) && !!toSafeString_(row.attendance1);
+}
+
+function addPercentage_(bucket) {
+  return {
+    name: bucket.name,
+    total: bucket.total,
+    footfall: bucket.footfall,
+    percentage: bucket.total ? Math.round((bucket.footfall / bucket.total) * 100) : 0,
+  };
 }
