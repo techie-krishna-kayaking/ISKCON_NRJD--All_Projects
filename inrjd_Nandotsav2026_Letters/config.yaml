@@ -1,0 +1,17 @@
+# Nandotsav 2026 Letters Generator Configuration
+
+# Input file names (files should be in the 'input' folder)
+csv_file: "Nandotsav 2026 - Top3.csv"
+template_file: "Nandotsav 2026 Finals.docx"
+
+# Output folder
+output_folder: "output"
+
+# PDF Converter: 'word' (auto-detect), 'word-mac' (macOS), 'word-windows' (Windows), 'libreoffice'
+pdf_converter: "word"
+
+# Verbose output
+verbose: false
+
+# Clean output folder before generating
+clean: false
