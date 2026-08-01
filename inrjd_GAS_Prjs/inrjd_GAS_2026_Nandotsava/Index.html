@@ -376,6 +376,34 @@
         padding: 8px 10px;
       }
 
+      .preaching-table {
+        min-width: 1440px;
+      }
+
+      .consent-wrap {
+        display: grid;
+        gap: 6px;
+      }
+
+      .consent-wrap label {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #5b4900;
+        font-weight: 600;
+      }
+
+      .consent-wrap input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .saved-row {
+        background: #ddf7dd;
+      }
+
       .suggestions {
         margin-top: 4px;
       }
@@ -742,6 +770,7 @@
         <div class="row">
           <button id="btnMainUser" class="btn btn-primary">MAIN DESK (Universal Desk)</button>
           <button id="btnDeskUser" class="btn btn-user">EVENT Desk (SPOC Desk)</button>
+          <button id="btnPreachingDesk" class="btn btn-user">PRACHING DESK</button>
         </div>
         <div id="globalStatus" class="status"></div>
       </div>
@@ -932,6 +961,86 @@
         </div>
       </div>
 
+      <div id="preachingSection" class="hidden">
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px;">PRACHING DESK - Attendance1 Completed Students</div>
+          <div class="row" style="margin-top: 2px; align-items: end;">
+            <div style="flex: 1; min-width: 220px;">
+              <label>Filter School</label>
+              <select id="preachingFilterSchool"></select>
+            </div>
+            <div style="flex: 1; min-width: 140px;">
+              <label>Filter Group</label>
+              <select id="preachingFilterGroup"></select>
+            </div>
+            <div style="flex: 1; min-width: 180px;">
+              <label>Filter Event</label>
+              <select id="preachingFilterEvent"></select>
+            </div>
+            <div style="flex: 1.2; min-width: 260px;">
+              <label>Search Student Name / Phone</label>
+              <input id="preachingSearch" placeholder="Type student name or phone number..." />
+            </div>
+            <div>
+              <button id="btnPreachingRefresh" class="btn btn-user" style="margin-top: 18px;">Refresh</button>
+            </div>
+          </div>
+          <div id="preachingStatus" class="status"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px;">PRACHING DESK LIST</div>
+          <div class="table-wrap">
+            <table class="preaching-table">
+              <thead>
+                <tr>
+                  <th>Sheet</th>
+                  <th>SchoolCode</th>
+                  <th>SchoolName</th>
+                  <th>Group</th>
+                  <th>Event</th>
+                  <th>StudentName</th>
+                  <th>Class</th>
+                  <th>Sec</th>
+                  <th>PhoneNo</th>
+                  <th>Parent Alt Number</th>
+                  <th>Attendance1</th>
+                  <th>Consent</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="preachingBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight: 800; margin-bottom: 8px; color: #1f8a2f;">SAVED CONTACTS (Moved Down)</div>
+          <div class="table-wrap">
+            <table class="preaching-table">
+              <thead>
+                <tr>
+                  <th>Sheet</th>
+                  <th>SchoolCode</th>
+                  <th>SchoolName</th>
+                  <th>Group</th>
+                  <th>Event</th>
+                  <th>StudentName</th>
+                  <th>Class</th>
+                  <th>Sec</th>
+                  <th>PhoneNo</th>
+                  <th>Parent Alt Number</th>
+                  <th>Attendance1</th>
+                  <th>Consent</th>
+                  <th>Saved At</th>
+                </tr>
+              </thead>
+              <tbody id="preachingSavedBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <footer class="app-footer">
         <div class="footer-brand">ISKCON Magadi Main Road</div>
         <p>&copy; 2026 Iskcon NRJD Website. All rights reserved. | Designed &amp; Developed by INRJD Tech Team</p>
@@ -944,6 +1053,9 @@
         unlockedMain: false,
         currentMainResults: [],
         deskPendingRows: [],
+        preachingRows: [],
+        preachingSavedRows: [],
+        preachingLoaded: false,
         currentDeskEventKey: "",
         refreshTimer: null,
       };
@@ -1038,14 +1150,29 @@
       function showMainUserSection() {
         document.getElementById("mainUserSection").classList.remove("hidden");
         document.getElementById("deskUserSection").classList.add("hidden");
+        document.getElementById("preachingSection").classList.add("hidden");
         stopAutoRefresh();
       }
 
       async function showDeskUserSection() {
         document.getElementById("deskUserSection").classList.remove("hidden");
         document.getElementById("mainUserSection").classList.add("hidden");
+        document.getElementById("preachingSection").classList.add("hidden");
         await refreshDeskRows();
         startAutoRefresh();
+      }
+
+      async function showPreachingDeskSection() {
+        document.getElementById("preachingSection").classList.remove("hidden");
+        document.getElementById("mainUserSection").classList.add("hidden");
+        document.getElementById("deskUserSection").classList.add("hidden");
+        stopAutoRefresh();
+
+        if (!state.preachingLoaded) {
+          await loadPreachingFilterOptions();
+          state.preachingLoaded = true;
+        }
+        await refreshPreachingRows();
       }
 
       async function loadFilterOptions() {
@@ -1058,6 +1185,17 @@
           renderDeskEventButtons();
         } catch (e) {
           setStatus("globalStatus", "Could not load filters: " + e.message, true);
+        }
+      }
+
+      async function loadPreachingFilterOptions() {
+        try {
+          const options = await callServer("getPreachingDeskFilterOptions", {});
+          fillSelect("preachingFilterSchool", options.schools || []);
+          fillSelect("preachingFilterGroup", options.groups || []);
+          fillSelect("preachingFilterEvent", options.events || []);
+        } catch (e) {
+          setStatus("preachingStatus", "Could not load preaching filters: " + e.message, true);
         }
       }
 
@@ -1240,6 +1378,135 @@
         }
       }
 
+      async function refreshPreachingRows() {
+        const payload = {
+          school: document.getElementById("preachingFilterSchool").value || "",
+          group: document.getElementById("preachingFilterGroup").value || "",
+          event: document.getElementById("preachingFilterEvent").value || "",
+          search: document.getElementById("preachingSearch").value || "",
+        };
+
+        try {
+          const res = await callServer("getPreachingDeskRows", payload);
+          state.preachingRows = res.pendingRows || [];
+          state.preachingSavedRows = res.savedRows || [];
+          renderPreachingRows(state.preachingRows, state.preachingSavedRows);
+          setStatus(
+            "preachingStatus",
+            "Loaded " + state.preachingRows.length + " pending and " + state.preachingSavedRows.length + " saved students.",
+            false
+          );
+        } catch (e) {
+          setStatus("preachingStatus", "Load failed: " + e.message, true);
+        }
+      }
+
+      function renderPreachingRows(rows, savedRows) {
+        const body = document.getElementById("preachingBody");
+        const savedBody = document.getElementById("preachingSavedBody");
+
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="13">No pending students found.</td></tr>`;
+        } else {
+          body.innerHTML = rows
+            .map((r, i) => {
+              const altId = "preachingAlt_" + i;
+              const c1Id = "preachingC1_" + i;
+              const c2Id = "preachingC2_" + i;
+
+              return `<tr>
+              <td>${escapeHtml(r.sheetName)}</td>
+              <td>${escapeHtml(r.schoolCode)}</td>
+              <td>${escapeHtml(r.schoolName)}</td>
+              <td>${escapeHtml(r.group)}</td>
+              <td>${escapeHtml(r.competition)}</td>
+              <td>${escapeHtml(r.studentName)}</td>
+              <td>${escapeHtml(r.className)}</td>
+              <td>${escapeHtml(r.sec)}</td>
+              <td>${escapeHtml(r.phoneNo)}</td>
+              <td><input id="${altId}" value="${escapeHtml(r.parentAltPhone || "")}" placeholder="Parent alt number" /></td>
+              <td>${escapeHtml(r.attendance1)}</td>
+              <td>
+                <div class="consent-wrap">
+                  <label><input type="checkbox" id="${c1Id}" ${r.consentContactCorrect ? "checked" : ""} />I confirm that the contact information provided is correct.</label>
+                  <label><input type="checkbox" id="${c2Id}" ${r.consentUpdates ? "checked" : ""} />I agree to receive occasional updates from NRJD about upcoming festivals, programs, and spiritual insights. I understand that I can unsubscribe at any time.</label>
+                </div>
+              </td>
+              <td><button class="btn btn-green" onclick="savePreaching(${i})">Save</button></td>
+            </tr>`;
+            })
+            .join("");
+        }
+
+        if (!savedRows.length) {
+          savedBody.innerHTML = `<tr><td colspan="13">No saved contacts yet.</td></tr>`;
+          return;
+        }
+
+        savedBody.innerHTML = savedRows
+          .map((r) => {
+            const consentText = (r.consentContactCorrect ? "YES" : "NO") + " / " + (r.consentUpdates ? "YES" : "NO");
+            return `<tr class="saved-row">
+              <td>${escapeHtml(r.sheetName)}</td>
+              <td>${escapeHtml(r.schoolCode)}</td>
+              <td>${escapeHtml(r.schoolName)}</td>
+              <td>${escapeHtml(r.group)}</td>
+              <td>${escapeHtml(r.competition)}</td>
+              <td>${escapeHtml(r.studentName)}</td>
+              <td>${escapeHtml(r.className)}</td>
+              <td>${escapeHtml(r.sec)}</td>
+              <td>${escapeHtml(r.phoneNo)}</td>
+              <td>${escapeHtml(r.parentAltPhone || "")}</td>
+              <td>${escapeHtml(r.attendance1)}</td>
+              <td>${escapeHtml(consentText)}</td>
+              <td>${escapeHtml(r.savedAt || "")}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      async function savePreaching(index) {
+        const row = state.preachingRows[index];
+        if (!row) return;
+
+        const alt = document.getElementById("preachingAlt_" + index);
+        const c1 = document.getElementById("preachingC1_" + index);
+        const c2 = document.getElementById("preachingC2_" + index);
+
+        const payload = {
+          sheetName: row.sheetName,
+          rowNumber: row.rowNumber,
+          parentAltPhone: alt ? alt.value : "",
+          consentContactCorrect: !!(c1 && c1.checked),
+          consentUpdates: !!(c2 && c2.checked),
+        };
+
+        const phone10 = String(payload.parentAltPhone || "").replace(/\D/g, "");
+        if (!/^\d{10}$/.test(phone10)) {
+          setStatus("preachingStatus", "Please enter phone number with exactly 10 digits.", true);
+          return;
+        }
+
+        if (!payload.consentContactCorrect || !payload.consentUpdates) {
+          setStatus("preachingStatus", "please give ur concent", true);
+          return;
+        }
+
+        payload.parentAltPhone = phone10;
+
+        try {
+          const res = await callServer("upsertPreachingDeskEntry", payload);
+          if (!res.ok) {
+            setStatus("preachingStatus", res.message || "Save failed.", true);
+            return;
+          }
+          setStatus("preachingStatus", (res.message || "Saved.") + " " + (res.updatedAt || ""), false);
+          await refreshPreachingRows();
+        } catch (e) {
+          setStatus("preachingStatus", "Save failed: " + e.message, true);
+        }
+      }
+
       function renderDeskPending(rows) {
         const body = document.getElementById("deskPendingBody");
         if (!rows.length) {
@@ -1328,6 +1595,7 @@
       function bindButtons() {
         document.getElementById("btnMainUser").addEventListener("click", showMainUserSection);
         document.getElementById("btnDeskUser").addEventListener("click", showDeskUserSection);
+        document.getElementById("btnPreachingDesk").addEventListener("click", showPreachingDeskSection);
         document.getElementById("btnUnlockMain").addEventListener("click", unlockMainUser);
         document.getElementById("mainCode").addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
@@ -1351,6 +1619,12 @@
 
         document.getElementById("btnDeskSearch").addEventListener("click", refreshDeskRows);
         document.getElementById("deskSearchName").addEventListener("input", debounce(refreshDeskRows, 250));
+
+        document.getElementById("btnPreachingRefresh").addEventListener("click", refreshPreachingRows);
+        document.getElementById("preachingSearch").addEventListener("input", debounce(refreshPreachingRows, 250));
+        ["preachingFilterSchool", "preachingFilterGroup", "preachingFilterEvent"].forEach((id) => {
+          document.getElementById(id).addEventListener("change", refreshPreachingRows);
+        });
       }
 
       async function init() {
@@ -1368,6 +1642,7 @@
 
       window.generateToken = generateToken;
       window.markAttendance2 = markAttendance2;
+      window.savePreaching = savePreaching;
 
       init();
     </script>

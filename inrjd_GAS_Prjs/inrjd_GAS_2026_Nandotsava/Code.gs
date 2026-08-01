@@ -395,6 +395,194 @@ function getCompetitionDeskRows(payload) {
   };
 }
 
+function getPreachingDeskFilterOptions() {
+  const rows = getAllRows_().filter((r) => !!toSafeString_(r.attendance1));
+  return {
+    schools: uniqueSorted_(rows.map((r) => r.schoolName).filter(Boolean)),
+    groups: uniqueSorted_(rows.map((r) => r.group).filter(Boolean)),
+    events: uniqueSorted_(rows.map((r) => r.competition).filter(Boolean)),
+  };
+}
+
+function getPreachingDeskRows(payload) {
+  const safePayload = payload || {};
+  const filterSchool = normalizeText_(safePayload.school || "");
+  const filterGroup = normalizeText_(safePayload.group || "");
+  const filterEvent = normalizeText_(safePayload.event || "");
+  const searchText = normalizeText_(safePayload.search || "");
+
+  const preachingMap = getPreachingDeskEntryMap_();
+
+  const rows = getAllRows_()
+    .filter((r) => !!toSafeString_(r.attendance1))
+    .filter((r) => {
+      if (filterSchool && normalizeText_(r.schoolName) !== filterSchool) return false;
+      if (filterGroup && normalizeText_(r.group) !== filterGroup) return false;
+      if (filterEvent && normalizeText_(r.competition) !== filterEvent) return false;
+      return true;
+    })
+    .sort((a, b) => compareTimestampAsc_(a.attendance1, b.attendance1));
+
+  const toDto = (r) => {
+    const participantKey = buildParticipantKey_(r.sheetName, r.rowNumber);
+    const saved = preachingMap[participantKey] || {};
+    return {
+      participantKey,
+      sheetName: r.sheetName,
+      rowNumber: r.rowNumber,
+      schoolCode: r.schoolCode,
+      schoolName: r.schoolName,
+      group: r.group,
+      competition: r.competition,
+      studentName: r.studentName,
+      className: r.className,
+      sec: r.sec,
+      phoneNo: r.phoneNo,
+      token: r.token,
+      attendance1: r.attendance1,
+      attendance2: r.attendance2,
+      parentAltPhone: toSafeString_(saved.parentAltPhone),
+      consentContactCorrect: toBoolean_(saved.consentContactCorrect),
+      consentUpdates: toBoolean_(saved.consentUpdates),
+      savedAt: toSafeString_(saved.savedAt),
+    };
+  };
+
+  const savedRows = [];
+  const pendingRows = [];
+
+  rows.forEach((r) => {
+    const dto = toDto(r);
+    const isSaved = !!toSafeString_(dto.savedAt);
+
+    if (isSaved) {
+      savedRows.push(dto);
+      return;
+    }
+
+    if (!searchText) {
+      pendingRows.push(dto);
+      return;
+    }
+
+    const byName = normalizeText_(dto.studentName).includes(searchText);
+    const byPhone = normalizeText_(dto.phoneNo).includes(searchText);
+    if (byName || byPhone) {
+      pendingRows.push(dto);
+    }
+  });
+
+  savedRows.sort((a, b) => compareTimestampAsc_(a.savedAt, b.savedAt));
+
+  return {
+    pendingRows,
+    savedRows,
+  };
+}
+
+function upsertPreachingDeskEntry(payload) {
+  const safePayload = payload || {};
+  const sheetName = String(safePayload.sheetName || "").trim();
+  const rowNumber = Number(safePayload.rowNumber);
+  const parentAltPhone = String(safePayload.parentAltPhone || "")
+    .replace(/\D/g, "")
+    .trim();
+  const consentContactCorrect = !!safePayload.consentContactCorrect;
+  const consentUpdates = !!safePayload.consentUpdates;
+
+  if (!sheetName || !rowNumber) {
+    return { ok: false, message: "Sheet name and row number are required." };
+  }
+
+  if (!/^\d{10}$/.test(parentAltPhone)) {
+    return { ok: false, message: "Please enter phone number with exactly 10 digits." };
+  }
+
+  if (!consentContactCorrect || !consentUpdates) {
+    return { ok: false, message: "please give ur concent" };
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    const allRows = getAllRows_();
+    const src = allRows.find((r) => r.sheetName === sheetName && r.rowNumber === rowNumber);
+    if (!src) {
+      return { ok: false, message: "Source student not found." };
+    }
+    if (!toSafeString_(src.attendance1)) {
+      return { ok: false, message: "Student has not completed Attendance1." };
+    }
+
+    const ss = getSpreadsheet_();
+    const sheet = getOrCreatePreachingDeskSheet_(ss);
+    const headers = getHeaders_(sheet);
+
+    const participantKey = buildParticipantKey_(src.sheetName, src.rowNumber);
+    const nowText = formatNow_();
+
+    const dataRow = {
+      ParticipantKey: participantKey,
+      Sheet: src.sheetName,
+      RowNumber: src.rowNumber,
+      SchoolCode: src.schoolCode,
+      SchoolName: src.schoolName,
+      Group: src.group,
+      Competition: src.competition,
+      StudentName: src.studentName,
+      Class: src.className,
+      Sec: src.sec,
+      PhoneNo: src.phoneNo,
+      Token: src.token,
+      Attendance1: src.attendance1,
+      Attendance2: src.attendance2,
+      ParentAltPhone: parentAltPhone,
+      ConsentContactCorrect: consentContactCorrect ? "TRUE" : "FALSE",
+      ConsentUpdates: consentUpdates ? "TRUE" : "FALSE",
+      UpdatedAt: nowText,
+    };
+
+    const rowValues = headers.map((h) => {
+      const key = String(h || "").trim();
+      return Object.prototype.hasOwnProperty.call(dataRow, key) ? dataRow[key] : "";
+    });
+
+    const keyCol = headers.indexOf("ParticipantKey");
+    if (keyCol < 0) {
+      return { ok: false, message: "PreachingDesk headers are invalid." };
+    }
+
+    let targetRow = 0;
+    const lastRow = sheet.getLastRow();
+    if (lastRow >= 2) {
+      const keys = sheet.getRange(2, keyCol + 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < keys.length; i++) {
+        if (toSafeString_(keys[i][0]) === participantKey) {
+          targetRow = i + 2;
+          break;
+        }
+      }
+    }
+
+    if (targetRow) {
+      sheet.getRange(targetRow, 1, 1, headers.length).setValues([rowValues]);
+    } else {
+      sheet.getRange(sheet.getLastRow() + 1, 1, 1, headers.length).setValues([rowValues]);
+    }
+
+    return {
+      ok: true,
+      message: "Saved to PreachingDesk.",
+      updatedAt: nowText,
+    };
+  } catch (err) {
+    return { ok: false, message: "Failed to save PreachingDesk data: " + err.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function buildDeskEventOptions_(rows) {
   const map = {};
 
@@ -505,14 +693,92 @@ function getSpreadsheet_() {
   return SpreadsheetApp.openById(CONFIG.SHEET_ID);
 }
 
+function getOrCreatePreachingDeskSheet_(ss) {
+  const sheetName = "PreachingDesk";
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+  }
+
+  const headers = getPreachingDeskHeaders_();
+  const currentHeaders = getHeaders_(sheet);
+  const hasAnyHeader = currentHeaders.some((h) => !!toSafeString_(h));
+  if (!hasAnyHeader) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    return sheet;
+  }
+
+  if (currentHeaders.length !== headers.length || currentHeaders.some((h, i) => h !== headers[i])) {
+    throw new Error("PreachingDesk header mismatch. Please align row 1 with expected columns.");
+  }
+  return sheet;
+}
+
+function getPreachingDeskHeaders_() {
+  return [
+    "ParticipantKey",
+    "Sheet",
+    "RowNumber",
+    "SchoolCode",
+    "SchoolName",
+    "Group",
+    "Competition",
+    "StudentName",
+    "Class",
+    "Sec",
+    "PhoneNo",
+    "Token",
+    "Attendance1",
+    "Attendance2",
+    "ParentAltPhone",
+    "ConsentContactCorrect",
+    "ConsentUpdates",
+    "UpdatedAt",
+  ];
+}
+
+function getPreachingDeskEntryMap_() {
+  const ss = getSpreadsheet_();
+  const sheet = ss.getSheetByName("PreachingDesk");
+  if (!sheet || sheet.getLastRow() < 2) return {};
+
+  const headers = getHeaders_(sheet);
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues();
+
+  const idx = {
+    key: headers.indexOf("ParticipantKey"),
+    parentAltPhone: headers.indexOf("ParentAltPhone"),
+    consentContactCorrect: headers.indexOf("ConsentContactCorrect"),
+    consentUpdates: headers.indexOf("ConsentUpdates"),
+    savedAt: headers.indexOf("UpdatedAt"),
+  };
+
+  if (idx.key < 0) return {};
+
+  const map = {};
+  values.forEach((r) => {
+    const key = toSafeString_(r[idx.key]);
+    if (!key) return;
+    map[key] = {
+      parentAltPhone: idx.parentAltPhone >= 0 ? r[idx.parentAltPhone] : "",
+      consentContactCorrect: idx.consentContactCorrect >= 0 ? r[idx.consentContactCorrect] : false,
+      consentUpdates: idx.consentUpdates >= 0 ? r[idx.consentUpdates] : false,
+      savedAt: idx.savedAt >= 0 ? r[idx.savedAt] : "",
+    };
+  });
+  return map;
+}
+
 function getMainRows_() {
   const rows = getAllRows_();
   return rows.filter((r) => normalizeText_(r.sheetName) === normalizeText_(CONFIG.MAIN_SHEET));
 }
 
 function getHeaders_(sheet) {
+  const lastCol = sheet.getLastColumn();
+  if (!lastCol || lastCol < 1) return [];
   return sheet
-    .getRange(1, 1, 1, sheet.getLastColumn())
+    .getRange(1, 1, 1, lastCol)
     .getValues()[0]
     .map((h) => String(h || "").trim());
 }
@@ -694,6 +960,15 @@ function normalizeText_(val) {
 
 function toSafeString_(val) {
   return String(val == null ? "" : val).trim();
+}
+
+function toBoolean_(val) {
+  const txt = String(val == null ? "" : val).trim().toLowerCase();
+  return val === true || txt === "true" || txt === "yes" || txt === "1";
+}
+
+function buildParticipantKey_(sheetName, rowNumber) {
+  return String(sheetName || "") + "#" + String(rowNumber || "");
 }
 
 function getEffectiveCompetition_(sheetName, rawCompetition) {
