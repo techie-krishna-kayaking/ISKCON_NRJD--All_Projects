@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate school-wise Nandotsav 2026 final letters from a DOCX template and CSV data.
+Generate school-wise Nandotsav 2026 final letters from a DOCX template and Excel data.
 
 Outputs for each school inside ./output:
 - <school_slug>.pdf
@@ -12,7 +12,6 @@ Supports: macOS (Word or LibreOffice), Windows (Word or LibreOffice), Linux (Lib
 from __future__ import annotations
 
 import argparse
-import csv
 import re
 import shutil
 import subprocess
@@ -30,6 +29,7 @@ from docx.oxml.ns import qn
 from docx.shared import Pt
 from docx.table import Table
 from docx.text.paragraph import Paragraph
+from openpyxl import load_workbook
 
 
 @dataclass
@@ -40,6 +40,13 @@ class Finalist:
     klass: str
     section: str
     rank: str
+
+
+@dataclass
+class FancyParticipant:
+    name: str
+    klass: str
+    section: str
 
 
 def apply_font_to_run(run, font_name: str = "Arial", font_size: int = 12) -> None:
@@ -91,37 +98,114 @@ def slugify(name: str) -> str:
     return safe.lower() or "school"
 
 
-def read_school_data(csv_path: Path) -> Dict[str, Dict[str, object]]:
+def normalize_header(value: str) -> str:
+    text = normalize_space(value)
+    return re.sub(r"[^a-z0-9]+", "", text.casefold())
+
+
+def pick_row_value(row: Dict[str, str], *aliases: str) -> str:
+    for alias in aliases:
+        key = normalize_header(alias)
+        value = row.get(key, "")
+        if normalize_space(value):
+            return normalize_space(value)
+    return ""
+
+
+def read_sheet_rows(excel_path: Path, sheet_name: str) -> List[Dict[str, str]]:
+    wb = load_workbook(excel_path, data_only=True, read_only=True)
+    try:
+        target_sheet = None
+        for actual_name in wb.sheetnames:
+            if actual_name.casefold() == sheet_name.casefold():
+                target_sheet = actual_name
+                break
+
+        if target_sheet is None:
+            available = ", ".join(wb.sheetnames)
+            raise ValueError(
+                f"Sheet '{sheet_name}' not found in {excel_path.name}. "
+                f"Available sheets: {available}"
+            )
+
+        ws = wb[target_sheet]
+        rows_iter = ws.iter_rows(values_only=True)
+        header_row = next(rows_iter, None)
+        if not header_row:
+            return []
+
+        headers = [normalize_header(str(col or "")) for col in header_row]
+        records: List[Dict[str, str]] = []
+        for row in rows_iter:
+            record: Dict[str, str] = {}
+            non_empty = False
+            for idx, cell in enumerate(row):
+                if idx >= len(headers) or not headers[idx]:
+                    continue
+                value = normalize_space(str(cell or ""))
+                if value:
+                    non_empty = True
+                record[headers[idx]] = value
+            if non_empty:
+                records.append(record)
+        return records
+    finally:
+        wb.close()
+
+
+def read_school_data_from_excel(
+    excel_path: Path,
+    finalists_sheet: str,
+    fancydress_sheet: str,
+) -> Dict[str, Dict[str, object]]:
     schools: Dict[str, Dict[str, object]] = defaultdict(lambda: {
         "display_counter": Counter(),
-        "rows": [],
+        "finalists": [],
+        "fancy_participants": [],
     })
 
-    with csv_path.open("r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            school_name = normalize_space(row.get("SchoolName", ""))
-            if not school_name:
-                continue
+    finalist_rows = read_sheet_rows(excel_path, finalists_sheet)
+    fancy_rows = read_sheet_rows(excel_path, fancydress_sheet)
 
-            school_key = school_name.casefold()
-            schools[school_key]["display_counter"][school_name] += 1
+    for row in finalist_rows:
+        school_name = pick_row_value(row, "SchoolName", "School Name", "School")
+        if not school_name:
+            continue
 
-            finalist = Finalist(
-                group=normalize_group(row.get("Group", "")),
-                competition=normalize_space(row.get("Competition", "")),
-                name=normalize_space(row.get("StudentName", "")),
-                klass=normalize_space(row.get("Class", "")),
-                section=normalize_space(row.get("Sec", "")),
-                rank=normalize_space(row.get("Rank", "")),
-            )
-            schools[school_key]["rows"].append(finalist)
+        school_key = school_name.casefold()
+        schools[school_key]["display_counter"][school_name] += 1
+
+        finalist = Finalist(
+            group=normalize_group(pick_row_value(row, "Group")),
+            competition=pick_row_value(row, "Competition"),
+            name=pick_row_value(row, "StudentName", "Student Name", "Name"),
+            klass=pick_row_value(row, "Class", "Klass"),
+            section=pick_row_value(row, "Sec", "Section"),
+            rank=pick_row_value(row, "Rank"),
+        )
+        schools[school_key]["finalists"].append(finalist)
+
+    for row in fancy_rows:
+        school_name = pick_row_value(row, "SchoolName", "School Name", "School")
+        if not school_name:
+            continue
+
+        school_key = school_name.casefold()
+        schools[school_key]["display_counter"][school_name] += 1
+
+        participant = FancyParticipant(
+            name=pick_row_value(row, "StudentName", "Student Name", "Participant", "Name"),
+            klass=pick_row_value(row, "Class", "Klass"),
+            section=pick_row_value(row, "Sec", "Section"),
+        )
+        if participant.name:
+            schools[school_key]["fancy_participants"].append(participant)
 
     resolved: Dict[str, Dict[str, object]] = {}
     for school_key, payload in schools.items():
         display_name = payload["display_counter"].most_common(1)[0][0]
-        rows: List[Finalist] = payload["rows"]
-        rows.sort(
+        finalists: List[Finalist] = payload["finalists"]
+        finalists.sort(
             key=lambda x: (
                 group_sort_key(x.group),
                 x.competition.upper(),
@@ -129,9 +213,13 @@ def read_school_data(csv_path: Path) -> Dict[str, Dict[str, object]]:
                 x.name.upper(),
             )
         )
+        fancy_participants: List[FancyParticipant] = payload["fancy_participants"]
+        fancy_participants.sort(key=lambda x: (x.name.upper(), x.klass.upper(), x.section.upper()))
+
         resolved[school_key] = {
             "school_name": display_name,
-            "rows": rows,
+            "finalists": finalists,
+            "fancy_participants": fancy_participants,
         }
 
     return resolved
@@ -165,17 +253,19 @@ def insert_table_after(doc: Document, paragraph: Paragraph, rows: int, cols: int
     return new_table
 
 
-def fill_annexure3_table(doc: Document, finalists: List[Finalist]) -> None:
-    # Find the LAST paragraph containing "annexure" (typically ANNEXURE - 3 FINALISTS)
-    # This handles different layouts and alignment changes
-    annexure_para = None
+def find_annexure_heading(doc: Document, include_terms: List[str]) -> Optional[Paragraph]:
+    found = None
     for para in doc.paragraphs:
         text = normalize_space(para.text).lower()
-        if "annexure" in text:
-            annexure_para = para  # Keep updating to get the last occurrence
+        if all(term in text for term in include_terms):
+            found = para
+    return found
 
+
+def fill_annexure3_table(doc: Document, finalists: List[Finalist]) -> None:
+    annexure_para = find_annexure_heading(doc, ["annexure", "3", "final"])
     if annexure_para is None:
-        raise ValueError("Could not find 'Annexure' heading in template")
+        raise ValueError("Could not find 'ANNEXURE - 3 FINALISTS' heading in template")
 
     table = insert_table_after(doc, annexure_para, rows=1, cols=5)
     table.style = "Table Grid"
@@ -194,6 +284,29 @@ def fill_annexure3_table(doc: Document, finalists: List[Finalist]) -> None:
 
         # Keep finalist names consistent in output PDFs.
         for paragraph in row_cells[2].paragraphs:
+            for run in paragraph.runs:
+                apply_font_to_run(run, "Arial", 12)
+
+
+def fill_annexure4_table(doc: Document, participants: List[FancyParticipant]) -> None:
+    annexure_para = find_annexure_heading(doc, ["annexure", "4", "fancy", "dress"])
+    if annexure_para is None:
+        raise ValueError("Could not find 'ANNEXURE - 4 FANCY DRESS COMPETITION PARTICIPANTS' heading in template")
+
+    table = insert_table_after(doc, annexure_para, rows=1, cols=3)
+    table.style = "Table Grid"
+
+    headers = ["NAME", "CLASS", "SECTION"]
+    for idx, text in enumerate(headers):
+        table.cell(0, idx).text = text
+
+    for entry in participants:
+        row_cells = table.add_row().cells
+        row_cells[0].text = entry.name
+        row_cells[1].text = entry.klass
+        row_cells[2].text = entry.section
+
+        for paragraph in row_cells[0].paragraphs:
             for run in paragraph.runs:
                 apply_font_to_run(run, "Arial", 12)
 
@@ -340,7 +453,11 @@ def convert_pdf_to_images(pdf_path: Path, output_prefix: Path, scale: float = 2.
 
 
 def generate_docx_for_school(
-    template_path: Path, temp_dir: Path, school_name: str, finalists: List[Finalist]
+    template_path: Path,
+    temp_dir: Path,
+    school_name: str,
+    finalists: List[Finalist],
+    fancy_participants: List[FancyParticipant],
 ) -> tuple[str, Path]:
     school_slug = slugify(school_name)
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -350,6 +467,7 @@ def generate_docx_for_school(
     doc = Document(str(template_path))
     replace_school_placeholder(doc, school_name)
     fill_annexure3_table(doc, finalists)
+    fill_annexure4_table(doc, fancy_participants)
     doc.save(str(docx_path))
     return school_slug, docx_path
 
@@ -399,7 +517,9 @@ def load_config(config_path: str = "config.yaml") -> Dict:
     
     # Default configuration
     default_config = {
-        "csv_file": "Nandotsav 2026 - Top3.csv",
+        "excel_file": "Nandotsav 2026.xlsx",
+        "finalists_sheet": "top3",
+        "fancydress_sheet": "fancydress",
         "template_file": "Nandotsav 2026 Finals.docx",
         "output_folder": "output",
         "pdf_converter": "word",
@@ -435,10 +555,28 @@ def parse_args() -> argparse.Namespace:
         help="Path to YAML config file (default: config.yaml)",
     )
     parser.add_argument(
+        "--excel",
+        dest="excel_file",
+        type=str,
+        help="Excel file name inside input/ (overrides config.yaml)",
+    )
+    parser.add_argument(
         "--csv",
         dest="csv_file",
         type=str,
-        help="CSV file name (overrides config.yaml)",
+        help="Deprecated alias for --excel (kept for backward compatibility)",
+    )
+    parser.add_argument(
+        "--finalists-sheet",
+        dest="finalists_sheet",
+        type=str,
+        help="Sheet name for finalists data (default from config.yaml)",
+    )
+    parser.add_argument(
+        "--fancydress-sheet",
+        dest="fancydress_sheet",
+        type=str,
+        help="Sheet name for fancy dress participants (default from config.yaml)",
     )
     parser.add_argument(
         "--template",
@@ -478,8 +616,14 @@ def main() -> int:
     config = load_config(args.config_file)
 
     # Override config with command-line arguments
+    if args.excel_file:
+        config["excel_file"] = args.excel_file
     if args.csv_file:
-        config["csv_file"] = args.csv_file
+        config["excel_file"] = args.csv_file
+    if args.finalists_sheet:
+        config["finalists_sheet"] = args.finalists_sheet
+    if args.fancydress_sheet:
+        config["fancydress_sheet"] = args.fancydress_sheet
     if args.template_file:
         config["template_file"] = args.template_file
     if args.output_folder:
@@ -493,17 +637,17 @@ def main() -> int:
 
     # Set up paths - input files are in 'input/' folder
     input_dir = Path("input")
-    csv_path = (input_dir / config["csv_file"]).resolve()
+    excel_path = (input_dir / config["excel_file"]).resolve()
     template_path = (input_dir / config["template_file"]).resolve()
     output_dir = Path(config["output_folder"]).resolve()
 
     if not input_dir.exists():
         print(f"❌ Input directory not found: {input_dir}", file=sys.stderr)
-        print(f"   Please create an 'input' folder and add your CSV and DOCX files there", file=sys.stderr)
+        print(f"   Please create an 'input' folder and add your Excel and DOCX files there", file=sys.stderr)
         return 1
 
-    if not csv_path.exists():
-        print(f"❌ CSV file not found: {csv_path}", file=sys.stderr)
+    if not excel_path.exists():
+        print(f"❌ Excel file not found: {excel_path}", file=sys.stderr)
         return 1
 
     if not template_path.exists():
@@ -549,7 +693,9 @@ def main() -> int:
 
     if config["verbose"]:
         print(f"📋 Configuration loaded from: {args.config_file}")
-        print(f"   CSV: {csv_path}")
+        print(f"   Excel: {excel_path}")
+        print(f"   Finalists sheet: {config['finalists_sheet']}")
+        print(f"   Fancydress sheet: {config['fancydress_sheet']}")
         print(f"   Template: {template_path}")
         print(f"   Output: {output_dir}")
         print(f"   Converter: {converter}")
@@ -558,9 +704,13 @@ def main() -> int:
     if config["clean"] and output_dir.exists():
         shutil.rmtree(output_dir)
 
-    school_data = read_school_data(csv_path)
+    school_data = read_school_data_from_excel(
+        excel_path,
+        config["finalists_sheet"],
+        config["fancydress_sheet"],
+    )
     if not school_data:
-        print("❌ No school data found in CSV.", file=sys.stderr)
+        print("❌ No school data found in the configured Excel sheets.", file=sys.stderr)
         return 1
 
     if config["verbose"]:
@@ -574,13 +724,15 @@ def main() -> int:
 
     for payload in school_data.values():
         school_name = payload["school_name"]
-        finalists = payload["rows"]
+        finalists = payload["finalists"]
+        fancy_participants = payload["fancy_participants"]
         try:
             school_slug, docx_path = generate_docx_for_school(
                 template_path,
                 temp_dir,
                 school_name,
                 finalists,
+                fancy_participants,
             )
             pdf_path = output_dir / f"{school_slug}.pdf"
             generated.append((school_name, school_slug, docx_path, pdf_path))

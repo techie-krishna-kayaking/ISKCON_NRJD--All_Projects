@@ -1,6 +1,6 @@
 # Nandotsav 2026 Letters Generator
 
-Automatically generate personalized Nandotsav 2026 finalist letters (PDF + PNG images) for all schools using a Word template and CSV data file.
+Automatically generate personalized Nandotsav 2026 letters (PDF + PNG images) for all schools using a Word template and a multi-sheet Excel file.
 
 ## Features
 
@@ -37,7 +37,7 @@ Create an `input/` folder and place your files there:
 ```
 inrjd_Nandotsav2026_Letters/
 ├── input/
-│   ├── Nandotsav 2026 - Top3.csv      ← Your data
+│   ├── Nandotsav 2026.xlsx            ← Your data (multiple sheets)
 │   └── Nandotsav 2026 Finals.docx     ← Your template
 ├── config.yaml
 ├── generate_final_letters_v2.py
@@ -54,9 +54,16 @@ Check the `output/` folder for your generated PDFs and PNG images!
 
 ---
 
-## CSV File Format
+## Excel File Format
 
-The CSV must contain these columns **in this order**:
+Use one Excel file with these two sheets:
+
+1. `top3` sheet: finalists data (used for ANNEXURE - 3 FINALISTS)
+2. `fancydress` sheet: fancy dress participants (used for ANNEXURE - 4 FANCY DRESS COMPETITION PARTICIPANTS)
+
+### `top3` sheet format
+
+The `top3` sheet should contain these columns:
 
 | Column | Description | Example |
 |--------|-------------|---------|
@@ -73,7 +80,7 @@ The CSV must contain these columns **in this order**:
 | `Attendance1` | Attendance data (optional) | Empty OK |
 | `Attendance2` | Attendance data (optional) | Empty OK |
 
-### Example CSV:
+### Example `top3` sheet row data:
 
 ```
 SchoolCode,SchoolName,Group,Competition,Rank,StudentName,Class,Sec,PhoneNo,Token,Attendance1,Attendance2
@@ -82,11 +89,18 @@ AVN,AGASTHYA VIDYANIKETHAN NAGARBHAVI,G1,COLORING,2,THIRUMALESH M,UKG,A,,,,
 BMN,BMN PUBLIC SCHOOL,G1,COLORING,3,ADITI M,UKG,,,,,
 ```
 
+### `fancydress` sheet format
+
+The `fancydress` sheet should contain at least:
+- `SchoolName`
+- `StudentName` (or `Name` / `Participant`)
+- `Class` (optional)
+- `Sec` or `Section` (optional)
+
 **Key Points:**
-- ✅ Columns must be in the exact order shown above
-- ✅ Column names are case-sensitive
-- ✅ First row must be the header
-- ✅ Optional columns (PhoneNo, Token, Attendance1, Attendance2) can be empty
+- ✅ First row must be the header in both sheets
+- ✅ Sheet names are configurable in `config.yaml`
+- ✅ Column names are matched flexibly for common variants (like `StudentName`/`Student Name`)
 
 ---
 
@@ -95,7 +109,8 @@ BMN,BMN PUBLIC SCHOOL,G1,COLORING,3,ADITI M,UKG,,,,,
 Your template should contain:
 
 1. **Placeholder:** `{School Name}` - will be replaced with actual school name
-2. **Last Heading:** Must contain "ANNEXURE" (any case) - the finalist table will be inserted after this heading
+2. **Annexure 3 Heading:** Must contain "ANNEXURE", "3", and "FINAL" text
+3. **Annexure 4 Heading:** Must contain "ANNEXURE", "4", "FANCY", and "DRESS" text
 
 Example:
 ```
@@ -111,6 +126,9 @@ Dear Sir/Madam,
 
 ANNEXURE – 3 FINALISTS
 [Table will be inserted here]
+
+ANNEXURE - 4 FANCY DRESS COMPETITION PARTICIPANTS
+[Table will be inserted here]
 ```
 
 ---
@@ -121,7 +139,9 @@ Customize file names and settings in `config.yaml`:
 
 ```yaml
 # Input file names (files should be in the 'input' folder)
-csv_file: "Nandotsav 2026 - Top3.csv"
+excel_file: "Nandotsav 2026.xlsx"
+finalists_sheet: "top3"
+fancydress_sheet: "fancydress"
 template_file: "Nandotsav 2026 Finals.docx"
 
 # Output folder
@@ -141,7 +161,9 @@ clean: false
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `csv_file` | `Nandotsav 2026 - Top3.csv` | CSV filename in `input/` folder |
+| `excel_file` | `Nandotsav 2026.xlsx` | Excel filename in `input/` folder |
+| `finalists_sheet` | `top3` | Sheet for finalists data |
+| `fancydress_sheet` | `fancydress` | Sheet for fancy dress participants |
 | `template_file` | `Nandotsav 2026 Finals.docx` | DOCX filename in `input/` folder |
 | `output_folder` | `output` | Folder for generated PDFs/PNGs |
 | `pdf_converter` | `word` | `word` (auto-detect) or `libreoffice` |
@@ -152,8 +174,8 @@ clean: false
 
 ## 📁 Input Files
 
-### 1. CSV Data File
-**File name:** `Nandotsav 2026 - Top3.csv`
+### 1. Excel Data File
+**File name:** `Nandotsav 2026.xlsx`
 
 ### 2. Word Template
 **File name:** `Nandotsav 2026 Finals.docx`
@@ -201,8 +223,11 @@ python3 generate_final_letters_v2.py --verbose
 # Delete old output and regenerate
 python3 generate_final_letters_v2.py --clean
 
-# Use custom CSV file
-python3 generate_final_letters_v2.py --csv "Snana_Yatra.csv"
+# Use custom Excel file
+python3 generate_final_letters_v2.py --excel "Snana_Yatra.xlsx"
+
+# Use custom sheet names
+python3 generate_final_letters_v2.py --finalists-sheet "top3" --fancydress-sheet "fancydress"
 
 # Use custom template
 python3 generate_final_letters_v2.py --template "Snana_Yatra_Template.docx"

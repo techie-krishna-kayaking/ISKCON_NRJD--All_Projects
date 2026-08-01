@@ -1,7 +1,9 @@
 # Nandotsav 2026 Letters Generator Configuration
 
 # Input file names (files should be in the 'input' folder)
-csv_file: "Nandotsav 2026 - Top3.csv"
+excel_file: "Nandotsav 2026.xlsx"
+finalists_sheet: "top3"
+fancydress_sheet: "fancydress"
 template_file: "Nandotsav 2026 Finals.docx"
 
 # Output folder

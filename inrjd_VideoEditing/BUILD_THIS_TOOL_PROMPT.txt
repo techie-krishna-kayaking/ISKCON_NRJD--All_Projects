@@ -1,0 +1,524 @@
+================================================================================
+FULL PROMPT: BUILD AN AUTOMATED DEVOTIONAL EVENT VIDEO EDITING TOOL
+================================================================================
+
+You are an expert Python developer and media automation engineer. Build a
+production-grade, headless video editing and publishing tool for a Hindu temple
+organisation (ISKCON). The tool must be completely CLI-driven, use FFmpeg under
+the hood, and require zero manual video editing from the user.
+
+The user places raw media (photos + videos from events) into a folder, runs one
+command, and receives four finished, branded, publication-ready MP4 files in an
+output folder.
+
+================================================================================
+SECTION 1 — PROJECT OVERVIEW
+================================================================================
+
+Name        : ISKCON NRJD Video Editor
+Language    : Python 3.12+
+Interface   : Typer CLI + Rich terminal UI
+Media engine: FFmpeg / FFprobe (must be installed separately)
+Config      : Single YAML file, no database
+Output      : Four MP4 files per event, published to output/
+
+The tool must work on both macOS (Apple Silicon + Intel) and Windows.
+
+================================================================================
+SECTION 2 — FOUR OUTPUT TYPES (one per event)
+================================================================================
+
+Every event folder produces exactly four output videos:
+
+─────────────────────────────────────────────────────────────────────
+Output 1: <event>_pictures_short.mp4   — Short-form picture slideshow
+─────────────────────────────────────────────────────────────────────
+  Resolution  : 1080 × 1920 (portrait / vertical, for Reels & Shorts)
+  Source      : shortform_pictures/ bucket (JPG/PNG images)
+  Duration    : Target ~60 s; can split into multiple parts
+  Structure:
+    - INTRO (5 s): 10 images flash at 0.5 s/image, no zoompan (too short),
+      event folder name overlaid in large YELLOW text with thick BLACK border,
+      centred on screen.
+    - MAIN (remaining images): smooth zoom-in then zoom-out per image
+      (zoompan filter), alternating colour then B&W pattern (every 5 colour
+      then 2 B&W), cross-dissolve transitions 0.7 s.
+    - OUTRO (last 8 s): white background, four lines of RED text with black
+      shadow centred on screen (see Section 5 for exact text).
+  Music       : random track from music/ folder, fade in/out
+  Overlay     : socials badge bottom-left, website badge bottom-right
+                (transparent PNG, scaled to 9% / 10% of frame width)
+
+─────────────────────────────────────────────────────────────────────
+Output 2: <event>_pictures_long.mp4   — Long-form picture slideshow
+─────────────────────────────────────────────────────────────────────
+  Resolution  : 1920 × 1080 (landscape)
+  Source      : longform_pictures/ bucket (JPG/PNG images)
+  Duration    : All images processed, however long that takes
+  Structure (cyclic pipeline):
+    Phase 0 — INTRO (first 10 images, 0.5 s each = 5 s):
+      Hard/near-hard cuts, event name large yellow text with black border.
+    Phase A — ZOOM (next 10 images, 4 s each):
+      zoompan: smooth zoom-in to 107% at midpoint, back out, centred.
+      Cross-dissolve 0.7 s.
+    Phase B — PAN (next 10 images, 5 s each):
+      zoompan: slow horizontal Ken-Burns pan at 108% zoom, alternating
+      left→right then right→left direction per clip.
+      Cross-dissolve 0.7 s.
+    Phase C — MONTAGE (next 10 images, 3 s each):
+      Static frame (no zoompan), fadeblack transition 0.6 s.
+    Repeat Phase A → B → C → A → ... until all images are exhausted.
+  Outro (last 8 s): white background, four lines RED text black shadow.
+  Music       : multi-track plan covering full duration, cross-faded.
+  Overlay     : socials badge + website badge (corner badges).
+
+─────────────────────────────────────────────────────────────────────
+Output 3: <event>_short_main.mp4(s)   — Short-form video reel
+─────────────────────────────────────────────────────────────────────
+  Resolution  : 1080 × 1920 (portrait)
+  Source      : shortform_videos/ bucket (MOV/MP4/MKV video files)
+  Duration    : ~60 s target per part; splits into part01, part02 … as needed
+  Clip logic  : Random segments extracted from each source video, distributed
+                across source files to avoid repeating same source back-to-back.
+                Clip duration buckets: 35% fast (0.5–2 s), 30% normal, 35% slow.
+                Unused-first selection strategy: clips not used in previous
+                renders are preferred.
+  Structure:
+    INTRO (4 s):
+      2 s colour then 2 s B&W from a 4-tile mosaic of the first video frame
+      (split into 4 quadrants, stacked 2×2 with xstack), event name overlaid.
+    MAIN clips: smooth per-clip zoom-in→zoom-out (scale filter eval=frame,
+      peak zoom 1.035), cross-dissolve transitions.
+    OUTRO (last 5 s):
+      Same 4-tile mosaic with yellow text four-line card.
+  Music       : Original audio kept (duck to 35% under any music track).
+  Overlay     : socials + website corner badges.
+
+─────────────────────────────────────────────────────────────────────
+Output 4: <event>_long_main.mp4   — Long-form video
+─────────────────────────────────────────────────────────────────────
+  Resolution  : 1920 × 1080 (landscape)
+  Source      : longform_videos/ bucket (MOV/MP4/MKV video files)
+  Duration    : Target ~10–30 min depending on available footage
+  Clip selection:
+    Pacing phases cycling:
+      t < 120 s  → fast clips 1.0–2.0 s
+      120–170 s  → slow clips 2.2–3.8 s
+      t > 170 s  → very fast clips 0.45–0.95 s
+  Structure:
+    INTRO (4 s): 4-tile mosaic, 2 s colour → 2 s B&W, event name overlay.
+    MAIN: clips with mild smooth zoom (1.035 peak, eval=frame scale), cross-
+      dissolve/fade transitions. Original audio + background music.
+    OUTRO (last 5 s): 4-tile mosaic card + four yellow text lines.
+  Music       : multi-track, original audio ducked.
+  Overlay     : socials + website.
+
+================================================================================
+SECTION 3 — FOLDER STRUCTURE & CONVENTIONS
+================================================================================
+
+project_root/
+  raw_data/                 ← user drops raw event folders here
+    2026_Snana_Yatra/
+      IMG_001.jpg
+      IMG_002.MOV
+      ...
+  input/                    ← organised by the tool's organizer step
+    2026_Snana_Yatra/
+      shortform_pictures/
+      longform_pictures/
+      shortform_videos/
+      longform_videos/
+  output/                   ← final MP4 files published here
+    2026_Snana_Yatra_pictures_short.mp4
+    2026_Snana_Yatra_pictures_long.mp4
+    2026_Snana_Yatra_short_main.mp4
+    2026_Snana_Yatra_long_main.mp4
+  work/
+    temp/                   ← intermediate ffmpeg outputs (cleaned up by default)
+    logs/
+    reports/
+  assets/
+    overlays/
+      socials.png           ← transparent PNG, social media icons
+      website.png           ← transparent PNG, website URL badge
+      header.png            ← optional header banner (NOT used in portrait short)
+    fonts/
+      NotoSans-Bold.ttf     ← or any font supporting the required language
+  music/                    ← background music files (.mp3 / .wav / .m4a)
+  config/
+    config.yaml             ← all settings in one file
+  src/
+    cli/
+    config/
+    renderer/
+    organizer/
+    analyzer/
+    review/
+    image/
+    reports/
+    utils/
+  main.py                   ← CLI entrypoint
+  requirements.txt
+  pyproject.toml
+
+================================================================================
+SECTION 4 — MEDIA ORGANIZER (Step 1 of the pipeline)
+================================================================================
+
+When the user runs any command, the organizer runs FIRST:
+
+1. Scan raw_data/ for event folders.
+2. Run ffprobe on every media file to get: codec, width, height, fps,
+   duration, rotation, orientation (portrait vs landscape).
+3. Classify each file:
+   - Image portrait  → shortform_pictures
+   - Image landscape → longform_pictures
+   - Video portrait  → shortform_videos  (or longform_videos based on duration)
+   - Video landscape → longform_videos
+   Thresholds: short video < config threshold (default 90 s), else long.
+4. Hard-link (default) or copy/move files into input/<event>/<bucket>/.
+5. Write an analyzer report JSON to work/reports/<event>/analyzer_report.json.
+6. If raw_data/ has no analyzer report yet, auto-generate one from ffprobe data.
+
+The user can override classification with --copy, --move, or --link flags.
+The user can also run interactive review before rendering to keep/reject files:
+  python3 main.py review --event "2026_Snana_Yatra"
+  (keys: k=keep, d=delete, n=next, q=quit, r=resume from saved progress)
+
+================================================================================
+SECTION 5 — OUTRO TEXT (same for ALL four output types)
+================================================================================
+
+The outro appears on a WHITE background for the last 8 seconds of every video.
+Text is RED with a BLACK drop-shadow. Fade to black over the final 3 seconds.
+
+  Line 1 (medium):  THANK YOU FOR WATCHING.
+  Line 2 (medium):  PLEASE VISIT OUR TEMPLE
+  Line 3 (medium):  ISKCON MAGADI MAIN ROAD
+  Line 4 (LARGEST): NEW RAJAPUR JAGANNATH DHAM.
+
+All lines centred horizontally. Font sizes relative to min(width, height):
+  Lines 1-3: ~4.8% of min_side
+  Line 4   : ~6.4% of min_side
+
+================================================================================
+SECTION 6 — OVERLAY BADGES
+================================================================================
+
+Both socials.png and website.png are PNG files with transparent backgrounds.
+They must be composited with alpha blending (overlay=format=yuv420).
+
+Placement:
+  socials.png  → bottom-left corner, 9% of frame width, margin 24px
+  website.png  → bottom-right corner, 10% of frame width, margin 24px
+
+PNG loading for overlay:
+  movie=path.png,scale={px}:-2[badge]   ← -2 means keep aspect ratio, even height
+  [video][badge]overlay=x:y:format=yuv420[out]
+
+CRITICAL: do NOT convert PNG to rgb24 or yuv420p before the overlay — this
+strips the alpha channel and creates black boxes. Load as rgba, let the
+overlay filter handle compositing with format=yuv420.
+
+================================================================================
+SECTION 7 — FFMPEG FILTER GRAPH RULES (critical)
+================================================================================
+
+7.1  Output pixel format must always be yuv420p. End every clip chain with
+     setsar=1,format=yuv420p[label].
+
+7.2  The overlay filter's `format` option accepts only: yuv420, yuv422,
+     yuv444, rgb, gbrp, auto. It does NOT accept yuv420p (with the p).
+     Use `format=yuv420` not `format=yuv420p` in overlay calls.
+
+7.3  To avoid `yuv420p → gbrap` scaling failures (common with PNG overlays),
+     never apply format=rgb24 before overlay. Load PNG as rgba, overlay with
+     format=yuv420.
+
+7.4  Zoompan filter is memory-intensive. Skip it for clips shorter than 0.5 s
+     (perceptible motion needs at least 15–20 frames). Use plain scale+crop
+     for intro clips.
+
+7.5  Limit filter_threads to 2 for picture workflows to avoid virtual memory
+     exhaustion when many zoompan instances run in parallel.
+     Add -filter_threads 2 to the ffmpeg command.
+
+7.6  Scale filter with eval=frame allows time-varying expressions:
+       scale=w='iw*(1+0.04*sin(3.14*t/dur))':h='ih*(1+...)':eval=frame
+     This is lighter than zoompan for video clips.
+
+7.7  xfade transition names: fade (cross-dissolve), fadeblack, fadefast,
+     dissolve, pixelize, wipeleft, wiperight, etc.
+
+7.8  For white-background outros use:
+       drawbox=x=0:y=0:w=iw:h=ih:color=white:t=fill:enable='gte(t,T)'
+     then overlay drawtext on top within the same filter chain.
+
+7.9  For drawtext with animated fontsize using sin(), PI is available in ffmpeg
+     expressions. Example: fontsize='80+20*sin(2*PI*t/1.5)'
+
+7.10 Transitions require the INPUT clip to be longer than the transition
+     duration. Always clamp: tdur = min(tdur, clip_a_dur-0.001, clip_b_dur-0.001)
+
+================================================================================
+SECTION 8 — CLIP USAGE TRACKING (anti-repetition)
+================================================================================
+
+The tool tracks which video segments have been used across renders:
+- A JSON file clip_usage.json stores {segment_id: use_count}.
+- segment_id = sha256(source_path + start_time + duration).
+- When selecting clips for a new render, prefer segment_id with use_count=0
+  (never used), then lowest count.
+- After a successful render, increment use_count for every used segment.
+- This prevents the same 5-second clip from appearing in every video.
+
+Implement a render_history.json that stores per-render metadata:
+  event, date, workflow, files_used, music_used, output_size, render_time.
+
+================================================================================
+SECTION 9 — CONFIGURATION (config/config.yaml)
+================================================================================
+
+Top-level sections:
+  project         : name, version
+  paths           : input, output, temp, music, assets, reports, logs
+  render          : ffmpeg_path, ffprobe_path, gpu_auto_detect, workers
+  shorts          : resolution (1080×1920), fps (30), duration (min/max/default)
+  long            : resolution (1920×1080), fps (30), duration (min/max/default)
+  images          : image_duration, min_width, min_height
+  videos          : clip_duration (min/max), mute_original_audio, shuffle
+  transitions     : duration (0.7), hard_cut, cross_dissolve, film_burn
+  color_grading   : brightness (0.0), contrast (1.02), saturation (1.02),
+                    gamma (1.0), sharpen (0.18)
+  audio           : music_volume (0.7), fade_in (2.0), fade_out (3.0),
+                    crossfade (2.0)
+  text_overlay    : font (relative path to .ttf), opening_title, duration
+  overlays        :
+    header        : enabled, file, margin
+    socials       : enabled, file, margin_left, margin_bottom
+    website       : enabled, file, margin_right, margin_bottom
+  thumbnails      : generate, width (1280), height (720), jpeg_quality (92)
+  organizer       : default_mode (link), short_video_max_seconds (90)
+  review          : enabled
+  logging         : level (INFO), rotation (10 MB), retention (7 days),
+                    console, file
+  reports         : json, csv, summary, statistics
+  advanced        : dry_run, debug_mode
+
+Support environment variable overrides via .env file:
+  NRJD_OUTPUT_FOLDER, NRJD_FFMPEG_PATH, NRJD_WORKERS, NRJD_DEBUG
+
+================================================================================
+SECTION 10 — CLI COMMANDS
+================================================================================
+
+python3 main.py make-videos
+  Full pipeline: organize + all 4 renders + publish. Batch all events.
+  Flags: --event TEXT, --profile TEXT, --dry-run, --keep-intermediate
+
+python3 main.py organize
+  Step 1: classify and hard-link media from raw_data/ → input/.
+  Flags: --event TEXT, --copy, --move, --link
+
+python3 main.py render-final-videos
+  Step 2 (after organize): render + publish all 4 outputs.
+  Flags: --event TEXT, --profile TEXT, --dry-run, --keep-intermediate
+
+python3 main.py render-shorts-pictures   [--event TEXT]
+python3 main.py render-long-pictures     [--event TEXT] [--profile TEXT]
+python3 main.py render-short-videos      [--event TEXT] [--profile TEXT] [--dry-run]
+python3 main.py render-long-videos       [--event TEXT] [--profile TEXT] [--dry-run]
+
+python3 main.py review
+  Interactive CLI: show each file, press k=keep d=delete n=next q=quit.
+  Flags: --event TEXT, --type [shortform_pictures|longform_pictures|
+         shortform_videos|longform_videos], --resume, --filter-low-quality,
+         --filter-duplicates, --filter-portrait-images, etc.
+
+python3 main.py version
+
+macOS anti-sleep wrapper (add to README):
+  caffeinate -i python3 main.py make-videos
+
+================================================================================
+SECTION 11 — SOURCE MODULE STRUCTURE
+================================================================================
+
+src/
+  cli/
+    app.py                   ← create_cli() wires all commands via Typer
+    make_videos_command.py   ← orchestrates organize + all 4 renders
+    render_long_pictures_command.py
+    render_shorts_pictures_command.py
+    render_short_videos_command.py
+    render_long_videos_command.py
+
+  config/
+    config_loader.py         ← load YAML, merge defaults, validate
+    config_models.py         ← dataclasses for Settings, all sub-sections
+    config_validator.py      ← range checks, file existence checks
+    config_manager.py        ← single entry point: ConfigManager.load()
+
+  renderer/
+    long_pictures_workflow.py   ← Output 2: cycling zoom/pan/montage pipeline
+    shorts_pictures_workflow.py ← Output 1: portrait picture slideshow
+    unified_video_workflow.py   ← Outputs 3 & 4: video clip rendering engine
+
+  organizer/
+    service.py               ← MediaOrganizer: classify + link files
+    contracts.py
+
+  analyzer/
+    contracts.py
+    (ffprobe-based metadata extraction lives inside organizer/service.py)
+
+  review/
+    engine.py                ← interactive terminal review loop
+    discovery.py             ← find files per bucket
+    progress_store.py        ← save/resume review state
+    reporter.py
+    models.py
+
+  image/
+    image_animator.py        ← AnimationOptions, ImageAnimator (chooses motion)
+    image_effects.py         ← ColorEffectOptions
+    image_loader.py          ← load + order image paths
+    image_processor.py       ← PIL resize + color grade, disk-cached
+    image_validator.py       ← min size, skip duplicates
+    slideshow.py             ← SlideshowEngine: builds Timeline from image list
+    timeline_builder.py      ← TimelineClip, Timeline, DurationOptions
+
+  reports/
+    render_reporting.py      ← write_report_artifacts (JSON + CSV + TXT)
+    contracts.py
+
+  utils/
+    file_utils.py            ← ensure_directory()
+
+  logging/
+    setup.py                 ← initialize_logger() using loguru
+
+  models/
+    entities.py              ← Project, MediaFile, RenderJob, Report dataclasses
+
+  effects/
+    color_presets.py         ← ColorPresetValues, resolve_color_preset()
+    contracts.py
+
+================================================================================
+SECTION 12 — KEY ALGORITHMIC DETAILS
+================================================================================
+
+12.1  Image processing pipeline (for picture workflows):
+      1. Load path list, sort by EXIF DateTimeOriginal.
+      2. Validate: skip images < min_width × min_height or duplicates (imagehash).
+      3. Resize each image to target resolution with PIL (center-crop or
+         letterbox), apply colour grading (brightness/contrast/saturation).
+      4. Cache resized images to disk (work/temp/slideshow_cache/) keyed by
+         hash of source path + processing options. Avoids reprocessing same
+         image on re-runs.
+      5. Build Timeline: list of TimelineClip(image_path, duration, animation,
+         effects, transition).
+
+12.2  Video clip selection (for video workflows):
+      1. ffprobe each source video: width, height, fps, duration, rotation.
+      2. If rotation is 90/270, swap width/height.
+      3. Build clip candidates: for short sources use full duration; for long
+         sources sample random start points.
+      4. Group by source, sort by ascending use_count.
+      5. Select clips round-robin across sources (no two consecutive clips from
+         same source if alternatives exist).
+      6. Fill to target duration; if short of minimum, reuse lowest-count clips.
+
+12.3  Music plan:
+      1. Discover all .mp3/.wav/.m4a/.aac/.flac/.ogg in music/.
+      2. Probe duration of each track.
+      3. Pick random tracks, random start offset within first 50% of track.
+      4. Chain with acrossfade until total covered > video duration + crossfade.
+      5. Trim, apply afade in/out, set volume, loudnorm.
+
+12.4  Thumbnail generation (for long video):
+      1. Take the clip at the midpoint of the timeline.
+      2. Open with PIL, EXIF-transpose, thumbnail to 1280×720.
+      3. Centre-paste on black 1280×720 canvas.
+      4. Save as JPEG quality 92.
+
+================================================================================
+SECTION 13 — TESTING
+================================================================================
+
+Write pytest unit tests for:
+- config_loader: merge, validate, missing fields
+- image_processor: resize dimensions, cache hit/miss
+- timeline_builder: clip count, total duration
+- image_animator: no-repeat rule, zoom range clamping
+- organizer: portrait/landscape classification, rotation handling
+- clip_usage: increment counts, prefer unused
+
+Fixture: a small set of test images (100×100 PNG) and a 5-second test video.
+All tests must pass with PYTHONPATH=. pytest -q.
+
+================================================================================
+SECTION 14 — PACKAGING
+================================================================================
+
+build_macos.py  : PyInstaller --windowed --onedir → dist/iskcon-video-editor.app
+build_windows.py: PyInstaller --onefile         → dist/iskcon-video-editor.exe
+
+Both bundle all Python dependencies. FFmpeg and FFprobe are NOT bundled (user
+must install separately via Homebrew on macOS, or download on Windows).
+
+Include a .spec file for reproducible builds.
+
+================================================================================
+SECTION 15 — NON-FUNCTIONAL REQUIREMENTS
+================================================================================
+
+- All filter expressions must produce valid ffmpeg filter_complex strings with
+  no dangling inputs or unconnected outputs (causes "Error binding filtergraph").
+- On macOS Apple Silicon: GPU acceleration via videotoolbox is attempted first;
+  falls back to libx264 CPU automatically on failure.
+- Output codec: libx264, preset slow, CRF 18, pix_fmt yuv420p, aac 192k 48kHz.
+- All intermediate files written to work/temp/ and cleaned up unless
+  --keep-intermediate is passed.
+- Logging via loguru: human-readable console + rotating file in work/logs/.
+- Render report saved to work/reports/<event>/render_report.json after each run.
+- The tool must handle zero-length buckets gracefully (log warning, skip, continue).
+- Duplicate image detection via perceptual hash (imagehash library, threshold 8).
+- Low-quality detection: flag images with resolution below min thresholds.
+- All user-facing text strings must support UTF-8 (Kannada, Hindi, English event names).
+
+================================================================================
+SECTION 16 — EXAMPLE END-TO-END FLOW
+================================================================================
+
+User workflow:
+
+  1. Drop event folder:
+       raw_data/2026_Snana_Yatra/   (contains 200 photos + 40 videos)
+
+  2. Run:
+       caffeinate -i python3 main.py make-videos --event "2026_Snana_Yatra"
+
+  3. Tool does:
+       a. Organizer: ffprobe all files, classify, link into input/
+       b. Analyzer report generated (JSON)
+       c. Render shortform pictures → work/temp/shorts/2026_Snana_Yatra/
+       d. Render longform pictures  → work/temp/long/2026_Snana_Yatra/
+       e. Render short videos       → work/temp/shorts/2026_Snana_Yatra/
+       f. Render long video         → work/temp/long/2026_Snana_Yatra/
+       g. Publish all 4 to output/
+       h. Clean intermediate temp files
+
+  4. User finds in output/:
+       2026_Snana_Yatra_pictures_short.mp4   (~50–90 MB)
+       2026_Snana_Yatra_pictures_long.mp4    (~40–120 MB)
+       2026_Snana_Yatra_short_main.mp4       (~80–250 MB per part)
+       2026_Snana_Yatra_long_main.mp4        (~200–800 MB)
+
+  5. All four are ready to upload directly to YouTube / Instagram / Facebook.
+
+================================================================================
+END OF PROMPT
+================================================================================
