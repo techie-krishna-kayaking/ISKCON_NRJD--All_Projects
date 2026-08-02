@@ -43,7 +43,7 @@ Output 1: <event>_pictures_short.mp4   — Short-form picture slideshow
     - MAIN (remaining images): smooth zoom-in then zoom-out per image
       (zoompan filter), alternating colour then B&W pattern (every 5 colour
       then 2 B&W), cross-dissolve transitions 0.7 s.
-    - OUTRO (last 8 s): white background, four lines of RED text with black
+    - OUTRO (last 4 s): white background, four lines of RED text with black
       shadow centred on screen (see Section 5 for exact text).
   Music       : random track from music/ folder, fade in/out
   Overlay     : socials badge bottom-left, website badge bottom-right
