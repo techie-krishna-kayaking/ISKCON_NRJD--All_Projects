@@ -1125,9 +1125,21 @@
           });
         });
 
-        buttons[0].classList.add("active");
-        state.currentDeskEventKey = buttons[0].getAttribute("data-event-key") || "";
-        document.getElementById("deskSelectedEventLabel").textContent = "Selected: " + (buttons[0].getAttribute("data-event-label") || "");
+        // Restore highlight for currently selected event
+        const currentKey = state.currentDeskEventKey || DESK_EVENT_BUTTONS[0].key;
+        buttons.forEach((b) => {
+          if (b.getAttribute("data-event-key") === currentKey) {
+            b.classList.add("active");
+          } else {
+            b.classList.remove("active");
+          }
+        });
+        
+        // Ensure state is set to match the highlighted button
+        if (!state.currentDeskEventKey) {
+          state.currentDeskEventKey = currentKey;
+          document.getElementById("deskSelectedEventLabel").textContent = "Selected: " + (DESK_EVENT_BUTTONS.find(e => e.key === currentKey)?.label || "");
+        }
       }
 
       function debounce(fn, waitMs) {
@@ -1158,6 +1170,13 @@
         document.getElementById("deskUserSection").classList.remove("hidden");
         document.getElementById("mainUserSection").classList.add("hidden");
         document.getElementById("preachingSection").classList.add("hidden");
+        // Only refresh if an event is already selected (don't clear with empty query)
+        if (!state.currentDeskEventKey) {
+          // First time: load the first event's data
+          const firstEventKey = DESK_EVENT_BUTTONS[0].key || "";
+          state.currentDeskEventKey = firstEventKey;
+          document.getElementById("deskSelectedEventLabel").textContent = "Selected: " + (DESK_EVENT_BUTTONS[0].label || "");
+        }
         await refreshDeskRows();
         startAutoRefresh();
       }
@@ -1369,11 +1388,13 @@
 
         try {
           const res = await callServer("getCompetitionDeskRows", payload);
+          console.log("Event Desk Response:", { eventKey: payload.eventKey, pendingCount: (res.pending || []).length, completedCount: (res.completed || []).length, response: res });
           state.deskPendingRows = res.pending || [];
           renderDeskPending(state.deskPendingRows);
           renderDeskCompleted(res.completed || []);
           setStatus("deskStatus", "Pending: " + (res.pending || []).length + " | Completed: " + (res.completed || []).length, false);
         } catch (e) {
+          console.error("Event Desk Error:", e);
           setStatus("deskStatus", "Load failed: " + e.message, true);
         }
       }
