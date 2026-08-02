@@ -38,6 +38,56 @@ function verifyMainUserCode(code) {
   return String(code || "").trim() === CONFIG.MAIN_USER_CODE;
 }
 
+function getDiagnostics() {
+  const allRows = getAllRows_();
+  const stats = {
+    totalRows: allRows.length,
+    bySheet: {},
+    byStatus: {
+      noToken: 0,
+      noAttendance1: 0,
+      hasToken: 0,
+      readyForEventDesk: 0,
+    },
+  };
+
+  const eventDeskReady = allRows.filter((r) => r.token && r.attendance1);
+
+  allRows.forEach((r) => {
+    if (!stats.bySheet[r.sheetName]) {
+      stats.bySheet[r.sheetName] = { total: 0, withToken: 0, withAttendance1: 0, ready: 0 };
+    }
+    stats.bySheet[r.sheetName].total += 1;
+
+    if (r.token) {
+      stats.bySheet[r.sheetName].withToken += 1;
+      stats.byStatus.hasToken += 1;
+    } else {
+      stats.byStatus.noToken += 1;
+    }
+
+    if (r.attendance1) {
+      stats.bySheet[r.sheetName].withAttendance1 += 1;
+    } else {
+      stats.byStatus.noAttendance1 += 1;
+    }
+
+    if (r.token && r.attendance1) {
+      stats.bySheet[r.sheetName].ready += 1;
+      stats.byStatus.readyForEventDesk += 1;
+    }
+  });
+
+  return {
+    stats,
+    message:
+      "Ready for Event Desk (token + attendance1): " +
+      stats.byStatus.readyForEventDesk +
+      " | Total rows: " +
+      stats.totalRows,
+  };
+}
+
 function getFilterOptions() {
   const allRows = getAllRows_();
 
@@ -350,8 +400,9 @@ function getCompetitionDeskRows(payload) {
   const filterCompetition = parsedEvent.competition;
   const searchName = normalizeText_(safePayload.studentName);
 
+  // Show students with tokens (includes attendance1, as they're written together)
   const rows = getAllRows_()
-    .filter((r) => r.token && r.attendance1)
+    .filter((r) => r.token)
     .filter((r) => {
       if (filterGroup && normalizeText_(r.group) !== filterGroup) return false;
       if (filterCompetition && normalizeText_(r.competition) !== filterCompetition) return false;
@@ -800,7 +851,8 @@ function getAllRows_() {
     if (effectiveLastCol < 1) return;
 
     const activeHeaders = headers.slice(0, effectiveLastCol);
-    const values = sheet.getRange(2, 1, lastRow - 1, effectiveLastCol).getValues();
+    // getDisplayValues returns cell text as shown — immune to date/number/custom formatting
+    const values = sheet.getRange(2, 1, lastRow - 1, effectiveLastCol).getDisplayValues();
 
     values.forEach((rowValues, idx) => {
       const rowObj = {};
@@ -808,12 +860,16 @@ function getAllRows_() {
         rowObj[normalizeHeader_(header)] = rowValues[i];
       });
 
+      let groupValue = toSafeString_(getCanonicalValue_(rowObj, "GROUP"));
+      // Normalize group values: handle Music as g3, extract G1/G2/G3/G4, etc.
+      groupValue = normalizeGroupValue_(groupValue);
+
       allRows.push({
         sheetName,
         rowNumber: idx + 2,
         schoolCode: toSafeString_(getCanonicalValue_(rowObj, "SCHOOL_CODE")),
         schoolName: toSafeString_(getCanonicalValue_(rowObj, "SCHOOL_NAME")),
-        group: toSafeString_(getCanonicalValue_(rowObj, "GROUP")),
+        group: groupValue,
         competition: getEffectiveCompetition_(sheetName, getCanonicalValue_(rowObj, "COMPETITION")),
         rank: toSafeString_(getCanonicalValue_(rowObj, "RANK")),
         studentName: toSafeString_(getCanonicalValue_(rowObj, "STUDENT_NAME")),
@@ -930,6 +986,29 @@ function extractGroupToken_(groupVal) {
   return "G" + m[1];
 }
 
+function normalizeGroupValue_(groupVal) {
+  const txt = String(groupVal || "")
+    .trim()
+    .toLowerCase();
+  
+  // Handle "Music" as g3
+  if (txt.includes("music")) return "g3";
+  
+  // Handle Fancy Dress: extract group if present (e.g., "G1-Fancy Dress" -> "g1")
+  if (txt.includes("fancy")) {
+    const m = txt.match(/g\s*[\-]?\s*([0-9]+)/);
+    if (m) return "g" + m[1];
+    return txt;
+  }
+  
+  // Extract group number: G1, G-1, Group 1, G 1, etc.
+  const m = txt.match(/g\s*[\-]?\s*([0-9]+)/);
+  if (m) return "g" + m[1];
+  
+  // Return as-is if no pattern matched
+  return txt;
+}
+
 function compareTimestampAsc_(a, b) {
   return parseTimeMs_(a) - parseTimeMs_(b);
 }
@@ -959,7 +1038,12 @@ function normalizeText_(val) {
 }
 
 function toSafeString_(val) {
-  return String(val == null ? "" : val).trim();
+  if (val == null) return "";
+  // Date objects (from getValues on date-formatted cells) must be formatted, not coerced
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? "" : Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  }
+  return String(val).trim();
 }
 
 function toBoolean_(val) {
