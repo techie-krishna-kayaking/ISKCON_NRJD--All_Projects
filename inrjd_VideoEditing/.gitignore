@@ -1,0 +1,49 @@
+# Ignore video files (all folders)
+*.mp4
+*.m4v
+*.mov
+*.mkv
+*.avi
+*.wmv
+*.flv
+*.webm
+*.mpeg
+*.mpg
+*.3gp
+*.mts
+*.m2ts
+
+# Uppercase variants
+*.MP4
+*.M4V
+*.MOV
+*.MKV
+*.AVI
+*.WMV
+*.FLV
+*.WEBM
+*.MPEG
+*.MPG
+*.3GP
+*.MTS
+*.M2TS
+
+# Ignore audio files (all folders)
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.flac
+*.ogg
+*.wma
+
+# Uppercase variants
+*.MP3
+*.WAV
+*.M4A
+*.AAC
+*.FLAC
+*.OGG
+*.WMA
+
+# Keep images trackable (no image ignore rules)
