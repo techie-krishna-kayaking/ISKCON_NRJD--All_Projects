@@ -20,11 +20,21 @@ import tempfile
 from pathlib import Path
 
 VIDEO_REGEX = re.compile(r"^(\d+)\.mp4$", re.IGNORECASE)
+HEADER_FLOW_DIR = "header_video_flow"
+HEADER_IMAGE_NAME = "shorts_header_socials..png"
+VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".m4v"}
+AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg"}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Merge numbered MP4 videos from input folder into one output video."
+    )
+    parser.add_argument(
+        "--flow",
+        choices=["merge", "header"],
+        default="merge",
+        help="Run standard merge flow or header overlay flow.",
     )
     parser.add_argument(
         "--input-dir",
@@ -40,6 +50,34 @@ def parse_args() -> argparse.Namespace:
         "--output-name",
         default="merged_full_video_2k.mp4",
         help="Output filename.",
+    )
+    parser.add_argument(
+        "--assets-dir",
+        default="assets",
+        help="Assets folder containing the header overlay image.",
+    )
+    parser.add_argument(
+        "--header-flow-folder",
+        default=HEADER_FLOW_DIR,
+        help="Subfolder inside input-dir used for header flow videos.",
+    )
+    parser.add_argument(
+        "--header-image",
+        default=HEADER_IMAGE_NAME,
+        help="Header image filename inside assets-dir.",
+    )
+    parser.add_argument(
+        "--header-add-bg-music",
+        action="store_true",
+        help=(
+            "Header flow only: mute source video audio and add background music "
+            "from assets/bgmusic in round-robin order."
+        ),
+    )
+    parser.add_argument(
+        "--header-bg-music-dir",
+        default="bgmusic",
+        help="Header flow only: bg music folder path (relative to assets-dir by default).",
     )
     parser.add_argument(
         "--crf",
@@ -102,6 +140,36 @@ def find_numbered_videos(input_dir: Path) -> list[Path]:
         )
 
     return [path for _, path in numbered]
+
+
+def find_all_videos(input_dir: Path) -> list[Path]:
+    if not input_dir.exists():
+        raise FileNotFoundError(f"Input directory does not exist: {input_dir}")
+
+    videos = [
+        item
+        for item in input_dir.iterdir()
+        if item.is_file() and item.suffix.lower() in VIDEO_EXTENSIONS
+    ]
+
+    if not videos:
+        raise FileNotFoundError(
+            f"No video files found in {input_dir}. Supported: {sorted(VIDEO_EXTENSIONS)}"
+        )
+
+    return sorted(videos, key=lambda path: path.name.lower())
+
+
+def find_all_audio(input_dir: Path) -> list[Path]:
+    if not input_dir.exists():
+        raise FileNotFoundError(f"Audio directory does not exist: {input_dir}")
+
+    audios = [
+        item
+        for item in input_dir.iterdir()
+        if item.is_file() and item.suffix.lower() in AUDIO_EXTENSIONS
+    ]
+    return sorted(audios, key=lambda path: path.name.lower())
 
 
 def build_concat_file(video_files: list[Path], concat_file: Path) -> None:
@@ -183,11 +251,8 @@ def merge_with_2k_reencode(
     chain_parts: list[str] = []
     concat_inputs: list[str] = []
     for idx in range(len(videos)):
+        chain_parts.append(f"[{idx}:v]{vf},setsar=1[v{idx}]")
         chain_parts.append(
-            f"[{idx}:v]{vf},setsar=1[v{idx}]"
-        )
-        chain_parts.append(
-            ""
             f"[{idx}:a]aformat=sample_fmts=fltp:sample_rates=48000:"
             f"channel_layouts=stereo,aresample=async=1:first_pts=0[a{idx}]"
         )
@@ -231,12 +296,138 @@ def merge_with_2k_reencode(
         )
 
 
+def render_header_overlay_shorts(
+    source_video: Path,
+    header_image: Path,
+    output_path: Path,
+    crf: int,
+    preset: str,
+    bg_music: Path | None = None,
+) -> None:
+    filter_complex = (
+        "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
+        "pad=1080:1920:(ow-iw)/2:(oh-ih)/2,format=yuv420p[base];"
+        "[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,"
+        "pad=1080:1920:(ow-iw)/2:(oh-ih)/2[hdr];"
+        "[base][hdr]overlay=(W-w)/2:(H-h)/2:format=auto[vout]"
+    )
+
+    cmd = [
+        "ffmpeg",
+        "-hide_banner",
+        "-y",
+        "-i",
+        str(source_video),
+        "-i",
+        str(header_image),
+    ]
+
+    if bg_music is not None:
+        cmd.extend(["-stream_loop", "-1", "-i", str(bg_music)])
+
+    cmd.extend(
+        [
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[vout]",
+        ]
+    )
+
+    if bg_music is not None:
+        # Source audio is intentionally muted when bg music mode is enabled.
+        cmd.extend(["-map", "2:a:0"])
+    else:
+        cmd.extend(["-map", "0:a?"])
+
+    cmd.extend(
+        [
+            "-c:v",
+            "libx264",
+            "-preset",
+            preset,
+            "-crf",
+            str(crf),
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-shortest",
+            "-movflags",
+            "+faststart",
+            str(output_path),
+        ]
+    )
+
+    result = run_cmd(cmd)
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Header overlay render failed.\n\n"
+            f"Source: {source_video}\n"
+            f"Command: {' '.join(cmd)}\n\n"
+            f"Error:\n{result.stderr}"
+        )
+
+
+def run_header_flow(args: argparse.Namespace, input_dir: Path, output_dir: Path) -> None:
+    flow_input_dir = input_dir / args.header_flow_folder
+    header_image = Path(args.assets_dir) / args.header_image
+
+    if not header_image.exists():
+        raise FileNotFoundError(f"Header image not found: {header_image}")
+
+    videos = find_all_videos(flow_input_dir)
+    header_output_dir = output_dir / HEADER_FLOW_DIR
+    header_output_dir.mkdir(parents=True, exist_ok=True)
+
+    bg_tracks: list[Path] = []
+    if args.header_add_bg_music:
+        raw_bg_path = Path(args.header_bg_music_dir)
+        bg_music_dir = (
+            raw_bg_path if raw_bg_path.is_absolute() else Path(args.assets_dir) / raw_bg_path
+        )
+        bg_tracks = find_all_audio(bg_music_dir)
+        if not bg_tracks:
+            raise FileNotFoundError(
+                "Header bg music option is enabled but no audio files were found in "
+                f"{bg_music_dir}."
+            )
+
+        print(
+            f"Background music enabled with {len(bg_tracks)} track(s) from {bg_music_dir}."
+        )
+
+    print(f"Found {len(videos)} header-flow video(s) in {flow_input_dir}:")
+    for video in videos:
+        print(f" - {video.name}")
+
+    for idx, video in enumerate(videos):
+        target_name = f"{video.stem}_shorts_header.mp4"
+        output_path = header_output_dir / target_name
+        temp_output_path = header_output_dir / f".{target_name}.tmp.mp4"
+        selected_track = bg_tracks[idx % len(bg_tracks)] if bg_tracks else None
+
+        if selected_track is not None:
+            print(f"   using bg track: {selected_track.name}")
+
+        render_header_overlay_shorts(
+            source_video=video,
+            header_image=header_image,
+            output_path=temp_output_path,
+            crf=args.crf,
+            preset=args.preset,
+            bg_music=selected_track,
+        )
+        os.replace(temp_output_path, output_path)
+        print(f"Created header video: {output_path}")
+
+
 def main() -> int:
     args = parse_args()
     input_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
     output_path = output_dir / args.output_name
-    lock_path = output_dir / ".merge.lock"
+    lock_path = output_dir / f".{args.flow}.lock"
     temp_output_path = output_dir / f".{args.output_name}.tmp.mp4"
 
     lock_fd: int | None = None
@@ -256,49 +447,54 @@ def main() -> int:
                 "Please wait for it to finish or delete output/.merge.lock if stale."
             ) from exc
 
-        videos = find_numbered_videos(input_dir)
-        expected_duration = sum(ffprobe_duration_seconds(video) for video in videos)
-        print(f"Found {len(videos)} videos. Merging in order:")
-        for video in videos:
-            print(f" - {video.name}")
+        if args.flow == "header":
+            run_header_flow(args, input_dir, output_dir)
+        else:
+            videos = find_numbered_videos(input_dir)
+            expected_duration = sum(ffprobe_duration_seconds(video) for video in videos)
+            print(f"Found {len(videos)} videos. Merging in order:")
+            for video in videos:
+                print(f" - {video.name}")
 
-        with tempfile.TemporaryDirectory(prefix="nrjd_merge_") as temp_dir:
-            concat_file = Path(temp_dir) / "concat_list.txt"
-            build_concat_file(videos, concat_file)
+            with tempfile.TemporaryDirectory(prefix="nrjd_merge_") as temp_dir:
+                concat_file = Path(temp_dir) / "concat_list.txt"
+                build_concat_file(videos, concat_file)
 
-            used_stream_copy = False
-            if args.try_stream_copy:
-                used_stream_copy = try_stream_copy(concat_file, temp_output_path)
+                used_stream_copy = False
+                if args.try_stream_copy:
+                    used_stream_copy = try_stream_copy(concat_file, temp_output_path)
 
-            if used_stream_copy:
-                actual_duration = ffprobe_duration_seconds(temp_output_path)
-                # If stream-copy result is unexpectedly shorter, switch to
-                # deterministic re-encode to avoid missing segments.
-                if actual_duration + 2.0 < expected_duration:
-                    print(
-                        "Stream-copy output duration is shorter than expected. "
-                        "Re-rendering in 2K mode for reliability..."
-                    )
+                if used_stream_copy:
+                    actual_duration = ffprobe_duration_seconds(temp_output_path)
+                    # If stream-copy result is unexpectedly shorter, switch to
+                    # deterministic re-encode to avoid missing segments.
+                    if actual_duration + 2.0 < expected_duration:
+                        print(
+                            "Stream-copy output duration is shorter than expected. "
+                            "Re-rendering in 2K mode for reliability..."
+                        )
+                        merge_with_2k_reencode(
+                            videos=videos,
+                            output_path=temp_output_path,
+                            crf=args.crf,
+                            preset=args.preset,
+                        )
+                else:
                     merge_with_2k_reencode(
                         videos=videos,
                         output_path=temp_output_path,
                         crf=args.crf,
                         preset=args.preset,
                     )
+
+            os.replace(temp_output_path, output_path)
+
+            if output_path.exists():
+                print(f"Merged video created successfully: {output_path}")
             else:
-                merge_with_2k_reencode(
-                    videos=videos,
-                    output_path=temp_output_path,
-                    crf=args.crf,
-                    preset=args.preset,
+                raise RuntimeError(
+                    "Merge process finished, but output file was not created."
                 )
-
-        os.replace(temp_output_path, output_path)
-
-        if output_path.exists():
-            print(f"Merged video created successfully: {output_path}")
-        else:
-            raise RuntimeError("Merge process finished, but output file was not created.")
 
         return 0
 
@@ -310,7 +506,7 @@ def main() -> int:
             os.close(lock_fd)
         if lock_acquired and lock_path.exists():
             lock_path.unlink()
-        if temp_output_path.exists():
+        if args.flow == "merge" and temp_output_path.exists():
             temp_output_path.unlink()
 
 
