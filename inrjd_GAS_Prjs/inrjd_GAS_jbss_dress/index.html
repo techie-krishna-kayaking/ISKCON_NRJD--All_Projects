@@ -277,16 +277,17 @@
 
       /* Dress Assignment: palette on top, calendar below */
       .assign-layout{flex-direction:column;height:auto}
-      .assign-sidebar{width:100%;height:auto;max-height:255px;border-left:none;border-bottom:1px solid #e8ddd0;order:-1;box-shadow:none}
+      .assign-sidebar{width:100%;height:auto;max-height:360px;border-left:none;border-bottom:1px solid #e8ddd0;order:-1;box-shadow:none}
       .assign-sidebar h3{font-size:.9rem;margin-bottom:.35rem}
       .sidebar-actions{margin-bottom:.4rem}
       #dressFilter{padding:.42rem .7rem;font-size:.82rem}
-      .dress-palette{grid-template-columns:repeat(3,1fr);gap:5px;max-height:155px}
-      .palette-item img{height:62px}
-      .palette-item:hover{transform:scale(1.3)}
-      .palette-label{font-size:.5rem}
+      .dress-palette{grid-template-columns:repeat(2,1fr);gap:8px;max-height:220px}
+      .palette-item img{height:95px}
+      .palette-item:hover{transform:none}
+      .palette-label{font-size:.6rem;padding:3px 6px}
+      .palette-item.selected{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.35)}
       .assign-calendar-wrap{overflow-y:visible}
-      .remove-assign{opacity:1;width:18px;height:18px;font-size:.65rem}
+      .remove-assign{opacity:1;width:22px;height:22px;font-size:.7rem}
 
       /* Modals */
       .modal-content{width:98%;max-height:92vh;padding:.9rem;border-radius:12px}
