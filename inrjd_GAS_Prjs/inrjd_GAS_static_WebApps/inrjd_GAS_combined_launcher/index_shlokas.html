@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Jost:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #fff9f0;
+      --bg2: #fef0d8;
+      --card: #ffffff;
+      --line: #f0d4a8;
+      --text: #4d2f10;
+      --accent: #b55f09;
+      --accent-2: #2d6d98;
+      --teens-color: #7b3f00;
+      --youth-color: #1d456a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Jost', sans-serif;
+      background: linear-gradient(180deg, var(--bg1) 0%, #fff5e6 50%, var(--bg2) 100%);
+      color: var(--text);
+    }
+
+    .home-nav {
+      padding: 10px 16px 0;
+    }
+
+    .home-link {
+      display: inline-block;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--teens-color);
+      background: #fff9ef;
+      padding: 8px 12px;
+      font-family: 'Jost', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .header {
+      width: 100%;
+      padding: 18px 14px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff7eb 0%, #ffe8c8 100%);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 10px rgba(180, 120, 40, 0.1);
+      position: relative;
+      margin-top: 10px;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f5b041 0%, #e67e22 45%, #f39c12 100%);
+    }
+
+    .header-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .header-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(180, 120, 40, 0.16);
+      flex-shrink: 0;
+    }
+
+    .header-title-wrap { flex: 1; min-width: 0; }
+
+    .title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 700;
+      color: #7b3f00;
+      letter-spacing: 0.06em;
+    }
+
+    .header-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #b8600a;
+      margin-top: 4px;
+    }
+
+    .subtitle {
+      color: #a06820;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 18px 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 9px 22px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    .tab-btn.teens { border-color: var(--accent); color: var(--teens-color); }
+    .tab-btn.teens.active { background: var(--accent); color: #fff; }
+
+    .tab-btn.youth { border-color: var(--accent-2); color: var(--youth-color); }
+    .tab-btn.youth.active { background: var(--accent-2); color: #fff; }
+
+    /* Shloka sections */
+    .section {
+      display: none;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .section.active { display: block; }
+
+    .section-heading {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--line);
+    }
+
+    .section-teens .section-heading { color: var(--teens-color); border-color: #e8c090; }
+    .section-youth .section-heading { color: var(--youth-color); border-color: #b8cde0; }
+
+    /* Shloka card */
+    .shloka-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(74, 39, 10, 0.08);
+    }
+
+    .section-teens .shloka-card { border-left: 5px solid var(--accent); }
+    .section-youth .shloka-card { border-left: 5px solid var(--accent-2); }
+
+    .shloka-ref {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-teens .shloka-ref { color: var(--accent); }
+    .section-youth .shloka-ref { color: var(--accent-2); }
+
+    .shloka-sanskrit {
+      font-family: 'Noto Serif Devanagari', 'Noto Serif', serif;
+      font-size: 1.1rem;
+      line-height: 1.85;
+      color: #3a1f06;
+      margin-bottom: 14px;
+      white-space: pre-line;
+    }
+
+    .shloka-divider {
+      border: none;
+      border-top: 1px dashed var(--line);
+      margin: 14px 0;
+    }
+
+    .shloka-transliteration {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: #6b4520;
+      font-style: italic;
+      white-space: pre-line;
+      margin-bottom: 14px;
+    }
+
+    .shloka-translation-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #a06820;
+      margin-bottom: 6px;
+    }
+
+    .shloka-translation {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.96rem;
+      line-height: 1.7;
+      color: #4d2f10;
+    }
+
+    .footer {
+      width: 100%;
+      text-align: center;
+      padding: 16px 14px 24px;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff9ef 0%, #fff2dd 100%);
+      color: #7b3f00;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    @media (max-width: 520px) {
+      .header { padding: 14px 10px; }
+      .header-inner { gap: 8px; }
+      .header-logo { width: 40px; height: 40px; padding: 3px; }
+      .header-eyebrow { font-size: 0.62rem; letter-spacing: 0.12em; }
+      .subtitle { font-size: 0.76rem; }
+      .shloka-card { padding: 16px; }
+      .shloka-sanskrit { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="home-nav">
+    <a class="home-link" href="<?= homeUrl ?>">← Back to Main Page</a>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <img
+        src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+        alt="ISKCON Logo"
+        class="header-logo"
+      >
+      <div class="header-title-wrap">
+        <div class="title">SHLOKAS</div>
+        <div class="header-eyebrow">ISKCON Magadi Main Road</div>
+        <div class="subtitle">New Rajapur Jagannatha Dhama</div>
+      </div>
+      <img
+        src="https://static.wixstatic.com/media/12520c_282ceb077df44b50a1c7dc789d00afff~mv2.png/v1/fill/w_96,h_84,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SP_logo_transp_blk.png"
+        alt="Jagannatha Logo"
+        class="header-logo"
+      >
+    </div>
+  </header>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn teens active" onclick="showTab('teens')">TEENS</button>
+    <button class="tab-btn youth" onclick="showTab('youth')">YOUTH</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TEENS SECTION
+  ══════════════════════════════════════════ -->
+  <div id="section-teens" class="section section-teens active">
+    <div class="section-heading">TEENS — Bhagavad-gītā Shlokas</div>
+
+    <!-- Bg. 2.13 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 2.13</div>
+      <div class="shloka-sanskrit">देहिनोऽस्मिन्यथा देहे कौमारं यौवनं जरा ।
+तथा देहान्तरप्राप्तिर्धीरस्तत्र न मुह्यति ॥ १३ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">dehino 'smin yathā dehe
+kaumāraṁ yauvanaṁ jarā
+tathā dehāntara-prāptir
+dhīras tatra na muhyati</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">As the embodied soul continuously passes, in this body, from boyhood to youth to old age, the soul similarly passes into another body at death. A sober person is not bewildered by such a change.</div>
+    </div>
+
+    <!-- Bg. 4.2 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 4.2</div>
+      <div class="shloka-sanskrit">एवं परम्पराप्राप्तमिमं राजर्षयो विदुः ।
+स कालेनेह महता योगे नष्टः परन्तप ॥ २ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">evaṁ paramparā-prāptam
+imaṁ rājarṣayo viduḥ
+sa kāleneha mahatā
+yogo naṣṭaḥ paran-tapa</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">This supreme science was thus received through the chain of disciplic succession, and the saintly kings understood it in that way. But in course of time the succession was broken, and therefore the science as it is appears to be lost.</div>
+    </div>
+
+    <!-- Bg. 5.18 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 5.18</div>
+      <div class="shloka-sanskrit">विद्याविनयसम्पन्ने ब्राह्मणे गवि हस्तिनि ।
+शुनि चैव श्वपाके च पण्डिता: समदर्शिन: ॥ १८ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">vidyā-vinaya-sampanne
+brāhmaṇe gavi hastini
+śuni caiva śva-pāke ca
+paṇḍitāḥ sama-darśinaḥ</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">The humble sages, by virtue of true knowledge, see with equal vision a learned and gentle brāhmaṇa, a cow, an elephant, a dog and a dog-eater [outcaste].</div>
+    </div>
+
+    <!-- Bg. 15.15 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 15.15</div>
+      <div class="shloka-sanskrit">सर्वस्य चाहं हृदि सन्निविष्टो
+मत्त: स्मृतिर्ज्ञानमपोहनं च ।
+वेदैश्च सर्वैरहमेव वेद्यो
+वेदान्तकृद्वेदविदेव चाहम् ॥ १५ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">sarvasya cāhaṁ hṛdi sanniviṣṭo
+mattaḥ smṛtir jñānam apohanaṁ ca
+vedaiś ca sarvair aham eva vedyo
+vedānta-kṛd veda-vid eva cāham</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">I am seated in everyone's heart, and from Me come remembrance, knowledge and forgetfulness. By all the Vedas, I am to be known. Indeed, I am the compiler of Vedānta, and I am the knower of the Vedas.</div>
+    </div>
+
+  </div><!-- /section-teens -->
+
+  <!-- ══════════════════════════════════════════
+       YOUTH SECTION
+  ══════════════════════════════════════════ -->
+  <div id="section-youth" class="section section-youth">
+    <div class="section-heading">YOUTH — Bhagavad-gītā &amp; Śrīmad-Bhāgavatam Shlokas</div>
+
+    <!-- Bg. 2.13 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 2.13</div>
+      <div class="shloka-sanskrit">देहिनोऽस्मिन्यथा देहे कौमारं यौवनं जरा ।
+तथा देहान्तरप्राप्तिर्धीरस्तत्र न मुह्यति ॥ १३ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">dehino 'smin yathā dehe
+kaumāraṁ yauvanaṁ jarā
+tathā dehāntara-prāptir
+dhīras tatra na muhyati</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">As the embodied soul continuously passes, in this body, from boyhood to youth to old age, the soul similarly passes into another body at death. A sober person is not bewildered by such a change.</div>
+    </div>
+
+    <!-- Bg. 2.62 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 2.62</div>
+      <div class="shloka-sanskrit">ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते ।
+सङ्गात्सञ्जायते कामः कामात्क्रोधोऽभिजायते ॥ ६२ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">dhyāyato viṣayān puṁsaḥ
+saṅgas teṣūpajāyate
+saṅgāt sañjāyate kāmaḥ
+kāmāt krodho 'bhijāyate</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">While contemplating the objects of the senses, a person develops attachment for them, and from such attachment lust develops, and from lust anger arises.</div>
+    </div>
+
+    <!-- Bg. 2.63 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 2.63</div>
+      <div class="shloka-sanskrit">क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः ।
+स्मृतिभ्रंशाद्बुद्धिनाशो बुद्धिनाशात्प्रणश्यति ॥ ६३ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">krodhād bhavati sammohaḥ
+sammohāt smṛti-vibhramaḥ
+smṛti-bhraṁśād buddhi-nāśo
+buddhi-nāśāt praṇaśyati</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">From anger, complete delusion arises, and from delusion bewilderment of memory. When memory is bewildered, intelligence is lost, and when intelligence is lost one falls down again into the material pool.</div>
+    </div>
+
+    <!-- Bg. 7.16 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 7.16</div>
+      <div class="shloka-sanskrit">चतुर्विधा भजन्ते मां जना: सुकृतिनोऽर्जुन ।
+आर्तो जिज्ञासुरर्थार्थी ज्ञानी च भरतर्षभ ॥ १६ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">catur-vidhā bhajante māṁ
+janāḥ su-kṛtino 'rjuna
+ārto jijñāsur arthārthī
+jñānī ca bharatarṣabha</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">O best among the Bhāratas, four kinds of pious men begin to render devotional service unto Me – the distressed, the desirer of wealth, the inquisitive, and he who is searching for knowledge of the Absolute.</div>
+    </div>
+
+    <!-- Bg. 4.2 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 4.2</div>
+      <div class="shloka-sanskrit">एवं परम्पराप्राप्तमिमं राजर्षयो विदुः ।
+स कालेनेह महता योगे नष्टः परन्तप ॥ २ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">evaṁ paramparā-prāptam
+imaṁ rājarṣayo viduḥ
+sa kāleneha mahatā
+yogo naṣṭaḥ paran-tapa</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">This supreme science was thus received through the chain of disciplic succession, and the saintly kings understood it in that way. But in course of time the succession was broken, and therefore the science as it is appears to be lost.</div>
+    </div>
+
+    <!-- Bg. 9.25 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">Bg. 9.25</div>
+      <div class="shloka-sanskrit">यान्ति देवव्रता देवान्पितॄन्यान्ति पितृव्रता: ।
+भूतानि यान्ति भूतेज्या यान्ति मद्याजिनोऽपि माम् ॥ २५ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">yānti deva-vratā devān
+pitṝn yānti pitṛ-vratāḥ
+bhūtāni yānti bhūtejyā
+yānti mad-yājino 'pi mām</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">Those who worship the demigods will take birth among the demigods; those who worship the ancestors go to the ancestors; those who worship ghosts and spirits will take birth among such beings; and those who worship Me will live with Me.</div>
+    </div>
+
+    <!-- ŚB 10.14.8 -->
+    <div class="shloka-card">
+      <div class="shloka-ref">ŚB 10.14.8</div>
+      <div class="shloka-sanskrit">तत्तेऽनुकम्पां सुसमीक्षमाणो
+भुञ्जान एवात्मकृतं विपाकम् ।
+हृद्वाग्वपुर्भिर्विदधन्नमस्ते
+जीवेत यो मुक्तिपदे स दायभाक् ॥ ८ ॥</div>
+      <hr class="shloka-divider">
+      <div class="shloka-transliteration">tat te 'nukampāṁ su-samīkṣamāṇo
+bhuñjāna evātma-kṛtaṁ vipākam
+hṛd-vāg-vapurbhir vidadhan namas te
+jīveta yo mukti-pade sa dāya-bhāk</div>
+      <div class="shloka-translation-label">Translation</div>
+      <div class="shloka-translation">My dear Lord, one who earnestly waits for You to bestow Your causeless mercy upon him, all the while patiently suffering the reactions of his past misdeeds and offering You respectful obeisances with his heart, words and body, is surely eligible for liberation, for it has become his rightful claim.</div>
+    </div>
+
+  </div><!-- /section-youth -->
+
+  <footer class="footer">
+    Hare Kṛṣṇa Hare Kṛṣṇa Kṛṣṇa Kṛṣṇa Hare Hare<br>
+    Hare Rāma Hare Rāma Rāma Rāma Hare Hare<br>
+    Jagat Guru Śrīla Prabhupāda Ki Jai!
+  </footer>
+
+  <script>
+    function showTab(tab) {
+      document.querySelectorAll('.section').forEach(function(s) {
+        s.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      document.getElementById('section-' + tab).classList.add('active');
+      document.querySelector('.tab-btn.' + tab).classList.add('active');
+    }
+  </script>
+</body>
+</html>

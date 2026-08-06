@@ -11,6 +11,14 @@ function doGet(e) {
     return renderPurushotamPage(lang);
   }
 
+  if (page === 'arati') {
+    return renderAratiPage();
+  }
+
+  if (page === 'shlokas') {
+    return renderShlokasPage();
+  }
+
   return renderHomePage();
 }
 
@@ -18,6 +26,8 @@ function renderHomePage() {
   const template = HtmlService.createTemplateFromFile('home');
   template.morningUrl = buildAppUrl({ page: 'morning' });
   template.purushotamUrl = buildAppUrl({ page: 'purushotam' });
+  template.aratiUrl = buildAppUrl({ page: 'arati' });
+  template.shlokaUrl = buildAppUrl({ page: 'shlokas' });
 
   return template
     .evaluate()
@@ -32,6 +42,26 @@ function renderMorningPage() {
   return template
     .evaluate()
     .setTitle('Morning Prayers - ISKCON NRJD')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function renderAratiPage() {
+  const template = HtmlService.createTemplateFromFile('index_arati');
+  template.homeUrl = buildAppUrl({ page: 'home' });
+
+  return template
+    .evaluate()
+    .setTitle('Arati Plates - ISKCON NRJD')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function renderShlokasPage() {
+  const template = HtmlService.createTemplateFromFile('index_shlokas');
+  template.homeUrl = buildAppUrl({ page: 'home' });
+
+  return template
+    .evaluate()
+    .setTitle('Shlokas - ISKCON NRJD')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
