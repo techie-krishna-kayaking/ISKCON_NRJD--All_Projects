@@ -745,7 +745,7 @@ const Calendar = {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      var dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      let dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
       const cell = document.createElement('div');
       cell.className = 'calendar-cell';
 
@@ -968,7 +968,7 @@ const Admin = {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      var dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      let dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
       const cell = document.createElement('div');
       cell.className = 'calendar-cell droppable';
 
