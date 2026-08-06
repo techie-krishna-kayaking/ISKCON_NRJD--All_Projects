@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JBSS Dress Search</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f0eb;color:#3d3529;min-height:100vh}
+
+    /* ── Nav ─────────────────────────────────────────────────── */
+    #mainNav{display:none;align-items:center;gap:1rem;padding:.6rem 1.5rem;
+      background:linear-gradient(135deg,#fff7ed,#fef3e2,#fde8cd);
+      border-bottom:1px solid #e8ddd0;position:sticky;top:0;z-index:200;
+      box-shadow:0 2px 12px rgba(120,80,40,.08)}
+    .nav-brand{font-size:1.15rem;font-weight:800;
+      background:linear-gradient(135deg,#b8860b,#d4a017,#c7254e);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      white-space:nowrap;letter-spacing:-.02em}
+    .nav-tabs{display:flex;gap:.3rem;flex:1;justify-content:center}
+    .nav-tab{padding:.5rem 1.2rem;color:#8b7355;text-decoration:none;border-radius:8px;
+      font-size:.9rem;font-weight:500;transition:all .2s;cursor:pointer}
+    .nav-tab:hover{color:#c7254e;background:rgba(199,37,78,.06)}
+    .nav-tab.active{color:#c7254e;background:rgba(199,37,78,.1);font-weight:700}
+    .nav-actions{display:flex;gap:.8rem;align-items:center}
+    .nav-action{color:#8b7355;font-size:.85rem;cursor:pointer;padding:.4rem .8rem;
+      border-radius:6px;transition:all .2s;font-weight:500}
+    .nav-action:hover{color:#c7254e;background:rgba(199,37,78,.06)}
+
+    /* ── Login ───────────────────────────────────────────────── */
+    #loginView{display:none;align-items:center;justify-content:center;min-height:100vh;
+      background:linear-gradient(160deg,#fef9f4,#fdf0e0,#f9e4cc)}
+    .login-container{background:#fff;border:1px solid #e8ddd0;border-radius:20px;
+      padding:2.5rem;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(120,80,40,.1)}
+    .login-container h2{text-align:center;margin-bottom:1.5rem;font-size:1.5rem;
+      background:linear-gradient(135deg,#b8860b,#c7254e);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    #loginForm{display:flex;flex-direction:column;gap:1rem}
+    #loginForm input{padding:.8rem 1rem;font-size:1rem;border:2px solid #e8ddd0;
+      border-radius:10px;background:#faf7f3;color:#3d3529;outline:none;transition:border-color .3s,box-shadow .3s}
+    #loginForm input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.12)}
+    #loginForm button{padding:.8rem;font-size:1rem;font-weight:700;border:none;border-radius:10px;
+      background:linear-gradient(135deg,#c7254e,#a31d3e);color:#fff;cursor:pointer;transition:transform .15s,box-shadow .3s}
+    #loginForm button:hover{transform:scale(1.02);box-shadow:0 4px 15px rgba(199,37,78,.3)}
+    .login-error{color:#c7254e;text-align:center;font-size:.9rem;font-weight:500}
+
+    /* ── Calendar ────────────────────────────────────────────── */
+    .calendar-header{display:flex;align-items:center;justify-content:center;gap:1.5rem;padding:1.2rem 1.5rem .6rem}
+    .calendar-header h2{font-size:1.5rem;color:#3d3529;min-width:220px;text-align:center;font-weight:700}
+    .cal-nav-btn{background:#fff;border:2px solid #e0d4c4;border-radius:10px;color:#8b7355;
+      font-size:1.4rem;padding:.35rem .9rem;cursor:pointer;transition:all .2s;box-shadow:0 1px 4px rgba(120,80,40,.06)}
+    .cal-nav-btn:hover{border-color:#c7254e;color:#c7254e;box-shadow:0 2px 8px rgba(199,37,78,.12)}
+    .calendar-search-bar{max-width:500px;margin:.5rem auto 1rem;padding:0 1.5rem}
+    .calendar-search-bar input{width:100%;padding:.65rem 1rem;font-size:.9rem;border:2px solid #e0d4c4;
+      border-radius:10px;background:#fff;color:#3d3529;outline:none;transition:border-color .3s,box-shadow .3s}
+    .calendar-search-bar input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.1)}
+    .calendar-search-bar input::placeholder{color:#b0a090}
+    .calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 1rem;margin-bottom:4px}
+    .calendar-weekdays span{text-align:center;font-size:.75rem;font-weight:700;color:#8b7355;
+      padding:.5rem 0;text-transform:uppercase;letter-spacing:.08em}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 1rem 1.5rem}
+    .calendar-cell{min-height:120px;background:#fff;border:1px solid #e8ddd0;border-radius:10px;
+      padding:6px;position:relative;transition:all .2s;box-shadow:0 1px 3px rgba(120,80,40,.04)}
+    .calendar-cell:hover{box-shadow:0 3px 12px rgba(120,80,40,.1);border-color:#d0c0a8}
+    .calendar-cell.empty{background:transparent;border:none;box-shadow:none}
+    .calendar-cell.today{border-color:#c7254e;box-shadow:0 0 0 2px rgba(199,37,78,.15),0 3px 12px rgba(199,37,78,.08)}
+    .calendar-cell.dimmed{opacity:.2}
+    .date-number{font-size:.85rem;color:#8b7355;font-weight:700;margin-bottom:3px}
+    .today .date-number{color:#c7254e;font-size:.9rem}
+    .moon-icon{position:absolute;top:4px;right:6px;font-size:1rem}
+    .festival-badge{font-size:.65rem;background:linear-gradient(135deg,rgba(212,160,23,.15),rgba(184,134,11,.12));
+      color:#9a7209;padding:2px 6px;border-radius:4px;margin-bottom:3px;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:600;border:1px solid rgba(212,160,23,.2)}
+    .dress-comment{font-size:.6rem;color:#4a90a4;font-style:italic;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;max-width:100%;margin-bottom:2px;font-weight:500}
+    .calendar-cell .cell-tooltip{display:none;position:absolute;bottom:100%;left:50%;
+      transform:translateX(-50%);background:#3d3529;color:#fff;padding:6px 12px;
+      border-radius:8px;font-size:.75rem;line-height:1.5;white-space:pre-line;z-index:50;
+      pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25);min-width:120px;max-width:220px;text-align:center}
+    .calendar-cell .cell-tooltip::after{content:"";position:absolute;top:100%;left:50%;
+      transform:translateX(-50%);border:6px solid transparent;border-top-color:#3d3529}
+    .calendar-cell:hover .cell-tooltip{display:block}
+    .dress-thumb{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;cursor:pointer;
+      display:block;margin-top:3px;border:1px solid #e8ddd0;transition:transform .15s,box-shadow .2s}
+    .dress-thumb:hover{transform:scale(1.03);box-shadow:0 4px 12px rgba(120,80,40,.15)}
+    .dress-label{font-size:.6rem;color:#8b7355;text-align:center;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;margin-top:2px;font-weight:600}
+
+    /* ── Gallery ─────────────────────────────────────────────── */
+    #galleryView header{padding:1.5rem 1.5rem 1rem;background:linear-gradient(135deg,#fff7ed,#fdf0e0)}
+    .header-content h1{font-size:1.6rem;font-weight:800;
+      background:linear-gradient(135deg,#b8860b,#c7254e);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .subtitle{color:#8b7355;font-size:.9rem;margin-top:.2rem}
+    .search-container{max-width:700px}
+    .search-box{display:flex;gap:.5rem;margin-top:1rem}
+    .search-box input{flex:1;padding:.75rem 1rem;font-size:1rem;border:2px solid #e8ddd0;
+      border-radius:12px;background:#fff;color:#3d3529;outline:none;transition:border-color .3s,box-shadow .3s}
+    .search-box input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.12)}
+    .search-box button{padding:.75rem 1.3rem;font-size:.9rem;font-weight:700;border:none;
+      border-radius:12px;cursor:pointer;transition:all .2s}
+    #searchBtn{background:linear-gradient(135deg,#c7254e,#a31d3e);color:#fff}
+    #searchBtn:hover{box-shadow:0 4px 14px rgba(199,37,78,.35)}
+    #clearBtn{background:#fff;border:2px solid #e8ddd0;color:#8b7355;padding:.75rem .9rem}
+    #clearBtn:hover{border-color:#c7254e;color:#c7254e}
+    .search-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+    .tag{padding:.3rem .75rem;border-radius:20px;font-size:.8rem;cursor:pointer;font-weight:600;
+      background:rgba(184,134,11,.1);color:#9a7209;border:1px solid rgba(184,134,11,.2);transition:all .2s}
+    .tag:hover,.tag.active{background:linear-gradient(135deg,#c7254e,#a31d3e);color:#fff;border-color:transparent}
+    main{padding:1rem 1.5rem 2rem}
+    .result-info{color:#8b7355;font-size:.85rem;margin-bottom:.8rem;font-weight:500}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .gallery-item{border-radius:12px;overflow:hidden;cursor:pointer;border:2px solid #e8ddd0;
+      background:#fff;transition:all .25s;box-shadow:0 2px 8px rgba(120,80,40,.06)}
+    .gallery-item:hover{border-color:#c7254e;transform:translateY(-3px);box-shadow:0 8px 24px rgba(120,80,40,.15)}
+    .gallery-item img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+    .gallery-item .item-label{padding:6px 8px;font-size:.7rem;font-weight:700;color:#5a4a38;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#faf7f3}
+    .loading{text-align:center;padding:3rem;color:#8b7355}
+    .spinner{width:40px;height:40px;border:4px solid #e8ddd0;border-top-color:#c7254e;
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── Assignment (drag-and-drop) ──────────────────────────── */
+    .assign-layout{display:flex;height:calc(100vh - 50px)}
+    .assign-calendar-wrap{flex:1;min-width:0;overflow-y:auto}
+    .assign-sidebar{width:300px;flex-shrink:0;padding:1rem;background:#fff;
+      border-left:1px solid #e8ddd0;display:flex;flex-direction:column;overflow:hidden;
+      box-shadow:-2px 0 12px rgba(120,80,40,.06)}
+    .assign-sidebar h3{font-size:1.05rem;color:#3d3529;margin-bottom:.6rem;font-weight:700}
+    .sidebar-actions{display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap}
+    .sidebar-btn{padding:.4rem .8rem;font-size:.75rem;font-weight:700;border:none;border-radius:8px;
+      cursor:pointer;transition:all .2s}
+    .sidebar-btn.primary{background:linear-gradient(135deg,#c7254e,#a31d3e);color:#fff}
+    .sidebar-btn.secondary{background:#fff;border:2px solid #e0d4c4;color:#8b7355}
+    .sidebar-btn:hover{opacity:.85}
+    #dressFilter{width:100%;padding:.55rem .8rem;font-size:.85rem;border:2px solid #e0d4c4;
+      border-radius:8px;background:#faf7f3;color:#3d3529;outline:none;margin-bottom:.6rem;transition:border-color .3s}
+    #dressFilter:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.1)}
+    #dressFilter::placeholder{color:#b0a090}
+    .dress-palette{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;overflow-y:auto;flex:1;padding:2px}
+    .palette-item{cursor:grab;border:2px solid #e8ddd0;border-radius:10px;overflow:visible;
+      transition:all .2s;position:relative;background:#fff;box-shadow:0 1px 4px rgba(120,80,40,.06);z-index:1}
+    .palette-item:hover{border-color:#c7254e;transform:scale(2.1);
+      box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:100;border-radius:8px;overflow:hidden}
+    .palette-item.selected{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.2),0 4px 12px rgba(212,160,23,.15)}
+    .palette-item.dragging{opacity:.5;transform:scale(.95)}
+    .palette-item img{width:100%;height:70px;object-fit:cover;display:block}
+    .palette-label{display:block;font-size:.55rem;color:#5a4a38;text-align:center;padding:2px 4px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;background:#faf7f3}
+    .calendar-cell.droppable:hover{border-color:#d0c0a8}
+    .calendar-cell.drag-over{border:2px dashed #c7254e;background:rgba(199,37,78,.03);
+      box-shadow:0 0 0 3px rgba(199,37,78,.1)}
+    .assign-thumb-wrap{position:relative}
+    .remove-assign{position:absolute;top:0;right:0;width:20px;height:20px;border-radius:50%;
+      border:2px solid #fff;background:#c7254e;color:#fff;font-size:.7rem;line-height:1;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;
+      box-shadow:0 2px 6px rgba(0,0,0,.2);z-index:2}
+    .assign-thumb-wrap:hover .remove-assign{opacity:1}
+
+    /* ── Lord Photo Modal ────────────────────────────────────── */
+    .modal{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center}
+    .modal-overlay{position:absolute;inset:0;background:rgba(60,50,40,.7);backdrop-filter:blur(4px)}
+    .modal-content{position:relative;background:#fff;border:1px solid #e8ddd0;border-radius:20px;
+      padding:2rem;max-width:850px;width:92%;max-height:85vh;overflow-y:auto;z-index:1;
+      box-shadow:0 20px 60px rgba(60,40,20,.25)}
+    .modal-close{position:absolute;top:1rem;right:1.2rem;font-size:1.5rem;background:none;border:none;
+      color:#8b7355;cursor:pointer;transition:color .2s;width:32px;height:32px;
+      display:flex;align-items:center;justify-content:center;border-radius:50%}
+    .modal-close:hover{color:#c7254e;background:rgba(199,37,78,.08)}
+    .modal-content h3{font-size:1.15rem;color:#3d3529;margin-bottom:1.2rem;font-weight:700;padding-right:2.5rem}
+    .lord-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:1.2rem}
+    .lord-photo-item{position:relative;border-radius:10px;overflow:hidden;border:2px solid #e8ddd0;
+      background:#faf7f3;cursor:pointer;transition:border-color .2s}
+    .lord-photo-item:hover{border-color:#c7254e}
+    .lord-photo-item img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+    .lord-photo-delete{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+      border:2px solid #fff;background:#c7254e;color:#fff;font-size:.75rem;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;
+      box-shadow:0 2px 6px rgba(0,0,0,.2)}
+    .lord-photo-item:hover .lord-photo-delete{opacity:1}
+    .lord-upload{display:flex;align-items:center;gap:.8rem;padding-top:.8rem;border-top:1px solid #e8ddd0}
+    .upload-btn{padding:.55rem 1.2rem;font-size:.85rem;font-weight:700;border:none;border-radius:10px;
+      background:linear-gradient(135deg,#d4a017,#b8860b);color:#fff;cursor:pointer;transition:all .2s}
+    .upload-btn:hover{box-shadow:0 4px 14px rgba(184,134,11,.35)}
+    .no-photos{color:#b0a090;font-size:.9rem;text-align:center;padding:2rem}
+
+    /* ── Lightbox ────────────────────────────────────────────── */
+    .lightbox{position:fixed;inset:0;background:rgba(20,15,10,.92);z-index:1000;
+      display:flex;align-items:center;justify-content:center}
+    .lightbox-content{max-width:90vw;max-height:90vh;text-align:center}
+    .lightbox-content img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:8px}
+    .lightbox-caption{color:#e0d4c8;font-size:.85rem;margin-top:.5rem;font-weight:600}
+    .lightbox-close{position:fixed;top:1.2rem;right:1.5rem;background:rgba(255,255,255,.15);
+      border:none;color:#fff;font-size:1.5rem;width:40px;height:40px;border-radius:50%;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+    .lightbox-close:hover{background:rgba(255,255,255,.25)}
+    .lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);
+      border:none;color:#fff;font-size:2rem;width:44px;height:60px;border-radius:8px;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+    .lightbox-nav:hover{background:rgba(255,255,255,.25)}
+    .lightbox-prev{left:1rem}
+    .lightbox-next{right:1rem}
+
+    /* ── Change Password / Upload Festival modals ────────────── */
+    .mini-modal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center}
+    .mini-modal-overlay{position:absolute;inset:0;background:rgba(60,50,40,.6);backdrop-filter:blur(3px)}
+    .mini-modal-box{position:relative;background:#fff;border-radius:16px;padding:2rem;
+      width:360px;z-index:1;box-shadow:0 16px 50px rgba(60,40,20,.2)}
+    .mini-modal-box h3{font-size:1.1rem;font-weight:700;color:#3d3529;margin-bottom:1.2rem}
+    .mini-modal-box input,.mini-modal-box input[type=file]{display:block;width:100%;
+      padding:.7rem 1rem;font-size:.9rem;border:2px solid #e0d4c4;border-radius:10px;
+      background:#faf7f3;color:#3d3529;outline:none;margin-bottom:.8rem;transition:border-color .3s}
+    .mini-modal-box input:focus{border-color:#d4a017;box-shadow:0 0 0 3px rgba(212,160,23,.1)}
+    .mini-modal-box .modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:.4rem}
+    .mini-modal-box button{padding:.55rem 1.2rem;font-size:.85rem;font-weight:700;border:none;
+      border-radius:8px;cursor:pointer;transition:all .2s}
+    .btn-primary{background:linear-gradient(135deg,#c7254e,#a31d3e);color:#fff}
+    .btn-secondary{background:#fff;border:2px solid #e0d4c4;color:#8b7355}
+    .btn-primary:hover{box-shadow:0 4px 14px rgba(199,37,78,.3)}
+    .btn-secondary:hover{border-color:#c7254e;color:#c7254e}
+    .msg-ok{color:#2e7d32;font-size:.85rem;margin-top:.5rem}
+    .msg-err{color:#c7254e;font-size:.85rem;margin-top:.5rem}
+
+    /* ── View base ───────────────────────────────────────────── */
+    .view{display:none}
+
+    /* ── Global touch improvements ──────────────────────────── */
+    *{-webkit-tap-highlight-color:transparent}
+    button,a,[role=button]{touch-action:manipulation}
+    .cal-nav-btn:active,.nav-tab:active{background:rgba(199,37,78,.1)}
+    .palette-item:active{opacity:.75}
+    .gallery-item:active{transform:translateY(-1px)}
+
+    /* ── Mobile (≤ 640px) ────────────────────────────────────── */
+    @media(max-width:640px){
+      /* Nav: brand + actions row, then tabs full-width row */
+      #mainNav{flex-wrap:wrap;padding:.4rem .8rem;gap:.3rem}
+      .nav-brand{font-size:.95rem}
+      .nav-actions{order:2;gap:.2rem}
+      .nav-action{font-size:.68rem;padding:.32rem .45rem;border-radius:6px}
+      .nav-tabs{order:3;width:100%;border-top:1px solid #e8ddd0;padding-top:.35rem;justify-content:space-evenly;gap:0}
+      .nav-tab{padding:.42rem .2rem;font-size:.75rem;flex:1;text-align:center;border-radius:6px}
+
+      /* Login */
+      .login-container{padding:2rem 1.4rem;margin:0 1rem;max-width:none}
+
+      /* Calendar */
+      .calendar-header{padding:.7rem .8rem .3rem;gap:.7rem}
+      .calendar-header h2{font-size:1rem;min-width:0}
+      .cal-nav-btn{padding:.32rem .7rem;font-size:1.2rem}
+      .calendar-search-bar{padding:0 .6rem;margin:.4rem auto .7rem}
+      .calendar-weekdays{padding:0 .4rem;margin-bottom:2px}
+      .calendar-weekdays span{font-size:.58rem;padding:.25rem 0}
+      .calendar-grid{padding:0 .4rem 1rem;gap:2px}
+      .calendar-cell{min-height:78px;padding:3px}
+      .date-number{font-size:.72rem}
+      .festival-badge{font-size:.5rem;padding:1px 3px}
+      .dress-comment{display:none}
+      .moon-icon{font-size:.78rem;top:2px;right:2px}
+      .dress-thumb{aspect-ratio:1/1;margin-top:2px}
+      .dress-label{font-size:.48rem}
+      .cell-tooltip{display:none!important}
+
+      /* Gallery */
+      #galleryView header{padding:.7rem .8rem .5rem}
+      .header-content h1{font-size:1.15rem}
+      .subtitle{font-size:.78rem}
+      main{padding:.6rem .8rem 1.5rem}
+      .gallery{grid-template-columns:repeat(2,1fr);gap:8px}
+      .search-box{gap:.3rem}
+      .search-box input{padding:.65rem .7rem;font-size:.88rem}
+      #searchBtn{padding:.65rem .9rem;font-size:.82rem}
+      #clearBtn{padding:.65rem .7rem}
+      .search-tags{gap:.3rem}
+      .tag{padding:.25rem .6rem;font-size:.75rem}
+
+      /* Dress Assignment: palette on top, calendar below */
+      .assign-layout{flex-direction:column;height:auto}
+      .assign-sidebar{width:100%;height:auto;max-height:255px;border-left:none;border-bottom:1px solid #e8ddd0;order:-1;box-shadow:none}
+      .assign-sidebar h3{font-size:.9rem;margin-bottom:.35rem}
+      .sidebar-actions{margin-bottom:.4rem}
+      #dressFilter{padding:.42rem .7rem;font-size:.82rem}
+      .dress-palette{grid-template-columns:repeat(3,1fr);gap:5px;max-height:155px}
+      .palette-item img{height:62px}
+      .palette-item:hover{transform:scale(1.3)}
+      .palette-label{font-size:.5rem}
+      .assign-calendar-wrap{overflow-y:visible}
+      .remove-assign{opacity:1;width:18px;height:18px;font-size:.65rem}
+
+      /* Modals */
+      .modal-content{width:98%;max-height:92vh;padding:.9rem;border-radius:12px}
+      .lord-photo-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+      .lord-photo-delete{opacity:1}
+      .mini-modal-box{width:95%;padding:1.4rem 1rem}
+
+      /* Lightbox */
+      .lightbox-nav{width:48px;height:68px;font-size:2.2rem}
+      .lightbox-close{width:46px;height:46px}
+      .lightbox-content img{max-height:80vh}
+    }
+
+    /* Extra-small (≤ 380px) */
+    @media(max-width:380px){
+      .nav-action{font-size:.62rem;padding:.28rem .38rem}
+      .calendar-cell{min-height:68px}
+      .dress-palette{grid-template-columns:repeat(3,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="mainNav">
+  <div class="nav-brand">JBSS Dress</div>
+  <div class="nav-tabs">
+    <span class="nav-tab active" data-view="calendar">Calendar</span>
+    <span class="nav-tab" data-view="gallery">Gallery</span>
+    <span class="nav-tab admin-only" data-view="assign">Dress Assignment</span>
+  </div>
+  <div class="nav-actions">
+    <span id="changePwBtn" class="admin-only nav-action">Change Password</span>
+    <span id="festUploadNavBtn" class="admin-only nav-action">Upload Festival CSV</span>
+    <span id="logoutBtn"     class="admin-only nav-action">Logout</span>
+  </div>
+</nav>
+
+<!-- Login View -->
+<div id="loginView" class="view" style="display:none;">
+  <div class="login-container">
+    <h2>Admin Login</h2>
+    <form id="loginForm">
+      <input type="password" id="loginPassword" placeholder="Enter key" autocomplete="current-password" required>
+      <button type="submit">Enter</button>
+      <div id="loginError" class="login-error" style="display:none;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Calendar View -->
+<div id="calendarView" class="view" style="display:none;">
+  <div class="calendar-header">
+    <button id="prevMonth" class="cal-nav-btn">&#8249;</button>
+    <h2 id="calendarTitle">Loading…</h2>
+    <button id="nextMonth" class="cal-nav-btn">&#8250;</button>
+  </div>
+  <div class="calendar-search-bar">
+    <input type="text" id="calendarSearch" placeholder="Search by color, design, date, festival…">
+  </div>
+  <div class="calendar-weekdays">
+    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div id="calendarGrid" class="calendar-grid"></div>
+</div>
+
+<!-- Gallery View -->
+<div id="galleryView" class="view" style="display:none;">
+  <header>
+    <div class="header-content">
+      <h1>JBSS Dress Search</h1>
+      <p class="subtitle">Search lord's dress collection by color, design, or pattern</p>
+      <button id="refreshGalleryBtn" class="admin-only" style="margin-top:.5rem;background:none;border:2px solid #e0d4c4;border-radius:8px;padding:.3rem .8rem;font-size:.8rem;font-weight:700;color:#8b7355;cursor:pointer;">&#8635; Refresh Dresses</button>
+    </div>
+    <div class="search-container">
+      <form id="searchForm">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search: pink, red+gold, fire design, swan…" autocomplete="off">
+          <button type="submit" id="searchBtn">Search</button>
+          <button type="button" id="clearBtn" title="Show all">&#10005;</button>
+        </div>
+      </form>
+      <div class="search-tags">
+        <span class="tag" data-query="pink">Pink</span>
+        <span class="tag" data-query="dark pink">Dark Pink</span>
+        <span class="tag" data-query="yellow">Yellow</span>
+        <span class="tag" data-query="blue">Blue</span>
+        <span class="tag" data-query="green">Green</span>
+        <span class="tag" data-query="red">Red</span>
+        <span class="tag" data-query="black">Black</span>
+        <span class="tag" data-query="white">White</span>
+        <span class="tag" data-query="gold">Gold</span>
+        <span class="tag" data-query="orange">Orange</span>
+        <span class="tag" data-query="purple">Purple</span>
+        <span class="tag" data-query="multi color">Multi Color</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div id="resultInfo" class="result-info"></div>
+    <div id="gallery"  class="gallery"></div>
+    <div id="loading"  class="loading" style="display:none;">
+      <div class="spinner"></div><p>Searching…</p>
+    </div>
+  </main>
+</div>
+
+<!-- Assignment View (admin only) -->
+<div id="assignmentView" class="view admin-only" style="display:none;">
+  <div class="assign-layout">
+    <div class="assign-calendar-wrap">
+      <div class="calendar-header">
+        <button id="assignPrevMonth" class="cal-nav-btn">&#8249;</button>
+        <h2 id="assignCalendarTitle">Loading…</h2>
+        <button id="assignNextMonth" class="cal-nav-btn">&#8250;</button>
+      </div>
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div id="assignCalendarGrid" class="calendar-grid assign-calendar"></div>
+    </div>
+    <div class="assign-sidebar">
+      <h3>Dresses</h3>
+      <p style="font-size:.65rem;color:#b0a090;margin-bottom:.4rem;line-height:1.4;">Tap a dress to select, then tap a date on the calendar to assign.</p>
+      <div class="sidebar-actions">
+        <button class="sidebar-btn primary" id="refreshDressesBtn">↻ Refresh</button>
+      </div>
+      <input type="text" id="dressFilter" placeholder="Filter dresses…">
+      <div id="dressPalette" class="dress-palette"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Lord Photo Modal -->
+<div id="lordPhotoModal" class="modal" style="display:none;">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <button class="modal-close" id="lordModalClose">&times;</button>
+    <h3 id="lordModalTitle">Lord's Photos</h3>
+    <div id="lordPhotoGrid" class="lord-photo-grid"></div>
+    <div id="lordUploadSection" class="admin-only lord-upload" style="display:none;">
+      <input type="file" id="lordPhotoFile" accept="image/*" style="display:none;">
+      <button id="lordUploadBtn" class="upload-btn">Upload Lord Photo</button>
+      <span id="lordUploadMsg"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" style="display:none;">
+  <button class="lightbox-close"  id="lightboxClose">&#10005;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev">&#8249;</button>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext">&#8250;</button>
+  <div class="lightbox-content">
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePwModal" class="mini-modal" style="display:none;">
+  <div class="mini-modal-overlay" id="changePwOverlay"></div>
+  <div class="mini-modal-box">
+    <h3>Change Password</h3>
+    <input type="password" id="newPw1" placeholder="New password">
+    <input type="password" id="newPw2" placeholder="Confirm new password">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelPwBtn">Cancel</button>
+      <button class="btn-primary"   id="savePwBtn">Save</button>
+    </div>
+    <div id="pwMsg"></div>
+  </div>
+</div>
+
+<!-- Upload Festival CSV Modal -->
+<div id="festUploadModal" class="mini-modal" style="display:none;">
+  <div class="mini-modal-overlay" id="festUploadOverlay"></div>
+  <div class="mini-modal-box">
+    <h3>Upload Festivals CSV</h3>
+    <p style="font-size:.8rem;color:#8b7355;margin-bottom:.8rem;">
+      Columns: <code>date, festival_name, dress_comment</code><br>
+      Type is auto-detected from the festival name.
+    </p>
+    <input type="file" id="festCsvFile" accept=".csv">
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelFestBtn">Cancel</button>
+      <button class="btn-primary"   id="uploadFestBtn">Upload</button>
+    </div>
+    <div id="festMsg"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   GAS helper — wrap google.script.run in a Promise
+   ════════════════════════════════════════════════════════════════ */
+const GAS = {
+  run(fn, ...args) {
+    return new Promise((resolve, reject) => {
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject);
+      runner[fn].apply(runner, args);
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Auth module
+   ════════════════════════════════════════════════════════════════ */
+const Auth = {
+  token: sessionStorage.getItem('adminToken'),
+  isAdmin: false,
+
+  async init() {
+    // Check saved admin token
+    if (this.token) {
+      try {
+        const res = await GAS.run('getAuthStatus', this.token);
+        if (res.authenticated) {
+          this.isAdmin = true;
+          return true;
+        }
+      } catch(e) {}
+      sessionStorage.removeItem('adminToken');
+      this.token = null;
+    }
+
+    return true;
+  },
+
+  async login(password) {
+    const res = await GAS.run('login', password);
+    if (res.error) return res;
+    this.token   = res.token;
+    this.isAdmin = true;
+    sessionStorage.setItem('adminToken', res.token);
+    return res;
+  },
+
+  async logout() {
+    if (this.token) await GAS.run('logout', this.token).catch(() => {});
+    sessionStorage.removeItem('adminToken');
+    this.token   = null;
+    this.isAdmin = false;
+    location.reload();
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Lightbox
+   ════════════════════════════════════════════════════════════════ */
+const Lightbox = {
+  images: [], current: 0,
+
+  open(imgs, idx) {
+    this.images  = imgs;
+    this.current = idx;
+    this._show();
+    document.getElementById('lightbox').style.display = 'flex';
+  },
+
+  close() { document.getElementById('lightbox').style.display = 'none'; },
+
+  prev() { this.current = (this.current - 1 + this.images.length) % this.images.length; this._show(); },
+  next() { this.current = (this.current + 1) % this.images.length; this._show(); },
+
+  _show() {
+    const img = this.images[this.current];
+    document.getElementById('lightboxImg').src = img.fullUrl || img.url || img.thumbnailUrl;
+    document.getElementById('lightboxCaption').textContent =
+      (img.filename || '').replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ');
+  },
+
+  init() {
+    document.getElementById('lightboxClose').addEventListener('click', () => this.close());
+    document.getElementById('lightboxPrev') .addEventListener('click', () => this.prev());
+    document.getElementById('lightboxNext') .addEventListener('click', () => this.next());
+    document.getElementById('lightbox').addEventListener('click', e => {
+      if (e.target === document.getElementById('lightbox')) this.close();
+    });
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('lightbox').style.display === 'none') return;
+      if (e.key === 'Escape')     this.close();
+      if (e.key === 'ArrowLeft')  this.prev();
+      if (e.key === 'ArrowRight') this.next();
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Gallery module
+   ════════════════════════════════════════════════════════════════ */
+const Gallery = {
+  allDresses: [],
+  dressMap: {},  // filename → dress object
+
+  async init() {
+    document.getElementById('searchForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const q = document.getElementById('searchInput').value.trim();
+      this.search(q);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+      this.render(this.allDresses);
+      document.getElementById('resultInfo').textContent = 'Showing all ' + this.allDresses.length + ' dresses';
+    });
+
+    const refreshBtn = document.getElementById('refreshGalleryBtn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.textContent = 'Refreshing…';
+        await GAS.run('invalidateDressCache', Auth.token).catch(() => {});
+        await this.load();
+        refreshBtn.textContent = '\u21BB Refresh Dresses';
+      });
+    }
+
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+        const q = tag.dataset.query;
+        document.getElementById('searchInput').value = q;
+        this.search(q);
+      });
+    });
+  },
+
+  async load() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('gallery').innerHTML = '';
+    document.getElementById('resultInfo').textContent = '';
+    try {
+      const data = await GAS.run('listDresses');
+      if (data.error) throw new Error(data.error);
+      this.allDresses = data.dresses;
+      this.dressMap   = {};
+      this.allDresses.forEach(d => { this.dressMap[d.filename] = d; });
+      this.render(this.allDresses);
+      document.getElementById('resultInfo').textContent = this.allDresses.length + ' dresses loaded';
+    } catch(e) {
+      document.getElementById('resultInfo').textContent = 'Error loading dresses: ' + e.message;
+    }
+    document.getElementById('loading').style.display = 'none';
+  },
+
+  async search(query) {
+    if (!query) { this.render(this.allDresses); return; }
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('gallery').innerHTML = '';
+    try {
+      const data = await GAS.run('searchDresses', query);
+      const dresses = data.dresses || this.allDresses;
+      this.render(dresses);
+      document.getElementById('resultInfo').textContent =
+        dresses.length + ' result' + (dresses.length !== 1 ? 's' : '') + ' for "' + query + '"';
+    } catch(e) {
+      document.getElementById('resultInfo').textContent = 'Search error: ' + e.message;
+    }
+    document.getElementById('loading').style.display = 'none';
+  },
+
+  render(dresses) {
+    const grid = document.getElementById('gallery');
+    grid.innerHTML = '';
+    dresses.forEach((d, i) => {
+      const item  = document.createElement('div');
+      item.className = 'gallery-item';
+      item.innerHTML = '<img src="' + d.thumbnailUrl + '" alt="' + d.filename.replace(/"/g, '&quot;') + '" loading="lazy">'
+        + '<div class="item-label">' + d.filename.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ') + '</div>';
+      item.addEventListener('click', () => {
+        LordModal.open(d.filename);
+      });
+      item.addEventListener('dblclick', () => Lightbox.open(dresses, i));
+      grid.appendChild(item);
+    });
+    document.getElementById('loading').style.display = 'none';
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Calendar module (read-only view)
+   ════════════════════════════════════════════════════════════════ */
+const Calendar = {
+  currentYear: new Date().getFullYear(),
+  currentMonth: new Date().getMonth(),
+  assignments: {},
+  festivalsByDate: {},
+  searchQuery: '',
+
+  init() {
+    document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+
+    const searchEl = document.getElementById('calendarSearch');
+    let t;
+    searchEl.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        this.searchQuery = searchEl.value.trim().toLowerCase();
+        this.render();
+      }, 300);
+    });
+  },
+
+  async load() {
+    const month = this._monthStr();
+    try {
+      const data  = await GAS.run('getCalendar', month);
+      this.assignments    = data.assignments || {};
+      this.festivalsByDate = {};
+      (data.festivals || []).forEach(f => {
+        if (!this.festivalsByDate[f.date]) this.festivalsByDate[f.date] = [];
+        this.festivalsByDate[f.date].push(f);
+      });
+    } catch(e) {
+      document.getElementById('calendarTitle').textContent = 'Setup required';
+      document.getElementById('calendarGrid').innerHTML =
+        '<p style="grid-column:1/-1;padding:2rem;color:#c7254e;font-size:.9rem;">'
+        + 'Run <b>setup()</b> from the GAS Script Editor to authorize Drive &amp; Sheets access, then refresh.</p>';
+      return;
+    }
+    this.render();
+  },
+
+  _monthStr() {
+    return this.currentYear + '-' + String(this.currentMonth + 1).padStart(2, '0');
+  },
+
+  changeMonth(delta) {
+    this.currentMonth += delta;
+    if (this.currentMonth > 11) { this.currentMonth = 0; this.currentYear++; }
+    if (this.currentMonth <  0) { this.currentMonth = 11; this.currentYear--; }
+    this.load();
+  },
+
+  render() {
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    document.getElementById('calendarTitle').textContent =
+      MONTHS[this.currentMonth] + ' ' + this.currentYear;
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    const firstDay    = new Date(this.currentYear, this.currentMonth, 1).getDay();
+    const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+    const today       = new Date();
+
+    for (let i = 0; i < firstDay; i++) {
+      const e = document.createElement('div');
+      e.className = 'calendar-cell empty';
+      grid.appendChild(e);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      var dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      const cell = document.createElement('div');
+      cell.className = 'calendar-cell';
+
+      if (today.getFullYear() === this.currentYear &&
+          today.getMonth()    === this.currentMonth &&
+          today.getDate()     === day) cell.classList.add('today');
+
+      if (this.searchQuery && !this._cellMatches(dateStr)) cell.classList.add('dimmed');
+
+      const dn = document.createElement('div');
+      dn.className   = 'date-number';
+      dn.textContent = day;
+      cell.appendChild(dn);
+
+      const festivals    = this.festivalsByDate[dateStr] || [];
+      const tooltipParts = [];
+      festivals.forEach(f => {
+        if (f.type === 'purnima') {
+          const m = document.createElement('span');
+          m.className   = 'moon-icon purnima';
+          m.textContent = '🌕';
+          cell.appendChild(m);
+          tooltipParts.push('🌕 Purnima');
+        } else if (f.type === 'amavasya') {
+          const m = document.createElement('span');
+          m.className   = 'moon-icon amavasya';
+          m.textContent = '🌑';
+          cell.appendChild(m);
+          tooltipParts.push('🌑 Amavasya');
+        } else {
+          const b = document.createElement('div');
+          b.className   = 'festival-badge';
+          b.textContent = f.name;
+          cell.appendChild(b);
+          tooltipParts.push(f.name);
+        }
+        if (f.dress_comment) {
+          const c = document.createElement('div');
+          c.className   = 'dress-comment';
+          c.textContent = f.dress_comment;
+          cell.appendChild(c);
+          tooltipParts.push('Note: ' + f.dress_comment);
+        }
+      });
+
+      const asgn = this.assignments[dateStr];
+      if (asgn && asgn.dress) {
+        const label = asgn.dress.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ');
+        const thumb = document.createElement('img');
+        thumb.className = 'dress-thumb';
+        thumb.src       = asgn.driveFileId
+          ? 'https://drive.google.com/thumbnail?id=' + asgn.driveFileId + '&sz=w200'
+          : '';
+        thumb.alt = asgn.dress;
+        thumb.loading = 'lazy';
+        thumb.addEventListener('click', e => {
+          e.stopPropagation();
+          LordModal.open(asgn.dress);
+        });
+        cell.appendChild(thumb);
+
+        const dl = document.createElement('div');
+        dl.className   = 'dress-label';
+        dl.textContent = label;
+        cell.appendChild(dl);
+        if (tooltipParts.length) tooltipParts.unshift(label);
+      }
+
+      if (tooltipParts.length) {
+        const tt = document.createElement('div');
+        tt.className   = 'cell-tooltip';
+        tt.textContent = tooltipParts.join('\n');
+        cell.appendChild(tt);
+      }
+      grid.appendChild(cell);
+    }
+  },
+
+  _cellMatches(dateStr) {
+    const q = this.searchQuery;
+    if (dateStr.includes(q)) return true;
+    const a = this.assignments[dateStr];
+    if (a && a.dress) {
+      const n = a.dress.toLowerCase().replace(/[-_+.]/g, ' ');
+      if (n.includes(q)) return true;
+    }
+    for (const f of (this.festivalsByDate[dateStr] || [])) {
+      if (f.name.toLowerCase().includes(q) || f.type.includes(q)) return true;
+    }
+    return false;
+  },
+
+  formatDressName(fn) {
+    return fn.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ')
+             .replace(/\b\w/g, c => c.toUpperCase());
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Admin drag-and-drop assignment module
+   ════════════════════════════════════════════════════════════════ */
+const Admin = {
+  currentYear: new Date().getFullYear(),
+  currentMonth: new Date().getMonth(),
+  allDresses: [],
+  assignments: {},
+  festivalsByDate: {},
+  selectedDress: null,
+
+  async init() {
+    document.getElementById('assignPrevMonth').addEventListener('click', () => this.changeMonth(-1));
+    document.getElementById('assignNextMonth').addEventListener('click', () => this.changeMonth(1));
+    document.getElementById('dressFilter').addEventListener('input', e =>
+      this.renderPalette(e.target.value.trim().toLowerCase()));
+    document.getElementById('refreshDressesBtn').addEventListener('click', async () => {
+      await GAS.run('invalidateDressCache', Auth.token).catch(() => {});
+      await this.loadDresses();
+    });
+    await this.loadDresses();
+  },
+
+  async loadDresses() {
+    document.getElementById('dressPalette').innerHTML =
+      '<div class="spinner" style="grid-column:1/-1;margin:1rem auto;"></div>';
+    const data = await GAS.run('listDresses');
+    this.allDresses = data.dresses || [];
+    this.renderPalette('');
+  },
+
+  async load() {
+    const month = this._monthStr();
+    try {
+      const data  = await GAS.run('getCalendar', month);
+      this.assignments    = data.assignments || {};
+      this.festivalsByDate = {};
+      (data.festivals || []).forEach(f => {
+        if (!this.festivalsByDate[f.date]) this.festivalsByDate[f.date] = [];
+        this.festivalsByDate[f.date].push(f);
+      });
+    } catch(e) {
+      console.error('Assignment calendar load error:', e);
+    }
+    this.renderCalendar();
+  },
+
+  _monthStr() {
+    return this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0');
+  },
+
+  changeMonth(delta) {
+    this.currentMonth += delta;
+    if (this.currentMonth > 11) { this.currentMonth = 0; this.currentYear++; }
+    if (this.currentMonth <  0) { this.currentMonth = 11; this.currentYear--; }
+    this.load();
+  },
+
+  renderPalette(filter) {
+    const palette  = document.getElementById('dressPalette');
+    palette.innerHTML = '';
+    const filtered = filter
+      ? this.allDresses.filter(d => d.filename.toLowerCase().replace(/[-_+.]/g, ' ').includes(filter))
+      : this.allDresses;
+
+    filtered.forEach(dress => {
+      const item = document.createElement('div');
+      item.className  = 'palette-item';
+      item.draggable  = true;
+      item.dataset.fn = dress.filename;
+      item.dataset.id = dress.fileId;
+
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', JSON.stringify({filename: dress.filename, fileId: dress.fileId}));
+        e.dataTransfer.effectAllowed = 'copy';
+        item.classList.add('dragging');
+      });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+
+      // Mobile tap-to-select
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.palette-item.selected').forEach(el => el.classList.remove('selected'));
+        if (this.selectedDress && this.selectedDress.filename === dress.filename) {
+          this.selectedDress = null;
+        } else {
+          this.selectedDress = dress;
+          item.classList.add('selected');
+        }
+      });
+
+      const img = document.createElement('img');
+      img.src     = dress.thumbnailUrl;
+      img.alt     = dress.filename;
+      img.loading = 'lazy';
+
+      const lbl = document.createElement('span');
+      lbl.className   = 'palette-label';
+      lbl.textContent = dress.filename.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ');
+
+      item.appendChild(img);
+      item.appendChild(lbl);
+      palette.appendChild(item);
+    });
+  },
+
+  renderCalendar() {
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    document.getElementById('assignCalendarTitle').textContent =
+      MONTHS[this.currentMonth] + ' ' + this.currentYear;
+
+    const grid = document.getElementById('assignCalendarGrid');
+    grid.innerHTML = '';
+    const firstDay    = new Date(this.currentYear, this.currentMonth, 1).getDay();
+    const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+    const today       = new Date();
+
+    for (let i = 0; i < firstDay; i++) {
+      const e = document.createElement('div');
+      e.className = 'calendar-cell empty';
+      grid.appendChild(e);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      var dateStr = this.currentYear + '-' + String(this.currentMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      const cell = document.createElement('div');
+      cell.className = 'calendar-cell droppable';
+
+      if (today.getFullYear() === this.currentYear &&
+          today.getMonth()    === this.currentMonth &&
+          today.getDate()     === day) cell.classList.add('today');
+
+      cell.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; cell.classList.add('drag-over'); });
+      cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
+      cell.addEventListener('drop', async e => {
+        e.preventDefault();
+        cell.classList.remove('drag-over');
+        try {
+          const d = JSON.parse(e.dataTransfer.getData('text/plain'));
+          if (d.filename) await this.assignDress(dateStr, d.filename, d.fileId);
+        } catch(_) {}
+      });
+
+      // Mobile tap-to-assign
+      cell.addEventListener('click', async () => {
+        if (this.selectedDress) {
+          await this.assignDress(dateStr, this.selectedDress.filename, this.selectedDress.fileId);
+          this.selectedDress = null;
+          document.querySelectorAll('.palette-item.selected').forEach(el => el.classList.remove('selected'));
+        }
+      });
+
+      const dn = document.createElement('div');
+      dn.className   = 'date-number';
+      dn.textContent = day;
+      cell.appendChild(dn);
+
+      // Festival badges
+      const tooltipParts = [];
+      (this.festivalsByDate[dateStr] || []).forEach(f => {
+        if (f.type === 'purnima') {
+          const m = document.createElement('span');
+          m.className = 'moon-icon purnima'; m.textContent = '🌕';
+          cell.appendChild(m); tooltipParts.push('🌕 Purnima');
+        } else if (f.type === 'amavasya') {
+          const m = document.createElement('span');
+          m.className = 'moon-icon amavasya'; m.textContent = '🌑';
+          cell.appendChild(m); tooltipParts.push('🌑 Amavasya');
+        } else {
+          const b = document.createElement('div');
+          b.className = 'festival-badge'; b.textContent = f.name;
+          cell.appendChild(b); tooltipParts.push(f.name);
+        }
+        if (f.dress_comment) tooltipParts.push('Note: ' + f.dress_comment);
+      });
+
+      // Assigned dress thumbnail
+      const asgn = this.assignments[dateStr];
+      if (asgn && asgn.dress) {
+        const label = asgn.dress.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ');
+        const wrap  = document.createElement('div');
+        wrap.className = 'assign-thumb-wrap';
+
+        const thumb = document.createElement('img');
+        thumb.className = 'dress-thumb';
+        thumb.src = asgn.driveFileId
+          ? 'https://drive.google.com/thumbnail?id=' + asgn.driveFileId + '&sz=w200'
+          : '';
+        thumb.alt = asgn.dress;
+        thumb.loading = 'lazy';
+        wrap.appendChild(thumb);
+
+        const rmBtn = document.createElement('button');
+        rmBtn.className   = 'remove-assign';
+        rmBtn.textContent = '×';
+        rmBtn.title       = 'Remove assignment';
+        rmBtn.addEventListener('click', async e => {
+          e.stopPropagation();
+          await this.unassignDress(dateStr);
+        });
+        wrap.appendChild(rmBtn);
+        cell.appendChild(wrap);
+        if (tooltipParts.length) tooltipParts.unshift(label);
+      }
+
+      if (tooltipParts.length) {
+        const tt = document.createElement('div');
+        tt.className   = 'cell-tooltip';
+        tt.textContent = tooltipParts.join('\n');
+        cell.appendChild(tt);
+      }
+      grid.appendChild(cell);
+    }
+  },
+
+  async assignDress(date, filename, fileId) {
+    const res = await GAS.run('assignDress', Auth.token, date, filename, fileId || '');
+    if (!res.error) {
+      this.assignments[date] = { dress: filename, driveFileId: fileId || '' };
+      this.renderCalendar();
+    }
+  },
+
+  async unassignDress(date) {
+    const res = await GAS.run('unassignDress', Auth.token, date);
+    if (!res.error) {
+      delete this.assignments[date];
+      this.renderCalendar();
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Lord Photos modal
+   ════════════════════════════════════════════════════════════════ */
+const LordModal = {
+  currentDress: null,
+
+  async open(dressFilename) {
+    this.currentDress = dressFilename;
+    const modal = document.getElementById('lordPhotoModal');
+    const grid  = document.getElementById('lordPhotoGrid');
+    const title = document.getElementById('lordModalTitle');
+
+    title.textContent  = "Lord's Photos \u2014 " + dressFilename.replace(/\.[^/.]+$/, '').replace(/[-_+]/g, ' ');
+    grid.innerHTML = '<div class="spinner"></div>';
+    modal.style.display = 'flex';
+
+    const data = await GAS.run('getLordPhotos', dressFilename);
+    grid.innerHTML = '';
+
+    if (!data.photos || data.photos.length === 0) {
+      grid.innerHTML = '<p class="no-photos">No lord photos uploaded yet for this dress.</p>';
+    } else {
+      const lightboxImgs = data.photos.map(p => ({ url: p.url, thumbnailUrl: p.url, fullUrl: p.url, filename: dressFilename }));
+      data.photos.forEach((photo, i) => {
+        const item = document.createElement('div');
+        item.className = 'lord-photo-item';
+        const img = document.createElement('img');
+        img.src     = photo.url;
+        img.loading = 'lazy';
+        img.addEventListener('click', () => Lightbox.open(lightboxImgs, i));
+        item.appendChild(img);
+
+        if (Auth.isAdmin) {
+          const del = document.createElement('button');
+          del.className   = 'lord-photo-delete';
+          del.textContent = '×';
+          del.title       = 'Remove photo';
+          del.addEventListener('click', async e => {
+            e.stopPropagation();
+            await GAS.run('deleteLordPhoto', Auth.token, dressFilename, photo.fileId);
+            this.open(dressFilename);
+          });
+          item.appendChild(del);
+        }
+        grid.appendChild(item);
+      });
+    }
+
+    const uploadSect = document.getElementById('lordUploadSection');
+    if (Auth.isAdmin) {
+      uploadSect.style.display = 'flex';
+      const uploadBtn = document.getElementById('lordUploadBtn');
+      const fileInput = document.getElementById('lordPhotoFile');
+      const msgEl     = document.getElementById('lordUploadMsg');
+
+      uploadBtn.onclick  = () => fileInput.click();
+      fileInput.onchange = async () => {
+        if (!fileInput.files.length) return;
+        msgEl.textContent = 'Uploading…';
+        try {
+          const file       = fileInput.files[0];
+          const compressed = await compressImage(file, 1200, 0.85);
+          const base64     = compressed.split(',')[1];
+          const mimeType   = 'image/jpeg';
+          await GAS.run('uploadLordPhoto', Auth.token, dressFilename, base64, file.name, mimeType);
+          msgEl.textContent = '';
+          fileInput.value   = '';
+          this.open(dressFilename);
+        } catch(e) {
+          msgEl.textContent = 'Upload failed: ' + e.message;
+        }
+      };
+    } else {
+      uploadSect.style.display = 'none';
+    }
+  },
+
+  close() {
+    document.getElementById('lordPhotoModal').style.display = 'none';
+  },
+
+  init() {
+    document.getElementById('lordModalClose').addEventListener('click', () => this.close());
+    document.querySelector('#lordPhotoModal .modal-overlay').addEventListener('click', () => this.close());
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   Image compression helper (canvas-based, keeps files under ~1MB)
+   ════════════════════════════════════════════════════════════════ */
+function compressImage(file, maxWidth = 1200, quality = 0.85) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   App router & modals
+   ════════════════════════════════════════════════════════════════ */
+const App = {
+  currentView: 'calendar',
+  galleryLoaded: false,
+
+  async init() {
+    const ok = await Auth.init();
+    if (!ok) return;
+
+    if (!Auth.isAdmin) {
+      this._showLogin();
+      return;
+    }
+
+    this._setupUI();
+    this._showView('calendar');
+  },
+
+  _showLogin() {
+    document.getElementById('loginView').style.display = 'flex';
+    document.getElementById('mainNav').style.display   = 'none';
+    this._setupLoginForm();
+  },
+
+  _setupLoginForm() {
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const pw  = document.getElementById('loginPassword').value;
+      const err = document.getElementById('loginError');
+      err.style.display = 'none';
+      try {
+        const res = await Auth.login(pw);
+        if (res.error) {
+          err.textContent   = res.error;
+          err.style.display = 'block';
+          return;
+        }
+        document.getElementById('loginView').style.display = 'none';
+        this._setupUI();
+        this._showView('calendar');
+      } catch(ex) {
+        err.textContent   = 'Connection error. Please try again.';
+        err.style.display = 'block';
+      }
+    });
+  },
+
+  _setupUI() {
+    const nav = document.getElementById('mainNav');
+    nav.style.display = 'flex';
+
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.style.display = Auth.isAdmin ? '' : 'none';
+    });
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => this._showView(tab.dataset.view));
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => Auth.logout());
+
+    // Change password modal
+    document.getElementById('changePwBtn').addEventListener('click', () => {
+      document.getElementById('changePwModal').style.display = 'flex';
+    });
+    document.getElementById('cancelPwBtn').addEventListener('click',  () => {
+      document.getElementById('changePwModal').style.display = 'none';
+    });
+    document.getElementById('changePwOverlay').addEventListener('click', () => {
+      document.getElementById('changePwModal').style.display = 'none';
+    });
+    document.getElementById('savePwBtn').addEventListener('click', async () => {
+      const p1 = document.getElementById('newPw1').value;
+      const p2 = document.getElementById('newPw2').value;
+      const msg = document.getElementById('pwMsg');
+      if (p1 !== p2)        { msg.className = 'msg-err'; msg.textContent = 'Passwords do not match.'; return; }
+      if (p1.length < 4)    { msg.className = 'msg-err'; msg.textContent = 'Too short (min 4 chars).'; return; }
+      const res = await GAS.run('changePassword', Auth.token, p1);
+      if (res.error) { msg.className = 'msg-err'; msg.textContent = res.error; return; }
+      msg.className   = 'msg-ok';
+      msg.textContent = 'Password changed successfully.';
+      setTimeout(() => { document.getElementById('changePwModal').style.display = 'none'; msg.textContent = ''; }, 2000);
+    });
+
+    // Upload festival CSV modal
+    document.getElementById('festUploadNavBtn').addEventListener('click', () => {
+      document.getElementById('festUploadModal').style.display = 'flex';
+    });
+    document.getElementById('cancelFestBtn').addEventListener('click', () => {
+      document.getElementById('festUploadModal').style.display = 'none';
+    });
+    document.getElementById('festUploadOverlay').addEventListener('click', () => {
+      document.getElementById('festUploadModal').style.display = 'none';
+    });
+    document.getElementById('uploadFestBtn').addEventListener('click', async () => {
+      const fileEl = document.getElementById('festCsvFile');
+      const msgEl  = document.getElementById('festMsg');
+      if (!fileEl.files.length) { msgEl.className = 'msg-err'; msgEl.textContent = 'Please select a CSV file.'; return; }
+      const text = await fileEl.files[0].text();
+      msgEl.textContent = 'Uploading…';
+      const res = await GAS.run('uploadFestivals', Auth.token, text);
+      if (res.error) { msgEl.className = 'msg-err'; msgEl.textContent = res.error; return; }
+      msgEl.className   = 'msg-ok';
+      msgEl.textContent = res.count + ' festivals imported.';
+      fileEl.value = '';
+      // Reload calendar to show updated festivals
+      Calendar.load();
+      setTimeout(() => { document.getElementById('festUploadModal').style.display = 'none'; msgEl.textContent = ''; }, 2500);
+    });
+
+    Lightbox.init();
+    LordModal.init();
+    Calendar.init();
+
+    if (Auth.isAdmin) Admin.init();
+  },
+
+  _showView(name) {
+    if (name === 'assign' && !Auth.isAdmin) return;
+    this.currentView = name;
+
+    document.querySelectorAll('.view').forEach(v => { v.style.display = 'none'; });
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.querySelector('.nav-tab[data-view="' + name + '"]');
+    if (tab) tab.classList.add('active');
+
+    switch (name) {
+      case 'calendar':
+        document.getElementById('calendarView').style.display = 'block';
+        Calendar.load();
+        break;
+      case 'gallery':
+        document.getElementById('galleryView').style.display = 'block';
+        Gallery.init();
+        if (!this.galleryLoaded) { Gallery.load(); this.galleryLoaded = true; }
+        break;
+      case 'assign':
+        document.getElementById('assignmentView').style.display = 'block';
+        Admin.load();
+        break;
+    }
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
