@@ -771,6 +771,9 @@
           <button id="btnMainUser" class="btn btn-primary">MAIN DESK (Universal Desk)</button>
           <button id="btnDeskUser" class="btn btn-user">EVENT Desk (SPOC Desk)</button>
           <button id="btnPreachingDesk" class="btn btn-user">PRACHING DESK</button>
+          <a href="?page=dashboard" target="_blank" style="text-decoration: none;">
+            <button class="btn btn-primary" style="background: linear-gradient(180deg, #1f8a2f, #16673a); margin-left: auto;">📊 DASHBOARD</button>
+          </a>
         </div>
         <div id="globalStatus" class="status"></div>
       </div>
@@ -1458,7 +1461,9 @@
             state.medalFilterOptionsLoaded = true;
           }
 
-          setStatus("medalStatus", "Medal dashboard refreshed.", false);
+          const sourceSheets = (res && res.sourceSheets) || [];
+          const sourceText = sourceSheets.length ? " Source: " + sourceSheets.join(", ") : " Source: No Medalist sheet matched.";
+          setStatus("medalStatus", "Medal dashboard refreshed." + sourceText, false);
         } catch (e) {
           setStatus("medalStatus", "Medal dashboard load failed: " + e.message, true);
         }
