@@ -1,7 +1,7 @@
 const CONFIG = {
-  SHEET_ID: "1yzEVh3I6D_iWA6GfmzB1lIs3vzP1HX4HXJ7zRVwokas",
+  SHEET_ID: "1Pw9PH53U5B8czjk_hxiw90Sc-NBt_NYP-mX6u6sugYI",
   SHEET_NAMES: ["Top3", "fancydress", "Music"],
-  MEDAL_SHEET_CANDIDATES: ["MEDALIST", "Medalist", "medalist"],
+  MEDAL_SHEET_CANDIDATES: ["Copy of MEDALIST", "MEDALIST", "Medalist", "medalist", "MEDALISTS", "Medalists", "medalists"],
   MAIN_SHEET: "Top3",
   MAIN_USER_CODE: "108",
   TEAM_EVENT_KEYS: ["QUIZ", "MUSIC"],
@@ -23,7 +23,15 @@ const COLUMN_ALIASES = {
   ATTENDANCE2: ["ATTENDANCE2", "ATTENDANCE"],
 };
 
-function doGet() {
+function doGet(e) {
+  const page = e?.parameter?.page || "index";
+  
+  if (page === "dashboard") {
+    return HtmlService.createHtmlOutputFromFile("Dashboard")
+      .setTitle("Nandotsava 2026 Dashboard")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  
   return HtmlService.createHtmlOutputFromFile("Index")
     .setTitle("Nandotsava 2026 Desk App")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -261,7 +269,8 @@ function getMedalDashboard(payload) {
   const filterGroup = normalizeText_(safePayload.group || "");
   const filterMedalType = normalizeText_(safePayload.medalType || "");
 
-  const allRows = getMedalRows_();
+  const medalData = getMedalRowsWithMeta_();
+  const allRows = medalData.rows;
   const filteredRows = allRows.filter((r) => {
     if (filterSchool && normalizeText_(r.school) !== filterSchool) return false;
     if (filterEvent && normalizeText_(r.event) !== filterEvent) return false;
@@ -398,6 +407,7 @@ function getMedalDashboard(payload) {
     });
 
   return {
+    sourceSheets: medalData.sourceSheets,
     filterOptions: {
       schools: uniqueSorted_(allRows.map((r) => r.school).filter(Boolean)),
       events: uniqueSorted_(allRows.map((r) => r.event).filter(Boolean)),
@@ -409,6 +419,123 @@ function getMedalDashboard(payload) {
     eventWise,
     schoolEventWise,
     drillDownRows,
+  };
+}
+
+function getCategorySummary() {
+  const rows = getAllRows_();
+  const categoryMap = {};
+  
+  // Group by competition type
+  rows.forEach(r => {
+    const competition = toSafeString_(r.competition) || toSafeString_(r.sheetName) || 'Other';
+    const key = normalizeText_(competition);
+    
+    if (!categoryMap[key]) {
+      categoryMap[key] = {
+        slot: competition,
+        totalRegistered: 0,
+        attended: 0,
+        pending: 0,
+        percentage: 0,
+        groups: {}
+      };
+    }
+    
+    categoryMap[key].totalRegistered++;
+    
+    if (hasFootfall_(r)) {
+      categoryMap[key].attended++;
+    } else {
+      categoryMap[key].pending++;
+    }
+    
+    // Track by group
+    const group = toSafeString_(r.group) || 'NA';
+    if (!categoryMap[key].groups[group]) {
+      categoryMap[key].groups[group] = { total: 0, attended: 0 };
+    }
+    categoryMap[key].groups[group].total++;
+    if (hasFootfall_(r)) {
+      categoryMap[key].groups[group].attended++;
+    }
+  });
+  
+  // Calculate percentages and prepare for table
+  const summaryRows = Object.values(categoryMap)
+    .map(cat => ({
+      ...cat,
+      percentage: cat.totalRegistered > 0 ? Math.round((cat.attended / cat.totalRegistered) * 100) : 0,
+      groupSummary: Object.entries(cat.groups)
+        .map(([group, stats]) => `${group}(${stats.attended}/${stats.total})`)
+        .join(' | ')
+    }))
+    .sort((a, b) => b.attended - a.attended);
+    
+  return {
+    timestamp: new Date().toLocaleString('en-IN'),
+    summary: summaryRows,
+    totalRows: rows.length,
+    totalAttended: rows.filter(r => hasFootfall_(r)).length
+  };
+}
+
+function getMedalTally() {
+  const medalData = getMedalRowsWithMeta_();
+  const allRows = medalData.rows;
+  
+  // Map to store school-wise medal counts by event
+  const schoolMap = {};
+  const eventSet = new Set();
+  
+  allRows.forEach(r => {
+    if (!isMedalWinnerRank_(r.rank)) return; // Only count medal winners
+    
+    const school = toSafeString_(r.school) || "Unknown";
+    const event = toSafeString_(r.event) || "Other";
+    
+    eventSet.add(event);
+    
+    if (!schoolMap[school]) {
+      schoolMap[school] = {
+        name: school,
+        events: {},
+        totalMedals: 0,
+        points: 0
+      };
+    }
+    
+    if (!schoolMap[school].events[event]) {
+      schoolMap[school].events[event] = 0;
+    }
+    
+    schoolMap[school].events[event]++;
+    schoolMap[school].totalMedals++;
+    
+    // Calculate points: Gold=3, Silver=2, Bronze=1
+    const pointValue = r.medalType === "GOLD" ? 3 : r.medalType === "SILVER" ? 2 : 1;
+    schoolMap[school].points += pointValue;
+  });
+  
+  // Sort events
+  const eventList = Array.from(eventSet).sort();
+  
+  // Prepare rows for table
+  const rows = Object.values(schoolMap)
+    .map(school => ({
+      ...school,
+      eventCounts: eventList.map(event => school.events[event] || 0)
+    }))
+    .sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return b.totalMedals - a.totalMedals;
+    });
+  
+  return {
+    events: eventList,
+    rows: rows,
+    totalSchools: rows.length,
+    totalMedals: rows.reduce((sum, r) => sum + r.totalMedals, 0)
   };
 }
 
@@ -1073,6 +1200,10 @@ function getAllRows_() {
 }
 
 function getMedalRows_() {
+  return getMedalRowsWithMeta_().rows;
+}
+
+function getMedalRowsWithMeta_() {
   const ss = getSpreadsheet_();
   const sheets = resolveMedalSheets_(ss);
   const rows = [];
@@ -1122,15 +1253,20 @@ function getMedalRows_() {
     });
   });
 
-  return rows;
+  return {
+    rows,
+    sourceSheets: sheets.map((s) => s.getName()),
+  };
 }
 
 function resolveMedalSheets_(ss) {
   const allSheets = ss.getSheets();
+  const normalizedCandidates = CONFIG.MEDAL_SHEET_CANDIDATES.map((n) => normalizeMedalKey_(n));
 
   const candidateByName = allSheets.filter((sheet) => {
     const sheetNameKey = normalizeMedalKey_(sheet.getName());
-    return CONFIG.MEDAL_SHEET_CANDIDATES.some((n) => normalizeMedalKey_(n) === sheetNameKey);
+    if (normalizedCandidates.indexOf(sheetNameKey) >= 0) return true;
+    return sheetNameKey.indexOf("MEDALIST") >= 0;
   });
 
   return candidateByName.filter((sheet) => isLikelyMedalSheet_(sheet));

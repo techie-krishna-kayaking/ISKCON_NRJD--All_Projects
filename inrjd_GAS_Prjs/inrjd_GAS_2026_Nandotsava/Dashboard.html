@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nandotsava 2026 Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg-main: #fff7d1;
+      --bg-card: #fff3b0;
+      --bg-card-2: #ffe066;
+      --text-main: #2c2200;
+      --text-dim: #5e4b00;
+      --accent: #b8860b;
+      --accent-dark: #8c6b00;
+      --success: #1f8a2f;
+      --danger: #b00020;
+      --white: #ffffff;
+      --border: #e5c452;
+      --shadow: 0 8px 24px rgba(140, 107, 0, 0.16);
+      --font-display: "Cinzel", Georgia, serif;
+      --font-body: "Jost", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-body);
+      color: var(--text-main);
+      background: radial-gradient(circle at 20% 20%, #fffce8 0%, var(--bg-main) 45%, #ffe999 100%);
+    }
+
+    .app-header {
+      padding: 32px 20px 22px;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(180deg, rgba(255, 243, 176, 0.9) 0%, rgba(255, 247, 209, 0.75) 100%);
+      border-bottom: 1px solid rgba(229, 196, 82, 0.45);
+    }
+
+    .app-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, #b8860b 20%, #ffd43b 45%, #e5c452 70%, transparent 100%);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header-content {
+      flex: 1;
+    }
+
+    .header-eyebrow {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #8c6b00;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3.6vw, 46px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 2px;
+      background: linear-gradient(145deg, #7a5f00 0%, #b8860b 28%, #9a7400 56%, #c8a84b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-subtitle {
+      margin-top: 9px;
+      font-size: 13px;
+      color: #6e5600;
+      letter-spacing: 1.1px;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .control-group label {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    select {
+      border: 1px solid #d8b54a;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: #fffdf2;
+      min-width: 160px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+      background: linear-gradient(180deg, #d4a800, #b8860b);
+      color: #fff;
+      font-size: 13px;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .dashboard-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-main);
+    }
+
+    /* Summary Stats */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #ffe066, #ffd43b);
+      border: 1px solid #f0c419;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: #5e4b00;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2c2200;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-meta {
+      font-size: 11px;
+      color: #6e5600;
+    }
+
+    /* Main Table */
+    .table-container {
+      background: #fffbe6;
+      border: 1px solid #e0bd4f;
+      border-radius: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(180deg, #ffe066 0%, #ffd43b 100%);
+      box-shadow: 0 2px 8px rgba(140, 107, 0, 0.12);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-main);
+      border-bottom: 2px solid #f0c419;
+    }
+
+    td {
+      padding: 10px 12px;
+      font-size: 12px;
+      border-bottom: 1px solid #f0d57c;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: #fff9d4;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fffdf2;
+    }
+
+    /* Column styling */
+    .col-slot {
+      font-weight: 700;
+      width: 150px;
+      background: #fff7d1;
+    }
+
+    .col-event {
+      width: 180px;
+      font-weight: 600;
+    }
+
+    .col-count {
+      text-align: center;
+      width: 70px;
+      font-weight: 700;
+      color: #b8860b;
+    }
+
+    .col-percentage {
+      text-align: center;
+      width: 90px;
+      color: #1f8a2f;
+    }
+
+    .col-status {
+      text-align: center;
+      width: 100px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-success {
+      background: #e8f5e9;
+      color: #1f8a2f;
+      border: 1px solid #1f8a2f;
+    }
+
+    .badge-warning {
+      background: #fff9e6;
+      color: #b8860b;
+      border: 1px solid #b8860b;
+    }
+
+    .badge-error {
+      background: #ffebee;
+      color: #b00020;
+      border: 1px solid #b00020;
+    }
+
+    /* Event breakdown table */
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 28px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5c452;
+      color: var(--text-main);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .error {
+      background: #ffebee;
+      border: 1px solid #b00020;
+      border-radius: 8px;
+      padding: 12px;
+      color: #b00020;
+      margin-bottom: 16px;
+    }
+
+    .loading {
+      padding: 40px 20px;
+      text-align: center;
+      color: #5e4b00;
+      font-size: 16px;
+    }
+
+    .app-footer {
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid rgba(229, 196, 82, 0.55);
+      background: linear-gradient(0deg, rgba(255, 236, 153, 0.25), transparent);
+      margin-top: 24px;
+      font-size: 12px;
+      color: #6e5600;
+    }
+
+    @media (max-width: 768px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      select {
+        min-width: 100%;
+      }
+
+      th, td {
+        padding: 8px;
+        font-size: 11px;
+      }
+
+      .col-slot {
+        width: 120px;
+      }
+
+      .col-event {
+        width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-header">
+    <div class="header-inner">
+      <div class="header-content">
+        <div class="header-eyebrow">Nandotsava 2026</div>
+        <h1>📊 Event Dashboard</h1>
+        <div class="header-subtitle">Real-time Event Statistics & Tracking</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="errorContainer"></div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>View:</label>
+        <select id="viewSelect">
+          <option value="summary">Event Summary</option>
+          <option value="categories">Category Summary</option>
+          <option value="schools">Schools Breakdown</option>
+          <option value="medals">🏆 Medal Tally</option>
+        </select>
+      </div>
+      <button onclick="refreshData()">🔄 Refresh</button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div id="summaryStats" class="summary-grid"></div>
+
+    <!-- Main Dashboard Table -->
+    <div id="dashboardContent">
+      <div class="loading">Loading data...</div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    <p>Nandotsava 2026 | Last Updated: <span id="lastUpdated">--:--</span></p>
+  </div>
+
+  <script>
+    let allData = null;
+    let categorySummary = null;
+    let medalTally = null;
+
+    function updateLastUpdated() {
+      const now = new Date();
+      document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-IN');
+    }
+
+    function showError(message) {
+      const container = document.getElementById('errorContainer');
+      container.innerHTML = `<div class="error">⚠️ ${message}</div>`;
+    }
+
+    function clearError() {
+      document.getElementById('errorContainer').innerHTML = '';
+    }
+
+    function displaySummaryStats(data) {
+      const container = document.getElementById('summaryStats');
+      if (!data.overall) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const overall = data.overall;
+      const cats = data.categoryTotals;
+
+      const stats = [
+        {
+          label: 'Total Participants',
+          value: overall.total,
+          meta: `${overall.percentage}% attended`,
+          color: '#b8860b'
+        },
+        {
+          label: 'Attended',
+          value: overall.footfall,
+          meta: 'Footfall Count',
+          color: '#1f8a2f'
+        },
+        {
+          label: 'Fancy Dress',
+          value: cats.fancyDress?.total || 0,
+          meta: `${cats.fancyDress?.percentage || 0}% attended`,
+          color: '#d9a900'
+        },
+        {
+          label: 'Music',
+          value: cats.music?.total || 0,
+          meta: `${cats.music?.percentage || 0}% attended`,
+          color: '#d9a900'
+        },
+        {
+          label: 'Coloring',
+          value: cats.coloring?.total || 0,
+          meta: `${cats.coloring?.percentage || 0}% attended`,
+          color: '#d9a900'
+        }
+      ];
+
+      container.innerHTML = stats.map(stat => `
+        <div class="stat-card">
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value" style="color: ${stat.color}">${stat.value}</div>
+          <div class="stat-meta">${stat.meta}</div>
+        </div>
+      `).join('');
+    }
+
+    function displayCategorySummary() {
+      const container = document.getElementById('dashboardContent');
+      
+      if (!categorySummary || !categorySummary.summary || categorySummary.summary.length === 0) {
+        container.innerHTML = '<div class="error">No category data available</div>';
+        return;
+      }
+
+      let html = `
+        <div class="dashboard-title">📋 Category-wise Summary</div>
+        <div style="margin-bottom: 16px; font-size: 12px; color: #5e4b00;">
+          Total: ${categorySummary.totalRows} registered | ${categorySummary.totalAttended} attended
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-event">Slot / Category</th>
+                <th class="col-count">Total</th>
+                <th class="col-count">Attended</th>
+                <th class="col-count">Pending</th>
+                <th class="col-percentage">Attendance %</th>
+                <th style="text-align: left;">Group Breakdown</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      categorySummary.summary.forEach(row => {
+        const status = row.percentage >= 80 ? '✅ Excellent' : row.percentage >= 60 ? '⚠️ Good' : '❌ Low';
+        const statusClass = row.percentage >= 80 ? 'badge-success' : row.percentage >= 60 ? 'badge-warning' : 'badge-error';
+
+        html += `
+          <tr>
+            <td class="col-event">${row.slot}</td>
+            <td class="col-count">${row.totalRegistered}</td>
+            <td class="col-count">${row.attended}</td>
+            <td class="col-count">${row.pending}</td>
+            <td class="col-percentage">${row.percentage}%</td>
+            <td style="font-size: 11px; color: #5e4b00;">${row.groupSummary}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function displaySummaryTable(data) {
+      const container = document.getElementById('dashboardContent');
+      
+      if (!data.eventWise || data.eventWise.length === 0) {
+        container.innerHTML = '<div class="error">No data available</div>';
+        return;
+      }
+
+      let html = `
+        <div class="dashboard-title">📋 Event-wise Summary</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-event">Event / Competition</th>
+                <th class="col-count">Total</th>
+                <th class="col-count">Attended</th>
+                <th class="col-percentage">Attendance %</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      data.eventWise.forEach(event => {
+        const percentage = event.total ? Math.round((event.footfall / event.total) * 100) : 0;
+        const status = percentage >= 80 ? '✅ Excellent' : percentage >= 60 ? '⚠️ Good' : '❌ Low';
+        const statusClass = percentage >= 80 ? 'badge-success' : percentage >= 60 ? 'badge-warning' : 'badge-error';
+
+        html += `
+          <tr>
+            <td class="col-event">${event.name}</td>
+            <td class="col-count">${event.total}</td>
+            <td class="col-count">${event.footfall}</td>
+            <td class="col-percentage">${percentage}%</td>
+            <td class="col-status"><span class="badge ${statusClass}">${status}</span></td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // Add School Summary
+      if (data.schoolWise && data.schoolWise.length > 0) {
+        html += `
+          <div class="section-title">🏫 School-wise Participation</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th class="col-event">School Name</th>
+                  <th class="col-count">Registrations</th>
+                  <th class="col-count">Attended</th>
+                  <th class="col-percentage">Attendance %</th>
+                  <th class="col-status">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        data.schoolWise.slice(0, 20).forEach(school => {
+          const status = school.percentage >= 80 ? '✅ Excellent' : school.percentage >= 60 ? '⚠️ Good' : '❌ Low';
+          const statusClass = school.percentage >= 80 ? 'badge-success' : school.percentage >= 60 ? 'badge-warning' : 'badge-error';
+
+          html += `
+            <tr>
+              <td class="col-event">${school.name}</td>
+              <td class="col-count">${school.total}</td>
+              <td class="col-count">${school.footfall}</td>
+              <td class="col-percentage">${school.percentage}%</td>
+              <td class="col-status"><span class="badge ${statusClass}">${status}</span></td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function displayMedalTally() {
+      const container = document.getElementById('dashboardContent');
+      
+      if (!medalTally || !medalTally.rows || medalTally.rows.length === 0) {
+        container.innerHTML = '<div class="error">No medal data available</div>';
+        return;
+      }
+
+      const events = medalTally.events || [];
+      
+      let html = `
+        <div class="dashboard-title">🏆 Medal Tally - School-wise Performance</div>
+        <div style="margin-bottom: 16px; font-size: 12px; color: #5e4b00;">
+          Total: ${medalTally.totalMedals} medals | ${medalTally.totalSchools} schools
+        </div>
+        <div class="table-container" style="overflow-x: auto;">
+          <table style="min-width: 1200px;">
+            <thead>
+              <tr>
+                <th class="col-event" style="min-width: 250px;">School</th>
+      `;
+      
+      // Add event columns
+      events.forEach(event => {
+        html += `<th style="text-align: center; width: 70px; font-size: 11px;">${event}</th>`;
+      });
+      
+      html += `
+                <th style="text-align: center; width: 80px; font-weight: 700;">Total Medals</th>
+                <th style="text-align: center; width: 70px; background: #ffd43b; font-weight: 700;">Points</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      medalTally.rows.forEach(school => {
+        html += `
+          <tr>
+            <td class="col-event" style="min-width: 250px; font-weight: 600;">${school.name}</td>
+        `;
+        
+        // Add medal counts for each event
+        school.eventCounts.forEach(count => {
+          const bgColor = count > 0 ? '#fff9e6' : '#ffffff';
+          html += `<td style="text-align: center; background: ${bgColor}; font-weight: ${count > 0 ? '700' : '400'};">${count > 0 ? count : '—'}</td>`;
+        });
+        
+        html += `
+            <td style="text-align: center; font-weight: 700; background: #e8f5e9;">${school.totalMedals}</td>
+            <td style="text-align: center; font-weight: 800; background: #ffd43b; color: #b8860b; font-size: 14px;">${school.points}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function refreshData() {
+      try {
+        clearError();
+        document.getElementById('dashboardContent').innerHTML = '<div style="padding: 20px; text-align: center; color: #5e4b00;">Loading data...</div>';
+        
+        // Load desk stats (primary data)
+        google.script.run
+          .withSuccessHandler(data => {
+            try {
+              allData = data;
+              updateLastUpdated();
+              displaySummaryStats(data);
+              displaySummaryTable(data);
+            } catch (e) {
+              console.error('Error displaying desk stats:', e);
+              showError(`Error: ${e.message}`);
+            }
+          })
+          .withFailureHandler(error => {
+            showError(`Failed to load desk stats: ${error.message}`);
+            console.error('getMainDeskStats error:', error);
+          })
+          .getMainDeskStats();
+
+        // Load category summary (non-blocking)
+        google.script.run
+          .withSuccessHandler(data => {
+            try {
+              categorySummary = data;
+              console.log('Category summary loaded');
+            } catch (e) {
+              console.error('Error processing category summary:', e);
+            }
+          })
+          .withFailureHandler(error => {
+            console.warn('Category summary load failed (non-blocking):', error);
+          })
+          .getCategorySummary();
+
+        // Load medal tally (non-blocking)
+        google.script.run
+          .withSuccessHandler(data => {
+            try {
+              medalTally = data;
+              console.log('Medal tally loaded');
+            } catch (e) {
+              console.error('Error processing medal tally:', e);
+            }
+          })
+          .withFailureHandler(error => {
+            console.warn('Medal tally load failed (non-blocking):', error);
+          })
+          .getMedalTally();
+      } catch (e) {
+        console.error('refreshData error:', e);
+        showError(`Critical error: ${e.message}`);
+      }
+    }
+
+    document.getElementById('viewSelect').addEventListener('change', e => {
+      if (e.target.value === 'summary' && allData) {
+        displaySummaryTable(allData);
+      } else if (e.target.value === 'categories' && categorySummary) {
+        displayCategorySummary();
+      } else if (e.target.value === 'schools' && allData) {
+        displaySummaryTable(allData);
+      } else if (e.target.value === 'medals' && medalTally) {
+        displayMedalTally();
+      }
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded - starting refresh');
+      refreshData();
+      // Auto-refresh every 30 seconds
+      setInterval(refreshData, 30000);
+    });
+  </script>
+</body>
+</html>
