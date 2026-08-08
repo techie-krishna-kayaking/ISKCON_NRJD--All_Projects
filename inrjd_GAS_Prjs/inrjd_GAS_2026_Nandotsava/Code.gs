@@ -1,6 +1,7 @@
 const CONFIG = {
   SHEET_ID: "1yzEVh3I6D_iWA6GfmzB1lIs3vzP1HX4HXJ7zRVwokas",
   SHEET_NAMES: ["Top3", "fancydress", "Music"],
+  MEDAL_SHEET_CANDIDATES: ["MEDALIST", "Medalist", "medalist"],
   MAIN_SHEET: "Top3",
   MAIN_USER_CODE: "108",
   TEAM_EVENT_KEYS: ["QUIZ", "MUSIC"],
@@ -161,6 +162,7 @@ function getMainDeskStats() {
 
   const eventMap = {};
   const schoolMap = {};
+  const schoolEventMap = {};
 
   rows.forEach((r) => {
     const eventName = (toSafeString_(r.group) || "NA") + "-" + (toSafeString_(r.competition) || "NA");
@@ -173,15 +175,28 @@ function getMainDeskStats() {
       eventMap[eventName] = { name: eventName, total: 0, footfall: 0 };
     }
     if (!schoolMap[schoolName]) {
-      schoolMap[schoolName] = { name: schoolName, total: 0, footfall: 0 };
+      schoolMap[schoolName] = { name: schoolName, total: 0, footfall: 0, percentage: 0 };
+    }
+
+    const schoolEventKey = schoolName + "||" + eventName;
+    if (!schoolEventMap[schoolEventKey]) {
+      schoolEventMap[schoolEventKey] = {
+        schoolName,
+        eventName,
+        total: 0,
+        footfall: 0,
+        percentage: 0,
+      };
     }
 
     eventMap[eventName].total += 1;
     schoolMap[schoolName].total += 1;
+    schoolEventMap[schoolEventKey].total += 1;
 
     if (isFootfall) {
       eventMap[eventName].footfall += 1;
       schoolMap[schoolName].footfall += 1;
+      schoolEventMap[schoolEventKey].footfall += 1;
     }
 
     // Fancy dress and music sheets do not carry COMPETITION in the source workbook,
@@ -206,8 +221,20 @@ function getMainDeskStats() {
     .sort((a, b) => b.footfall - a.footfall || b.total - a.total || a.name.localeCompare(b.name));
 
   const schoolWise = Object.keys(schoolMap)
-    .map((k) => schoolMap[k])
+    .map((k) => {
+      const row = schoolMap[k];
+      row.percentage = row.total ? Math.round((row.footfall / row.total) * 100) : 0;
+      return row;
+    })
     .sort((a, b) => b.footfall - a.footfall || b.total - a.total || a.name.localeCompare(b.name));
+
+  const schoolEventWise = Object.keys(schoolEventMap)
+    .map((k) => {
+      const row = schoolEventMap[k];
+      row.percentage = row.total ? Math.round((row.footfall / row.total) * 100) : 0;
+      return row;
+    })
+    .sort((a, b) => b.footfall - a.footfall || b.total - a.total || a.schoolName.localeCompare(b.schoolName));
 
   return {
     overall: {
@@ -223,6 +250,165 @@ function getMainDeskStats() {
     },
     eventWise,
     schoolWise,
+    schoolEventWise,
+  };
+}
+
+function getMedalDashboard(payload) {
+  const safePayload = payload || {};
+  const filterSchool = normalizeText_(safePayload.school || "");
+  const filterEvent = normalizeText_(safePayload.event || "");
+  const filterGroup = normalizeText_(safePayload.group || "");
+  const filterMedalType = normalizeText_(safePayload.medalType || "");
+
+  const allRows = getMedalRows_();
+  const filteredRows = allRows.filter((r) => {
+    if (filterSchool && normalizeText_(r.school) !== filterSchool) return false;
+    if (filterEvent && normalizeText_(r.event) !== filterEvent) return false;
+    if (filterGroup && normalizeText_(r.group) !== filterGroup) return false;
+    if (filterMedalType && normalizeText_(r.medalType) !== filterMedalType) return false;
+    return true;
+  });
+
+  const medalRows = filteredRows.filter((r) => isMedalWinnerRank_(r.rank));
+  const medalCount = medalRows.length;
+
+  const overall = {
+    participants: filteredRows.length,
+    medals: medalCount,
+    medalPercentage: filteredRows.length ? Math.round((medalCount / filteredRows.length) * 100) : 0,
+    gold: medalRows.filter((r) => r.medalType === "GOLD").length,
+    silver: medalRows.filter((r) => r.medalType === "SILVER").length,
+    bronze: medalRows.filter((r) => r.medalType === "BRONZE").length,
+  };
+
+  const schoolMap = {};
+  const eventMap = {};
+  const schoolEventMap = {};
+
+  filteredRows.forEach((r) => {
+    if (!schoolMap[r.school]) {
+      schoolMap[r.school] = {
+        school: r.school,
+        participants: 0,
+        medals: 0,
+        gold: 0,
+        silver: 0,
+        bronze: 0,
+        medalPercentage: 0,
+        sharePercentage: 0,
+      };
+    }
+    if (!eventMap[r.event]) {
+      eventMap[r.event] = {
+        event: r.event,
+        participants: 0,
+        medals: 0,
+        gold: 0,
+        silver: 0,
+        bronze: 0,
+        medalPercentage: 0,
+      };
+    }
+
+    const schoolEventKey = r.school + "||" + r.event;
+    if (!schoolEventMap[schoolEventKey]) {
+      schoolEventMap[schoolEventKey] = {
+        school: r.school,
+        event: r.event,
+        participants: 0,
+        medals: 0,
+        gold: 0,
+        silver: 0,
+        bronze: 0,
+        medalPercentage: 0,
+      };
+    }
+
+    schoolMap[r.school].participants += 1;
+    eventMap[r.event].participants += 1;
+    schoolEventMap[schoolEventKey].participants += 1;
+
+    if (r.medalType !== "NONE") {
+      schoolMap[r.school].medals += 1;
+      eventMap[r.event].medals += 1;
+      schoolEventMap[schoolEventKey].medals += 1;
+    }
+
+    if (r.medalType === "GOLD") {
+      schoolMap[r.school].gold += 1;
+      eventMap[r.event].gold += 1;
+      schoolEventMap[schoolEventKey].gold += 1;
+    } else if (r.medalType === "SILVER") {
+      schoolMap[r.school].silver += 1;
+      eventMap[r.event].silver += 1;
+      schoolEventMap[schoolEventKey].silver += 1;
+    } else if (r.medalType === "BRONZE") {
+      schoolMap[r.school].bronze += 1;
+      eventMap[r.event].bronze += 1;
+      schoolEventMap[schoolEventKey].bronze += 1;
+    }
+  });
+
+  const schoolWise = Object.keys(schoolMap)
+    .map((k) => {
+      const row = schoolMap[k];
+      row.medalPercentage = row.participants ? Math.round((row.medals / row.participants) * 100) : 0;
+      row.sharePercentage = overall.medals ? Math.round((row.medals / overall.medals) * 100) : 0;
+      return row;
+    })
+    .sort((a, b) => b.medals - a.medals || b.gold - a.gold || a.school.localeCompare(b.school));
+
+  const eventWise = Object.keys(eventMap)
+    .map((k) => {
+      const row = eventMap[k];
+      row.medalPercentage = row.participants ? Math.round((row.medals / row.participants) * 100) : 0;
+      return row;
+    })
+    .sort((a, b) => b.medals - a.medals || b.gold - a.gold || a.event.localeCompare(b.event));
+
+  const schoolEventWise = Object.keys(schoolEventMap)
+    .map((k) => {
+      const row = schoolEventMap[k];
+      row.medalPercentage = row.participants ? Math.round((row.medals / row.participants) * 100) : 0;
+      return row;
+    })
+    .sort((a, b) => b.medals - a.medals || b.gold - a.gold || a.school.localeCompare(b.school));
+
+  const drillDownRows = medalRows
+    .map((r) => ({
+      sheetName: r.sheetName,
+      rowNumber: r.rowNumber,
+      event: r.event,
+      group: r.group,
+      school: r.school,
+      studentName: r.studentName,
+      className: r.className,
+      sec: r.sec,
+      phoneNo: r.phoneNo,
+      score: r.score,
+      rank: r.rank,
+      medalType: r.medalType,
+    }))
+    .sort((a, b) => {
+      const ra = rankSortOrder_(a.rank);
+      const rb = rankSortOrder_(b.rank);
+      if (ra !== rb) return ra - rb;
+      return a.school.localeCompare(b.school);
+    });
+
+  return {
+    filterOptions: {
+      schools: uniqueSorted_(allRows.map((r) => r.school).filter(Boolean)),
+      events: uniqueSorted_(allRows.map((r) => r.event).filter(Boolean)),
+      groups: uniqueSorted_(allRows.map((r) => r.group).filter(Boolean)),
+      medalTypes: ["GOLD", "SILVER", "BRONZE"],
+    },
+    overall,
+    schoolWise,
+    eventWise,
+    schoolEventWise,
+    drillDownRows,
   };
 }
 
@@ -884,6 +1070,129 @@ function getAllRows_() {
   });
 
   return allRows;
+}
+
+function getMedalRows_() {
+  const ss = getSpreadsheet_();
+  const sheets = resolveMedalSheets_(ss);
+  const rows = [];
+
+  sheets.forEach((sheet) => {
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < 2 || lastCol < 1) return;
+
+    const headers = getHeaders_(sheet);
+    const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getDisplayValues();
+
+    values.forEach((rowVals, idx) => {
+      const rowObj = {};
+      headers.forEach((header, i) => {
+        rowObj[normalizeMedalKey_(header)] = toSafeString_(rowVals[i]);
+      });
+
+      const event = toSafeString_(getMedalCanonicalValue_(rowObj, ["EVENT", "COMPETITION"]));
+      const group = toSafeString_(normalizeGroupValue_(toSafeString_(getMedalCanonicalValue_(rowObj, ["GROUP"]))));
+      const school = toSafeString_(getMedalCanonicalValue_(rowObj, ["SCHOOL", "SCHOOL NAME", "SCHOOL_NAME", "SCHOOLNAME"]));
+      const studentName = toSafeString_(getMedalCanonicalValue_(rowObj, ["NAME", "STUDENT NAME", "STUDENT_NAME", "STUDENTNAME"]));
+      const className = toSafeString_(getMedalCanonicalValue_(rowObj, ["CLASS", "STD", "GRADE"]));
+      const sec = toSafeString_(getMedalCanonicalValue_(rowObj, ["SEC", "SECTION"]));
+      const phoneNo = toSafeString_(
+        getMedalCanonicalValue_(rowObj, ["PH NO", "PH_NO", "PHNO", "PHONE", "PHONE NO", "PHONE_NO", "MOBILE"])
+      );
+      const score = toSafeString_(getMedalCanonicalValue_(rowObj, ["SCORE", "MARKS"]));
+      const rank = toSafeString_(getMedalCanonicalValue_(rowObj, ["RANK", "POSITION"]));
+
+      if (!event && !school && !studentName) return;
+
+      rows.push({
+        sheetName: sheet.getName(),
+        rowNumber: idx + 2,
+        event,
+        group,
+        school,
+        studentName,
+        className,
+        sec,
+        phoneNo,
+        score,
+        rank,
+        medalType: getMedalType_(rank),
+      });
+    });
+  });
+
+  return rows;
+}
+
+function resolveMedalSheets_(ss) {
+  const allSheets = ss.getSheets();
+
+  const candidateByName = allSheets.filter((sheet) => {
+    const sheetNameKey = normalizeMedalKey_(sheet.getName());
+    return CONFIG.MEDAL_SHEET_CANDIDATES.some((n) => normalizeMedalKey_(n) === sheetNameKey);
+  });
+
+  return candidateByName.filter((sheet) => isLikelyMedalSheet_(sheet));
+}
+
+function getMedalCanonicalValue_(rowObj, aliases) {
+  for (let i = 0; i < aliases.length; i++) {
+    const key = normalizeMedalKey_(aliases[i]);
+    if (Object.prototype.hasOwnProperty.call(rowObj, key)) {
+      return rowObj[key];
+    }
+  }
+  return "";
+}
+
+function isLikelyMedalSheet_(sheet) {
+  const headers = getHeaders_(sheet);
+  if (!headers.length || sheet.getLastRow() < 2) return false;
+
+  const headerSet = {};
+  headers.forEach((h) => {
+    headerSet[normalizeMedalKey_(h)] = true;
+  });
+
+  const hasEvent = !!(headerSet.EVENT || headerSet.COMPETITION);
+  const hasSchool = !!(headerSet.SCHOOL || headerSet.SCHOOLNAME);
+  const hasName = !!(headerSet.NAME || headerSet.STUDENTNAME);
+  const hasRank = !!(headerSet.RANK || headerSet.POSITION);
+
+  return hasEvent && hasSchool && hasName && hasRank;
+}
+
+function normalizeMedalKey_(val) {
+  return String(val || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function getMedalType_(rankVal) {
+  const rank = parseRankNumber_(rankVal);
+  if (rank === 1) return "GOLD";
+  if (rank === 2) return "SILVER";
+  if (rank === 3) return "BRONZE";
+  return "NONE";
+}
+
+function isMedalWinnerRank_(rankVal) {
+  const rank = parseRankNumber_(rankVal);
+  return rank === 1 || rank === 2 || rank === 3;
+}
+
+function parseRankNumber_(rankVal) {
+  const rankTxt = String(rankVal || "").trim();
+  const rank = parseInt(rankTxt, 10);
+  if (isNaN(rank)) return 0;
+  return rank;
+}
+
+function rankSortOrder_(rankVal) {
+  const rank = parseInt(String(rankVal || "").trim(), 10);
+  return isNaN(rank) ? Number.MAX_SAFE_INTEGER : rank;
 }
 
 function getEffectiveLastCol_(headers) {
