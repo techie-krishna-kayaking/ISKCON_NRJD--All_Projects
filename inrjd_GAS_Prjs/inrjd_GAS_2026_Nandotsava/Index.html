@@ -891,6 +891,125 @@
             </div>
           </div>
 
+          <div class="card">
+            <div style="font-weight: 800; margin-bottom: 8px;">School-wise Event Footfall Drill-down</div>
+            <div class="table-wrap">
+              <table class="main-results-table">
+                <thead>
+                  <tr>
+                    <th>School</th>
+                    <th>Event</th>
+                    <th>Footfall</th>
+                    <th>Total</th>
+                    <th>Footfall %</th>
+                  </tr>
+                </thead>
+                <tbody id="schoolEventFootfallBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight: 800; margin-bottom: 8px;">Medal Dashboard (School/Event/Medal)</div>
+            <div class="row" style="margin-top: 2px; align-items: end;">
+              <div style="flex: 1; min-width: 220px;">
+                <label>Filter School</label>
+                <select id="medalFilterSchool"></select>
+              </div>
+              <div style="flex: 1; min-width: 220px;">
+                <label>Filter Event</label>
+                <select id="medalFilterEvent"></select>
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label>Filter Group</label>
+                <select id="medalFilterGroup"></select>
+              </div>
+              <div style="flex: 1; min-width: 180px;">
+                <label>Filter Medal</label>
+                <select id="medalFilterType"></select>
+              </div>
+              <div>
+                <button id="btnMedalRefresh" class="btn btn-primary" style="margin-top: 18px;">Refresh Medal Data</button>
+              </div>
+            </div>
+            <div id="medalStatus" class="status"></div>
+
+            <div class="summary-grid" style="margin-top: 12px;">
+              <div class="summary-box">
+                <div>Total Medalists</div>
+                <div class="num" id="medalTotalCount">0</div>
+                <div class="meta" id="medalTotalPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Gold</div>
+                <div class="num" id="medalGoldCount">0</div>
+                <div class="meta" id="medalGoldPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Silver</div>
+                <div class="num" id="medalSilverCount">0</div>
+                <div class="meta" id="medalSilverPercent">0%</div>
+              </div>
+              <div class="summary-box">
+                <div>Bronze</div>
+                <div class="num" id="medalBronzeCount">0</div>
+                <div class="meta" id="medalBronzePercent">0%</div>
+              </div>
+            </div>
+
+            <div class="grid-two" style="margin-top: 12px;">
+              <div>
+                <div style="font-weight: 800; margin-bottom: 8px;">School-wise Medals</div>
+                <div id="medalSchoolStats"></div>
+              </div>
+              <div>
+                <div style="font-weight: 800; margin-bottom: 8px;">Event-wise Medals</div>
+                <div id="medalEventStats"></div>
+              </div>
+            </div>
+
+            <div style="font-weight: 800; margin-top: 14px; margin-bottom: 8px;">School × Event Medal Drill-down</div>
+            <div class="table-wrap">
+              <table class="main-results-table">
+                <thead>
+                  <tr>
+                    <th>School</th>
+                    <th>Event</th>
+                    <th>Participants</th>
+                    <th>Medals</th>
+                    <th>Gold</th>
+                    <th>Silver</th>
+                    <th>Bronze</th>
+                    <th>Medal %</th>
+                  </tr>
+                </thead>
+                <tbody id="medalSchoolEventBody"></tbody>
+              </table>
+            </div>
+
+            <div style="font-weight: 800; margin-top: 14px; margin-bottom: 8px;">Medalist Detail Rows</div>
+            <div class="table-wrap">
+              <table class="main-results-table">
+                <thead>
+                  <tr>
+                    <th>Sheet</th>
+                    <th>Event</th>
+                    <th>Group</th>
+                    <th>School</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Sec</th>
+                    <th>Phone</th>
+                    <th>Score</th>
+                    <th>Rank</th>
+                    <th>Medal</th>
+                  </tr>
+                </thead>
+                <tbody id="medalDetailBody"></tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1053,6 +1172,7 @@
         unlockedMain: false,
         currentMainResults: [],
         deskPendingRows: [],
+        medalFilterOptionsLoaded: false,
         preachingRows: [],
         preachingSavedRows: [],
         preachingLoaded: false,
@@ -1238,6 +1358,7 @@
           document.getElementById("mainPanel").classList.remove("hidden");
           setStatus("mainCodeStatus", "Code verified.", false);
           await refreshMainStats();
+          await refreshMedalDashboard();
           await runSearch();
         } catch (e) {
           setStatus("mainCodeStatus", e.message || "Verification failed.", true);
@@ -1282,12 +1403,149 @@
 
         document.getElementById("eventWiseStats").innerHTML = (stats.eventWise || [])
           .slice(0, 200)
-          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total} (${Number(x.percentage || 0)}%)</div>`)
           .join("");
 
         document.getElementById("schoolWiseStats").innerHTML = (stats.schoolWise || [])
           .slice(0, 200)
-          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total}</div>`)
+          .map((x) => `<div class="pill">${escapeHtml(x.name)}: ${x.footfall}/${x.total} (${Number(x.percentage || 0)}%)</div>`)
+          .join("");
+
+        renderSchoolEventFootfall(stats.schoolEventWise || []);
+      }
+
+      function renderSchoolEventFootfall(rows) {
+        const body = document.getElementById("schoolEventFootfallBody");
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="5">No data</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = rows
+          .slice(0, 400)
+          .map(
+            (r) => `<tr>
+            <td>${escapeHtml(r.schoolName)}</td>
+            <td>${escapeHtml(r.eventName)}</td>
+            <td>${Number(r.footfall || 0)}</td>
+            <td>${Number(r.total || 0)}</td>
+            <td>${Number(r.percentage || 0)}%</td>
+          </tr>`
+          )
+          .join("");
+      }
+
+      async function refreshMedalDashboard() {
+        if (!state.unlockedMain) return;
+
+        const payload = {
+          school: document.getElementById("medalFilterSchool").value || "",
+          event: document.getElementById("medalFilterEvent").value || "",
+          group: document.getElementById("medalFilterGroup").value || "",
+          medalType: document.getElementById("medalFilterType").value || "",
+        };
+
+        try {
+          const res = await callServer("getMedalDashboard", payload);
+          renderMedalDashboard(res || {});
+
+          if (!state.medalFilterOptionsLoaded) {
+            const options = (res && res.filterOptions) || {};
+            fillSelect("medalFilterSchool", options.schools || []);
+            fillSelect("medalFilterEvent", options.events || []);
+            fillSelect("medalFilterGroup", options.groups || []);
+            fillSelect("medalFilterType", options.medalTypes || []);
+            state.medalFilterOptionsLoaded = true;
+          }
+
+          setStatus("medalStatus", "Medal dashboard refreshed.", false);
+        } catch (e) {
+          setStatus("medalStatus", "Medal dashboard load failed: " + e.message, true);
+        }
+      }
+
+      function renderMedalDashboard(data) {
+        const overall = data.overall || {};
+        const medals = Number(overall.medals || 0);
+        const participants = Number(overall.participants || 0);
+        const gold = Number(overall.gold || 0);
+        const silver = Number(overall.silver || 0);
+        const bronze = Number(overall.bronze || 0);
+
+        document.getElementById("medalTotalCount").textContent = medals + "/" + participants;
+        document.getElementById("medalTotalPercent").textContent = Number(overall.medalPercentage || 0) + "% medal conversion";
+
+        document.getElementById("medalGoldCount").textContent = gold;
+        document.getElementById("medalGoldPercent").textContent = medals ? Math.round((gold / medals) * 100) + "% of medals" : "0% of medals";
+
+        document.getElementById("medalSilverCount").textContent = silver;
+        document.getElementById("medalSilverPercent").textContent = medals ? Math.round((silver / medals) * 100) + "% of medals" : "0% of medals";
+
+        document.getElementById("medalBronzeCount").textContent = bronze;
+        document.getElementById("medalBronzePercent").textContent = medals ? Math.round((bronze / medals) * 100) + "% of medals" : "0% of medals";
+
+        document.getElementById("medalSchoolStats").innerHTML = (data.schoolWise || [])
+          .slice(0, 200)
+          .map(
+            (x) =>
+              `<div class="pill">${escapeHtml(x.school)}: ${x.medals} medals (${x.medalPercentage}% hit, ${x.sharePercentage}% share)</div>`
+          )
+          .join("");
+
+        document.getElementById("medalEventStats").innerHTML = (data.eventWise || [])
+          .slice(0, 200)
+          .map(
+            (x) =>
+              `<div class="pill">${escapeHtml(x.event)}: ${x.medals} medals (${x.medalPercentage}% hit)</div>`
+          )
+          .join("");
+
+        const schoolEventBody = document.getElementById("medalSchoolEventBody");
+        const schoolEventRows = data.schoolEventWise || [];
+        if (!schoolEventRows.length) {
+          schoolEventBody.innerHTML = `<tr><td colspan="8">No school-event medal data found.</td></tr>`;
+        } else {
+          schoolEventBody.innerHTML = schoolEventRows
+            .slice(0, 400)
+            .map(
+              (r) => `<tr>
+              <td>${escapeHtml(r.school)}</td>
+              <td>${escapeHtml(r.event)}</td>
+              <td>${Number(r.participants || 0)}</td>
+              <td>${Number(r.medals || 0)}</td>
+              <td>${Number(r.gold || 0)}</td>
+              <td>${Number(r.silver || 0)}</td>
+              <td>${Number(r.bronze || 0)}</td>
+              <td>${Number(r.medalPercentage || 0)}%</td>
+            </tr>`
+            )
+            .join("");
+        }
+
+        const detailBody = document.getElementById("medalDetailBody");
+        const detailRows = data.drillDownRows || [];
+        if (!detailRows.length) {
+          detailBody.innerHTML = `<tr><td colspan="11">No medal detail rows found for this filter.</td></tr>`;
+          return;
+        }
+
+        detailBody.innerHTML = detailRows
+          .slice(0, 800)
+          .map(
+            (r) => `<tr>
+            <td>${escapeHtml(r.sheetName)}</td>
+            <td>${escapeHtml(r.event)}</td>
+            <td>${escapeHtml(r.group)}</td>
+            <td>${escapeHtml(r.school)}</td>
+            <td>${escapeHtml(r.studentName)}</td>
+            <td>${escapeHtml(r.className)}</td>
+            <td>${escapeHtml(r.sec)}</td>
+            <td>${escapeHtml(r.phoneNo)}</td>
+            <td>${escapeHtml(r.score)}</td>
+            <td>${escapeHtml(r.rank)}</td>
+            <td>${escapeHtml(r.medalType)}</td>
+          </tr>`
+          )
           .join("");
       }
 
@@ -1635,7 +1893,15 @@
         });
 
         ["filterSchoolCode", "filterSchoolName", "filterGroup", "filterCompetition"].forEach((id) => {
-          document.getElementById(id).addEventListener("change", runSearch);
+          document.getElementById(id).addEventListener("change", async () => {
+            await runSearch();
+            await refreshMainStats();
+          });
+        });
+
+        document.getElementById("btnMedalRefresh").addEventListener("click", refreshMedalDashboard);
+        ["medalFilterSchool", "medalFilterEvent", "medalFilterGroup", "medalFilterType"].forEach((id) => {
+          document.getElementById(id).addEventListener("change", refreshMedalDashboard);
         });
 
         document.getElementById("btnDeskSearch").addEventListener("click", refreshDeskRows);
