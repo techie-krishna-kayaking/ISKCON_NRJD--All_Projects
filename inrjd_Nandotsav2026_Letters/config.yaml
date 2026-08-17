@@ -1,12 +1,21 @@
 # Nandotsav 2026 Letters Generator Configuration
 
-# Input file names (files should be in the 'input' folder)
-excel_file: "Nandotsav 2026.xlsx"
-finalists_sheet: "top3"
-fancydress_sheet: "fancydress"
-template_file: "Nandotsav 2026 Finals.docx"
+# Workflow: finalist or medalist
+workflow: "finalist"
 
-# Output folder
+# Finalist workflow input files/sheets (files should be in the 'input' folder)
+finalist_excel_file: "TMPLT_FInalist_Nandotsav2026.xlsx"
+finalist_template_file: "TMPLT_Finalist_Nandotsav2026.docx"
+finalists_sheet: "Top3"
+fancydress_sheet: "fancydress"
+
+# Medalist workflow input files/sheets
+medalist_excel_file: "TMPLT_Certificate_Nandotsav2026.xlsx"
+medalist_template_file: "TMPLT_Medalist_Nandotsav2026.docx"
+overall_sheet: "Overall"
+schoolwise_sheet: "Schoolwise"
+
+# Output root folder (workflow subfolders are auto-created: output/finalist, output/medalist)
 output_folder: "output"
 
 # PDF Converter: 'word' (auto-detect), 'word-mac' (macOS), 'word-windows' (Windows), 'libreoffice'
