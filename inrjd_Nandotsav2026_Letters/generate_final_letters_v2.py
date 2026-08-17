@@ -2,7 +2,9 @@
 """
 Generate school-wise Nandotsav 2026 final letters from a DOCX template and Excel data.
 
-Outputs for each school inside ./output:
+Outputs for each school inside workflow subfolders:
+- ./output/finalist/...
+- ./output/medalist/...
 - <school_slug>.pdf
 - <school_slug>_page_<n>.png (all PDF pages)
 
@@ -44,6 +46,15 @@ class Finalist:
 
 @dataclass
 class FancyParticipant:
+    name: str
+    klass: str
+    section: str
+
+
+@dataclass
+class MedalistWinner:
+    group: str
+    competition: str
     name: str
     klass: str
     section: str
@@ -225,7 +236,7 @@ def read_school_data_from_excel(
     return resolved
 
 
-def replace_school_placeholder(doc: Document, school_name: str) -> None:
+def replace_school_placeholder(doc: Document, school_name: str, font_size: int = 12) -> None:
     target = "{School Name}"
     replacement = school_name
 
@@ -235,13 +246,13 @@ def replace_school_placeholder(doc: Document, school_name: str) -> None:
             for run in para.runs:
                 if target in run.text:
                     run.text = run.text.replace(target, replacement)
-                    apply_font_to_run(run, "Arial", 12)
+                    apply_font_to_run(run, "Arial", font_size)
                     replaced = True
             if not replaced:
                 para.text = para.text.replace(target, replacement)
                 for run in para.runs:
                     if school_name in run.text:
-                        apply_font_to_run(run, "Arial", 12)
+                        apply_font_to_run(run, "Arial", font_size)
             return
 
     raise ValueError("Could not find '{School Name}' placeholder in the template")
@@ -309,6 +320,148 @@ def fill_annexure4_table(doc: Document, participants: List[FancyParticipant]) ->
         for paragraph in row_cells[0].paragraphs:
             for run in paragraph.runs:
                 apply_font_to_run(run, "Arial", 12)
+
+
+def read_medalist_data_from_excel(
+    excel_path: Path,
+    schoolwise_sheet: str,
+    overall_sheet: str,
+) -> Dict[str, Dict[str, object]]:
+    schools: Dict[str, Dict[str, object]] = defaultdict(lambda: {
+        "display_counter": Counter(),
+        "overall_winners": [],
+        "schoolwise_winners": [],
+    })
+
+    schoolwise_rows = read_sheet_rows(excel_path, schoolwise_sheet)
+    overall_rows = read_sheet_rows(excel_path, overall_sheet)
+
+    for row in overall_rows:
+        school_name = pick_row_value(row, "Schoolname", "SchoolName", "School Name", "School")
+        if not school_name:
+            continue
+
+        winner = MedalistWinner(
+            group=normalize_group(pick_row_value(row, "Group")),
+            competition=pick_row_value(row, "Competition"),
+            name=pick_row_value(row, "Student Name", "StudentName", "Name"),
+            klass=pick_row_value(row, "Class", "Klass"),
+            section=pick_row_value(row, "Sec", "Section"),
+        )
+        if not winner.name:
+            continue
+
+        school_key = school_name.casefold()
+        schools[school_key]["display_counter"][school_name] += 1
+        schools[school_key]["overall_winners"].append(winner)
+
+    for row in schoolwise_rows:
+        school_name = pick_row_value(row, "Schoolname", "SchoolName", "School Name", "School")
+        if not school_name:
+            continue
+
+        winner = MedalistWinner(
+            group=normalize_group(pick_row_value(row, "Group")),
+            competition=pick_row_value(row, "Competition"),
+            name=pick_row_value(row, "Student Name", "StudentName", "Name"),
+            klass=pick_row_value(row, "Class", "Klass"),
+            section=pick_row_value(row, "Sec", "Section"),
+        )
+        if not winner.name:
+            continue
+
+        school_key = school_name.casefold()
+        schools[school_key]["display_counter"][school_name] += 1
+        schools[school_key]["schoolwise_winners"].append(winner)
+
+    resolved: Dict[str, Dict[str, object]] = {}
+    for school_key, payload in schools.items():
+        display_name = payload["display_counter"].most_common(1)[0][0]
+        overall_winners: List[MedalistWinner] = payload["overall_winners"]
+        schoolwise_winners: List[MedalistWinner] = payload["schoolwise_winners"]
+
+        for winners in (overall_winners, schoolwise_winners):
+            winners.sort(
+                key=lambda x: (
+                    group_sort_key(x.group),
+                    x.competition.upper(),
+                    x.name.upper(),
+                    x.klass.upper(),
+                    x.section.upper(),
+                )
+            )
+
+        resolved[school_key] = {
+            "school_name": display_name,
+            "overall_winners": overall_winners,
+            "schoolwise_winners": schoolwise_winners,
+        }
+
+    return resolved
+
+
+def add_medalist_table(doc: Document, winners: List[MedalistWinner]) -> None:
+    table = doc.add_table(rows=1, cols=5)
+    table.style = "Table Grid"
+    headers = ["GROUP", "Competition", "Student Name", "Class", "Sec"]
+
+    for idx, header in enumerate(headers):
+        cell = table.cell(0, idx)
+        cell.text = header
+        for paragraph in cell.paragraphs:
+            for run in paragraph.runs:
+                apply_font_to_run(run, "Arial", 11)
+
+    for winner in winners:
+        row_cells = table.add_row().cells
+        row_cells[0].text = winner.group
+        row_cells[1].text = winner.competition
+        row_cells[2].text = winner.name
+        row_cells[3].text = winner.klass
+        row_cells[4].text = winner.section
+        for cell in row_cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    apply_font_to_run(run, "Arial", 11)
+
+
+def add_medalist_section(
+    doc: Document,
+    heading_text: str,
+    winners: List[MedalistWinner],
+) -> None:
+    doc.add_page_break()
+
+    heading_para = doc.add_paragraph()
+    heading_run = heading_para.add_run(heading_text)
+    heading_run.bold = True
+    apply_font_to_run(heading_run, "Arial", 14)
+
+    add_medalist_table(doc, winners)
+
+
+def generate_medalist_docx_for_school(
+    template_path: Path,
+    temp_dir: Path,
+    school_name: str,
+    overall_winners: List[MedalistWinner],
+    schoolwise_winners: List[MedalistWinner],
+) -> tuple[str, Path]:
+    school_slug = slugify(school_name)
+    temp_dir.mkdir(parents=True, exist_ok=True)
+
+    docx_path = temp_dir / f"{school_slug}.docx"
+    doc = Document(str(template_path))
+    replace_school_placeholder(doc, school_name, font_size=11)
+    
+    if overall_winners:
+        add_medalist_section(doc, "Inter-School Winners - ", overall_winners)
+        add_medalist_section(doc, "School Level Winners - ", schoolwise_winners)
+    else:
+        add_medalist_section(doc, "School Level Winners - ", schoolwise_winners)
+    
+    doc.save(str(docx_path))
+    return school_slug, docx_path
 
 
 def convert_docx_to_pdf_with_word_mac(input_docx: Path, output_pdf: Path) -> None:
@@ -517,10 +670,15 @@ def load_config(config_path: str = "config.yaml") -> Dict:
     
     # Default configuration
     default_config = {
-        "excel_file": "Nandotsav 2026.xlsx",
+        "workflow": "finalist",
+        "finalist_excel_file": "TMPLT_FInalist_Nandotsav2026.xlsx",
+        "finalist_template_file": "TMPLT_Finalist_Nandotsav2026.docx",
         "finalists_sheet": "top3",
         "fancydress_sheet": "fancydress",
-        "template_file": "Nandotsav 2026 Finals.docx",
+        "medalist_excel_file": "TMPLT_Certificate_Nandotsav2026.xlsx",
+        "medalist_template_file": "TMPLT_Medalist_Nandotsav2026.docx",
+        "schoolwise_sheet": "Schoolwise",
+        "overall_sheet": "Overall",
         "output_folder": "output",
         "pdf_converter": "word",
         "verbose": False,
@@ -547,6 +705,12 @@ def load_config(config_path: str = "config.yaml") -> Dict:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate Nandotsav finalist letters per school")
+    parser.add_argument(
+        "--workflow",
+        dest="workflow",
+        choices=["finalist", "medalist"],
+        help="Workflow to run: finalist or medalist (default from config.yaml)",
+    )
     parser.add_argument(
         "--config",
         dest="config_file",
@@ -577,6 +741,18 @@ def parse_args() -> argparse.Namespace:
         dest="fancydress_sheet",
         type=str,
         help="Sheet name for fancy dress participants (default from config.yaml)",
+    )
+    parser.add_argument(
+        "--schoolwise-sheet",
+        dest="schoolwise_sheet",
+        type=str,
+        help="Sheet name for school-level winners (medalist workflow)",
+    )
+    parser.add_argument(
+        "--overall-sheet",
+        dest="overall_sheet",
+        type=str,
+        help="Sheet name for inter-school winners (medalist workflow)",
     )
     parser.add_argument(
         "--template",
@@ -616,16 +792,16 @@ def main() -> int:
     config = load_config(args.config_file)
 
     # Override config with command-line arguments
-    if args.excel_file:
-        config["excel_file"] = args.excel_file
-    if args.csv_file:
-        config["excel_file"] = args.csv_file
+    if args.workflow:
+        config["workflow"] = args.workflow
     if args.finalists_sheet:
         config["finalists_sheet"] = args.finalists_sheet
     if args.fancydress_sheet:
         config["fancydress_sheet"] = args.fancydress_sheet
-    if args.template_file:
-        config["template_file"] = args.template_file
+    if args.schoolwise_sheet:
+        config["schoolwise_sheet"] = args.schoolwise_sheet
+    if args.overall_sheet:
+        config["overall_sheet"] = args.overall_sheet
     if args.output_folder:
         config["output_folder"] = args.output_folder
     if args.verbose:
@@ -635,11 +811,31 @@ def main() -> int:
     if args.use_libreoffice:
         config["pdf_converter"] = "libreoffice"
 
+    workflow = normalize_space(str(config.get("workflow", "finalist"))).casefold()
+    if workflow not in {"finalist", "medalist"}:
+        print("❌ Invalid workflow. Allowed values: finalist, medalist", file=sys.stderr)
+        return 1
+
+    if workflow == "finalist":
+        excel_file_name = str(config.get("finalist_excel_file") or config.get("excel_file") or "")
+        template_file_name = str(config.get("finalist_template_file") or config.get("template_file") or "")
+    else:
+        excel_file_name = str(config.get("medalist_excel_file") or config.get("excel_file") or "")
+        template_file_name = str(config.get("medalist_template_file") or config.get("template_file") or "")
+
+    if args.excel_file:
+        excel_file_name = args.excel_file
+    if args.csv_file:
+        excel_file_name = args.csv_file
+    if args.template_file:
+        template_file_name = args.template_file
+
     # Set up paths - input files are in 'input/' folder
     input_dir = Path("input")
-    excel_path = (input_dir / config["excel_file"]).resolve()
-    template_path = (input_dir / config["template_file"]).resolve()
-    output_dir = Path(config["output_folder"]).resolve()
+    excel_path = (input_dir / excel_file_name).resolve()
+    template_path = (input_dir / template_file_name).resolve()
+    output_root_dir = Path(config["output_folder"]).resolve()
+    output_dir = output_root_dir / workflow
 
     if not input_dir.exists():
         print(f"❌ Input directory not found: {input_dir}", file=sys.stderr)
@@ -693,10 +889,16 @@ def main() -> int:
 
     if config["verbose"]:
         print(f"📋 Configuration loaded from: {args.config_file}")
+        print(f"   Workflow: {workflow}")
         print(f"   Excel: {excel_path}")
-        print(f"   Finalists sheet: {config['finalists_sheet']}")
-        print(f"   Fancydress sheet: {config['fancydress_sheet']}")
+        if workflow == "finalist":
+            print(f"   Finalists sheet: {config['finalists_sheet']}")
+            print(f"   Fancydress sheet: {config['fancydress_sheet']}")
+        else:
+            print(f"   Overall sheet: {config['overall_sheet']}")
+            print(f"   Schoolwise sheet: {config['schoolwise_sheet']}")
         print(f"   Template: {template_path}")
+        print(f"   Output root: {output_root_dir}")
         print(f"   Output: {output_dir}")
         print(f"   Converter: {converter}")
         print()
@@ -704,11 +906,18 @@ def main() -> int:
     if config["clean"] and output_dir.exists():
         shutil.rmtree(output_dir)
 
-    school_data = read_school_data_from_excel(
-        excel_path,
-        config["finalists_sheet"],
-        config["fancydress_sheet"],
-    )
+    if workflow == "finalist":
+        school_data = read_school_data_from_excel(
+            excel_path,
+            config["finalists_sheet"],
+            config["fancydress_sheet"],
+        )
+    else:
+        school_data = read_medalist_data_from_excel(
+            excel_path,
+            config["schoolwise_sheet"],
+            config["overall_sheet"],
+        )
     if not school_data:
         print("❌ No school data found in the configured Excel sheets.", file=sys.stderr)
         return 1
@@ -724,16 +933,27 @@ def main() -> int:
 
     for payload in school_data.values():
         school_name = payload["school_name"]
-        finalists = payload["finalists"]
-        fancy_participants = payload["fancy_participants"]
         try:
-            school_slug, docx_path = generate_docx_for_school(
-                template_path,
-                temp_dir,
-                school_name,
-                finalists,
-                fancy_participants,
-            )
+            if workflow == "finalist":
+                finalists = payload["finalists"]
+                fancy_participants = payload["fancy_participants"]
+                school_slug, docx_path = generate_docx_for_school(
+                    template_path,
+                    temp_dir,
+                    school_name,
+                    finalists,
+                    fancy_participants,
+                )
+            else:
+                overall_winners = payload["overall_winners"]
+                schoolwise_winners = payload["schoolwise_winners"]
+                school_slug, docx_path = generate_medalist_docx_for_school(
+                    template_path,
+                    temp_dir,
+                    school_name,
+                    overall_winners,
+                    schoolwise_winners,
+                )
             pdf_path = output_dir / f"{school_slug}.pdf"
             generated.append((school_name, school_slug, docx_path, pdf_path))
         except Exception as exc:  # noqa: BLE001
