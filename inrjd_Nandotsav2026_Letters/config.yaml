@@ -13,7 +13,6 @@ fancydress_sheet: "fancydress"
 medalist_excel_file: "TMPLT_Certificate_Nandotsav2026.xlsx"
 medalist_template_file: "TMPLT_Medalist_Nandotsav2026.docx"
 overall_sheet: "Overall"
-schoolwise_sheet: "Schoolwise"
 
 # Output root folder (workflow subfolders are auto-created: output/finalist, output/medalist)
 output_folder: "output"

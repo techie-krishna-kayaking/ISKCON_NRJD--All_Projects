@@ -324,16 +324,13 @@ def fill_annexure4_table(doc: Document, participants: List[FancyParticipant]) ->
 
 def read_medalist_data_from_excel(
     excel_path: Path,
-    schoolwise_sheet: str,
     overall_sheet: str,
 ) -> Dict[str, Dict[str, object]]:
     schools: Dict[str, Dict[str, object]] = defaultdict(lambda: {
         "display_counter": Counter(),
         "overall_winners": [],
-        "schoolwise_winners": [],
     })
 
-    schoolwise_rows = read_sheet_rows(excel_path, schoolwise_sheet)
     overall_rows = read_sheet_rows(excel_path, overall_sheet)
 
     for row in overall_rows:
@@ -355,46 +352,24 @@ def read_medalist_data_from_excel(
         schools[school_key]["display_counter"][school_name] += 1
         schools[school_key]["overall_winners"].append(winner)
 
-    for row in schoolwise_rows:
-        school_name = pick_row_value(row, "Schoolname", "SchoolName", "School Name", "School")
-        if not school_name:
-            continue
-
-        winner = MedalistWinner(
-            group=normalize_group(pick_row_value(row, "Group")),
-            competition=pick_row_value(row, "Competition"),
-            name=pick_row_value(row, "Student Name", "StudentName", "Name"),
-            klass=pick_row_value(row, "Class", "Klass"),
-            section=pick_row_value(row, "Sec", "Section"),
-        )
-        if not winner.name:
-            continue
-
-        school_key = school_name.casefold()
-        schools[school_key]["display_counter"][school_name] += 1
-        schools[school_key]["schoolwise_winners"].append(winner)
-
     resolved: Dict[str, Dict[str, object]] = {}
     for school_key, payload in schools.items():
         display_name = payload["display_counter"].most_common(1)[0][0]
         overall_winners: List[MedalistWinner] = payload["overall_winners"]
-        schoolwise_winners: List[MedalistWinner] = payload["schoolwise_winners"]
 
-        for winners in (overall_winners, schoolwise_winners):
-            winners.sort(
-                key=lambda x: (
-                    group_sort_key(x.group),
-                    x.competition.upper(),
-                    x.name.upper(),
-                    x.klass.upper(),
-                    x.section.upper(),
-                )
+        overall_winners.sort(
+            key=lambda x: (
+                group_sort_key(x.group),
+                x.competition.upper(),
+                x.name.upper(),
+                x.klass.upper(),
+                x.section.upper(),
             )
+        )
 
         resolved[school_key] = {
             "school_name": display_name,
             "overall_winners": overall_winners,
-            "schoolwise_winners": schoolwise_winners,
         }
 
     return resolved
@@ -403,7 +378,7 @@ def read_medalist_data_from_excel(
 def add_medalist_table(doc: Document, winners: List[MedalistWinner]) -> None:
     table = doc.add_table(rows=1, cols=5)
     table.style = "Table Grid"
-    headers = ["GROUP", "Competition", "Student Name", "Class", "Sec"]
+    headers = ["GROUP", "COMPETITION", "STUDENT NAME", "CLASS", "SEC"]
 
     for idx, header in enumerate(headers):
         cell = table.cell(0, idx)
@@ -445,7 +420,6 @@ def generate_medalist_docx_for_school(
     temp_dir: Path,
     school_name: str,
     overall_winners: List[MedalistWinner],
-    schoolwise_winners: List[MedalistWinner],
 ) -> tuple[str, Path]:
     school_slug = slugify(school_name)
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -453,13 +427,8 @@ def generate_medalist_docx_for_school(
     docx_path = temp_dir / f"{school_slug}.docx"
     doc = Document(str(template_path))
     replace_school_placeholder(doc, school_name, font_size=11)
-    
-    if overall_winners:
-        add_medalist_section(doc, "Inter-School Winners - ", overall_winners)
-        add_medalist_section(doc, "School Level Winners - ", schoolwise_winners)
-    else:
-        add_medalist_section(doc, "School Level Winners - ", schoolwise_winners)
-    
+    add_medalist_section(doc, "Inter-School Winners - ", overall_winners)
+
     doc.save(str(docx_path))
     return school_slug, docx_path
 
@@ -677,7 +646,6 @@ def load_config(config_path: str = "config.yaml") -> Dict:
         "fancydress_sheet": "fancydress",
         "medalist_excel_file": "TMPLT_Certificate_Nandotsav2026.xlsx",
         "medalist_template_file": "TMPLT_Medalist_Nandotsav2026.docx",
-        "schoolwise_sheet": "Schoolwise",
         "overall_sheet": "Overall",
         "output_folder": "output",
         "pdf_converter": "word",
@@ -743,12 +711,6 @@ def parse_args() -> argparse.Namespace:
         help="Sheet name for fancy dress participants (default from config.yaml)",
     )
     parser.add_argument(
-        "--schoolwise-sheet",
-        dest="schoolwise_sheet",
-        type=str,
-        help="Sheet name for school-level winners (medalist workflow)",
-    )
-    parser.add_argument(
         "--overall-sheet",
         dest="overall_sheet",
         type=str,
@@ -798,8 +760,6 @@ def main() -> int:
         config["finalists_sheet"] = args.finalists_sheet
     if args.fancydress_sheet:
         config["fancydress_sheet"] = args.fancydress_sheet
-    if args.schoolwise_sheet:
-        config["schoolwise_sheet"] = args.schoolwise_sheet
     if args.overall_sheet:
         config["overall_sheet"] = args.overall_sheet
     if args.output_folder:
@@ -896,7 +856,6 @@ def main() -> int:
             print(f"   Fancydress sheet: {config['fancydress_sheet']}")
         else:
             print(f"   Overall sheet: {config['overall_sheet']}")
-            print(f"   Schoolwise sheet: {config['schoolwise_sheet']}")
         print(f"   Template: {template_path}")
         print(f"   Output root: {output_root_dir}")
         print(f"   Output: {output_dir}")
@@ -915,7 +874,6 @@ def main() -> int:
     else:
         school_data = read_medalist_data_from_excel(
             excel_path,
-            config["schoolwise_sheet"],
             config["overall_sheet"],
         )
     if not school_data:
@@ -946,13 +904,11 @@ def main() -> int:
                 )
             else:
                 overall_winners = payload["overall_winners"]
-                schoolwise_winners = payload["schoolwise_winners"]
                 school_slug, docx_path = generate_medalist_docx_for_school(
                     template_path,
                     temp_dir,
                     school_name,
                     overall_winners,
-                    schoolwise_winners,
                 )
             pdf_path = output_dir / f"{school_slug}.pdf"
             generated.append((school_name, school_slug, docx_path, pdf_path))

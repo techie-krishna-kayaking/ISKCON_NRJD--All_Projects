@@ -29,15 +29,9 @@ Default input files:
 What it does:
 - Replaces `{School Name}` in the medalist letter template.
 - Keeps original template content as page 1.
-- **If Inter-School winners exist:**
-  - Adds page 2 with heading **Inter-School Winners - ** and a table:
-    - `GROUP | Competition | Student Name | Class | Sec`
-  - Adds page 3 with heading **School Level Winners - ** and a table:
-    - `GROUP | Competition | Student Name | Class | Sec`
-- **If Inter-School winners are empty:**
-  - Adds page 2 with heading **School Level Winners - ** and a table:
-    - `GROUP | Competition | Student Name | Class | Sec`
-  - Skips page 3
+- Adds page 2 with heading **Inter-School Winners - ** and a table using uppercase headers:
+  - `GROUP | COMPETITION | STUDENT NAME | CLASS | SEC`
+- Generates files **only for schools present in the `Overall` sheet**.
 - Generates one school-wise PDF.
 
 Output location:
@@ -104,9 +98,8 @@ Expected columns:
 
 ## Medalist Excel: `TMPLT_Certificate_Nandotsav2026.xlsx`
 
-Required sheets:
+Required sheet:
 - `Overall`
-- `Schoolwise`
 
 ### Sheet: `Overall` (Inter-school winners)
 
@@ -116,19 +109,6 @@ Expected columns:
 |---|---|---|
 | `Schoolname` / `SchoolName` | Yes | School-wise grouping key |
 | `GROUP` / `Group` | Yes | Group value |
-| `Competition` | Yes | Event name |
-| `Student Name` / `StudentName` | Yes | Student name |
-| `Class` | Optional | Student class |
-| `Sec` / `Section` | Optional | Student section |
-
-### Sheet: `Schoolwise` (School-level winners)
-
-Expected columns:
-
-| Column | Required | Notes |
-|---|---|---|
-| `Schoolname` / `SchoolName` | Yes | School-wise grouping key |
-| `Group` | Yes | Group value |
 | `Competition` | Yes | Event name |
 | `Student Name` / `StudentName` | Yes | Student name |
 | `Class` | Optional | Student class |
@@ -149,7 +129,7 @@ Excel base files are also prefixed similarly:
 Template requirements:
 - Must contain `{School Name}` placeholder.
 - Finalist template must contain headings for Annexure-3 and Annexure-4 sections.
-- Medalist template uses page-1 body from template and appends winner tables on page 2 and page 3.
+- Medalist template uses page-1 body from template and appends only the Inter-School Winners table on page 2.
 
 ---
 
@@ -166,7 +146,6 @@ fancydress_sheet: "fancydress"
 medalist_excel_file: "TMPLT_Certificate_Nandotsav2026.xlsx"
 medalist_template_file: "TMPLT_Medalist_Nandotsav2026.docx"
 overall_sheet: "Overall"
-schoolwise_sheet: "Schoolwise"
 
 output_folder: "output"
 pdf_converter: "word"
