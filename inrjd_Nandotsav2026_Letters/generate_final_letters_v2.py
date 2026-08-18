@@ -405,9 +405,16 @@ def add_medalist_section(
     heading_text: str,
     winners: List[MedalistWinner],
 ) -> None:
-    doc.add_page_break()
-
+    # Use page-break-before on the heading paragraph instead of a standalone
+    # add_page_break() call, which inserts an extra empty paragraph that renders
+    # as a blank page when the template body fits within a single page.
     heading_para = doc.add_paragraph()
+    heading_pPr = heading_para._element.get_or_add_pPr()
+    pageBreakBefore = heading_pPr.__class__.__new__(heading_pPr.__class__)
+    from lxml import etree as _etree
+    pb_elem = _etree.SubElement(heading_pPr, qn("w:pageBreakBefore"))
+    pb_elem.set(qn("w:val"), "true")
+
     heading_run = heading_para.add_run(heading_text)
     heading_run.bold = True
     apply_font_to_run(heading_run, "Arial", 14)
