@@ -22,11 +22,6 @@ logs/
 */output/
 
 # Sheets
-*.xlsx
-*.xls
-*.csv
-*.docx
-*.doc
 *.mp4
 *.mov
 *.pdf
