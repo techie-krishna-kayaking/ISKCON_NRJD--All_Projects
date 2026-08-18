@@ -7,72 +7,110 @@ Config: [config.yaml](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--
 
 ---
 
-## Workflows
+## Workflows — Quick Reference
 
-## 1) Finalist workflow (`workflow: finalist`)
+| # | Workflow | Command | Excel | Template | Schools | Pages |
+|---|---|---|---|---|---|---|
+| 1 | Finalist | `--workflow finalist` | `TMPLT_FInalist_Nandotsav2026.xlsx` | `TMPLT_Finalist_Nandotsav2026.docx` | All schools in `Top3` / `fancydress` | 3+ |
+| 2 | Medalist | `--workflow medalist` | `TMPLT_Certificate_Nandotsav2026.xlsx` | `TMPLT_Medalist_Nandotsav2026.docx` | Only schools in `Overall` sheet | 2 |
+| 3 | Medalist Exception | `--workflow medalist_exception` | `TMPLT_Certificate_Nandotsav2026.xlsx` | `TMPLT_Medalist_Exception_Nandotsav2026.docx` | All schools in `Overall` + `Schoolwise` | 3 |
 
-What it does:
-- Replaces `{School Name}` in the finalist letter template.
-- Builds **Annexure-3** table from finalists sheet.
-- Builds **Annexure-4** table from fancy dress sheet.
-- Generates one school-wise PDF.
+---
 
-Output location:
-- [output/finalist/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/finalist)
+## Workflows — Detailed
 
-Default input files:
-- Excel: `TMPLT_FInalist_Nandotsav2026.xlsx`
-- Word template: `TMPLT_Finalist_Nandotsav2026.docx`
+### 1) Finalist (`--workflow finalist`)
 
-## 2) Medalist workflow (`workflow: medalist`)
+**Purpose:** Notifies schools of their students who qualified as finalists in NANDOTSAV 2026.
 
-What it does:
-- Replaces `{School Name}` in the medalist letter template.
-- Keeps original template content as page 1.
-- Adds page 2 with heading **Inter-School Winners -** and a table using uppercase headers:
-  - `GROUP | COMPETITION | STUDENT NAME | CLASS | SEC`
-- Generates files **only for schools present in the `Overall` sheet** (inter-school winners only).
-- Generates one school-wise PDF (2 pages).
+**What it does:**
+- Replaces `{School Name}` in the finalist letter template (page 1 = letter body).
+- Appends **Annexure-3** — finalists table from the `Top3` sheet.
+- Appends **Annexure-4** — fancy dress participants table from the `fancydress` sheet.
+- Generates one PDF per school for **all schools present in either sheet**.
 
-Output location:
-- [output/medalist/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/medalist)
+**PDF structure:**
+- Page 1: Letter (from template)
+- Page 2+: Annexure-3 (Finalist table)
+- Final page(s): Annexure-4 (Fancy Dress table)
 
-Default input files:
-- Excel: `TMPLT_Certificate_Nandotsav2026.xlsx`
-- Word template: `TMPLT_Medalist_Nandotsav2026.docx`
+**Input files:**
+| File | Location |
+|---|---|
+| Excel | `input/TMPLT_FInalist_Nandotsav2026.xlsx` |
+| Word template | `input/TMPLT_Finalist_Nandotsav2026.docx` |
 
-## 3) Medalist Exception workflow (`workflow: medalist_exception`)
+**Output:** `output/finalist/<school_slug>.pdf`
 
-What it does:
-- Replaces `{School Name}` in the medalist exception letter template.
-- Keeps original template content as page 1.
-- Adds page 2 with heading **Inter-School Winners -** (from the `Overall` sheet) and a table using uppercase headers:
-  - `GROUP | COMPETITION | STUDENT NAME | CLASS | SEC`
-- Adds page 3 with heading **School Level Winners -** (from the `Schoolwise` sheet) and the same table format.
-- Generates files for **all schools that appear in either the `Overall` or `Schoolwise` sheet** (union of both).
-- Generates one school-wise PDF (3 pages).
+---
 
-Output location:
-- [output/medalist_exception/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/medalist_exception)
+### 2) Medalist (`--workflow medalist`)
 
-Default input files:
-- Excel: `TMPLT_Certificate_Nandotsav2026.xlsx`
-- Word template: `TMPLT_Medalist_Exception_Nandotsav2026.docx`
+**Purpose:** Informs schools of their students who won **Inter-School prizes** at NANDOTSAV 2026.
+
+**What it does:**
+- Replaces `{School Name}` in the medalist letter template (page 1 = letter body).
+- Appends a winners table headed **"Inter-School Winners -"** sourced from the `Overall` sheet.
+- Table headers are in **ALL CAPS**: `GROUP | COMPETITION | STUDENT NAME | CLASS | SEC`
+- Generates a PDF **only for schools that appear in the `Overall` sheet** (17 schools).
+
+**PDF structure:**
+- Page 1: Letter (from template)
+- Page 2: Inter-School Winners table
+
+**Input files:**
+| File | Location |
+|---|---|
+| Excel | `input/TMPLT_Certificate_Nandotsav2026.xlsx` |
+| Word template | `input/TMPLT_Medalist_Nandotsav2026.docx` |
+
+**Output:** `output/medalist/<school_slug>.pdf`
+
+---
+
+### 3) Medalist Exception (`--workflow medalist_exception`)
+
+**Purpose:** Informs schools of **both** their Inter-School prize winners AND their School-Level winners — for schools that need both lists communicated together.
+
+**What it does:**
+- Replaces `{School Name}` in the medalist exception letter template (page 1 = letter body).
+- Appends a winners table headed **"Inter-School Winners -"** sourced from the `Overall` sheet.
+- Appends a second winners table headed **"School Level Winners -"** sourced from the `Schoolwise` sheet.
+- Table headers are in **ALL CAPS** for both tables: `GROUP | COMPETITION | STUDENT NAME | CLASS | SEC`
+- Generates a PDF for **all schools that appear in either the `Overall` or `Schoolwise` sheet** (23 schools — union of both).
+- If a school has no inter-school winners, the Inter-School Winners table on page 2 will be empty (only school-level data on page 3).
+
+**PDF structure:**
+- Page 1: Letter (from template)
+- Page 2: Inter-School Winners table (from `Overall` sheet)
+- Page 3: School Level Winners table (from `Schoolwise` sheet)
+
+**Input files:**
+| File | Location |
+|---|---|
+| Excel | `input/TMPLT_Certificate_Nandotsav2026.xlsx` |
+| Word template | `input/TMPLT_Medalist_Exception_Nandotsav2026.docx` |
+
+**Output:** `output/medalist_exception/<school_slug>.pdf`
 
 ---
 
 ## Input Folder Structure
 
-Keep all input files in [input/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/input):
+Keep all input files in `input/`:
 
 ```text
 inrjd_Nandotsav2026_Letters/
 ├── input/
-│   ├── TMPLT_FInalist_Nandotsav2026.xlsx
-│   ├── TMPLT_Finalist_Nandotsav2026.docx
-│   ├── TMPLT_Certificate_Nandotsav2026.xlsx
-│   ├── TMPLT_Medalist_Nandotsav2026.docx
-│   └── TMPLT_Medalist_Exception_Nandotsav2026.docx
+│   ├── TMPLT_FInalist_Nandotsav2026.xlsx          ← Finalist Excel
+│   ├── TMPLT_Finalist_Nandotsav2026.docx           ← Finalist template
+│   ├── TMPLT_Certificate_Nandotsav2026.xlsx        ← Medalist + Medalist Exception Excel
+│   ├── TMPLT_Medalist_Nandotsav2026.docx           ← Medalist template
+│   └── TMPLT_Medalist_Exception_Nandotsav2026.docx ← Medalist Exception template
+├── output/
+│   ├── finalist/            ← Generated by workflow 1
+│   ├── medalist/            ← Generated by workflow 2
+│   └── medalist_exception/  ← Generated by workflow 3
 ├── config.yaml
 └── generate_final_letters_v2.py
 ```
@@ -199,25 +237,35 @@ clean: false
 
 ## Usage
 
+Run all commands from inside the `inrjd_Nandotsav2026_Letters/` folder.
+
+### Workflow 1 — Finalist
 ```bash
-# Uses workflow and files from config.yaml
-python3 generate_final_letters_v2.py
-
-# Run finalist workflow explicitly
 python3 generate_final_letters_v2.py --workflow finalist
+```
 
-# Run medalist workflow explicitly
+### Workflow 2 — Medalist
+```bash
 python3 generate_final_letters_v2.py --workflow medalist
+```
 
-# Run medalist exception workflow explicitly
+### Workflow 3 — Medalist Exception
+```bash
 python3 generate_final_letters_v2.py --workflow medalist_exception
 ```
 
-Output goes to workflow-specific folders:
-- Finalist: [output/finalist/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/finalist)
-- Medalist: [output/medalist/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/medalist)
-- Medalist Exception: [output/medalist_exception/](/Users/kkrishna/Downloads/pp/VSCode_Projects/ISKCON_NRJD--All_Projects/inrjd_Nandotsav2026_Letters/output/medalist_exception)
+### Additional flags (work with any workflow)
+```bash
+# Verbose output — prints per-school detail and file paths
+python3 generate_final_letters_v2.py --workflow medalist_exception --verbose
 
-Each folder contains:
-- `<school_slug>.pdf`
-- `<school_slug>_page_1.png`, `<school_slug>_page_2.png`, ...
+# Clean output folder before generating (removes only that workflow's subfolder)
+python3 generate_final_letters_v2.py --workflow medalist_exception --clean
+
+# Use workflow set in config.yaml (no flag needed)
+python3 generate_final_letters_v2.py
+```
+
+Each output folder contains, per school:
+- `<school_slug>.pdf` — full multi-page PDF
+- `<school_slug>_page_1.png`, `<school_slug>_page_2.png`, ... — one PNG per page
