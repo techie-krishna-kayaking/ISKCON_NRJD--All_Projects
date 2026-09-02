@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <?!= include('Styles.html'); ?>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div id="pinView" class="screen">
+        <div class="pin-panel">
+          <div class="brand">ISKCON NRJD</div>
+          <div class="sub-brand">Janmashtami 2026</div>
+          <h1>Volunteer Tag Management</h1>
+          <label for="pinInput">Enter PIN</label>
+          <input id="pinInput" type="password" inputmode="numeric" maxlength="3" autocomplete="off" />
+          <button id="pinSubmit">ENTER</button>
+          <div id="pinError" class="error hidden" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div id="mainApp" class="hidden">
+        <header class="topbar">
+          <div>
+            <div class="brand-mini">ISKCON NRJD</div>
+            <div class="title-mini">Janmashtami 2026</div>
+          </div>
+        </header>
+
+        <nav class="tabs" aria-label="Main navigation">
+          <button class="tab-button active" data-tab="tagCounter">Tag Counter</button>
+          <button class="tab-button" data-tab="issues">Allocation Issues</button>
+        </nav>
+
+        <section id="tagCounter" class="tab-panel active">
+          <div class="toolbar card">
+            <label for="dateFilter">Date</label>
+            <select id="dateFilter">
+              <option value="ALL">All Dates</option>
+            </select>
+          </div>
+
+          <div class="search-panel card">
+            <label for="searchInput">Search Volunteer</label>
+            <input id="searchInput" type="text" placeholder="Search by name or phone number" autocomplete="off" />
+          </div>
+
+          <div id="results" class="results"></div>
+        </section>
+
+        <section id="issues" class="tab-panel">
+          <div id="statsCards" class="stats-grid"></div>
+          <div class="issues-header">
+            <h2>⚠ Multiple Activity Volunteers</h2>
+          </div>
+          <div id="duplicateResults" class="duplicate-results"></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <?!= include('JavaScript.html'); ?>
+  </body>
+</html>
