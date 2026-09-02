@@ -1,0 +1,248 @@
+<script>
+  const state = {
+    isAuthenticated: false,
+    activeTab: 'tagCounter',
+    dateFilter: 'ALL'
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    bindEvents();
+    loadDateOptions();
+  });
+
+  function bindEvents() {
+    document.getElementById('pinSubmit').addEventListener('click', handleLogin);
+    document.getElementById('pinInput').addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        handleLogin();
+      }
+    });
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+      if (state.isAuthenticated) {
+        runSearch();
+      }
+    });
+
+    document.getElementById('dateFilter').addEventListener('change', function () {
+      state.dateFilter = this.value;
+      if (state.isAuthenticated) {
+        runSearch();
+      }
+    });
+
+    document.querySelectorAll('.tab-button').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const nextTab = this.dataset.tab;
+        switchTab(nextTab);
+      });
+    });
+  }
+
+  function handleLogin() {
+    const pin = document.getElementById('pinInput').value;
+    google.script.run.withSuccessHandler(function (result) {
+      if (result === true) {
+        state.isAuthenticated = true;
+        document.getElementById('pinView').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        runSearch();
+        loadStatistics();
+        loadDuplicateReport();
+      } else {
+        showPinError('Invalid PIN');
+      }
+    }).validatePin(pin);
+  }
+
+  function showPinError(message) {
+    const errorEl = document.getElementById('pinError');
+    errorEl.textContent = message;
+    errorEl.classList.remove('hidden');
+  }
+
+  function switchTab(tabName) {
+    state.activeTab = tabName;
+    document.querySelectorAll('.tab-button').forEach(function (button) {
+      const isActive = button.dataset.tab === tabName;
+      button.classList.toggle('active', isActive);
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(function (panel) {
+      panel.classList.toggle('active', panel.id === tabName);
+    });
+  }
+
+  function loadDateOptions() {
+    google.script.run.withSuccessHandler(function (result) {
+      if (!result || !result.ok) {
+        return;
+      }
+      const select = document.getElementById('dateFilter');
+      const currentValue = state.dateFilter || 'ALL';
+      select.innerHTML = '<option value="ALL">All Dates</option>';
+      (result.dateOptions || []).forEach(function (dateValue) {
+        const option = document.createElement('option');
+        option.value = dateValue;
+        option.textContent = dateValue;
+        if (dateValue === currentValue) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+      state.dateFilter = currentValue;
+    }).searchVolunteers('', { dateFilter: 'ALL' });
+  }
+
+  function runSearch() {
+    if (!state.isAuthenticated) {
+      return;
+    }
+
+    const query = document.getElementById('searchInput').value;
+    const dateFilter = document.getElementById('dateFilter').value || 'ALL';
+
+    google.script.run.withSuccessHandler(function (result) {
+      renderVolunteerResults(result);
+    }).searchVolunteers(query, { dateFilter: dateFilter });
+  }
+
+  function renderVolunteerResults(result) {
+    const container = document.getElementById('results');
+    container.innerHTML = '';
+
+    if (!result || !result.items || !result.items.length) {
+      container.innerHTML = '<div class="empty-state">No matching volunteers found.</div>';
+      return;
+    }
+
+    result.items.forEach(function (volunteer) {
+      const card = document.createElement('article');
+      card.className = 'volunteer-card';
+
+      const name = document.createElement('h2');
+      name.className = 'volunteer-name';
+      name.textContent = volunteer.name;
+      card.appendChild(name);
+
+      const list = document.createElement('ul');
+      list.className = 'meta-list';
+      list.innerHTML = [
+        '<li><strong>Phone:</strong> ' + escapeHtml(volunteer.phone) + '</li>',
+        '<li><strong>Group:</strong> ' + escapeHtml(volunteer.group) + '</li>',
+        '<li><strong>Date:</strong> ' + escapeHtml(volunteer.date) + '</li>',
+        '<li><strong>Available:</strong> ' + escapeHtml(volunteer.time) + '</li>'
+      ].join('');
+      card.appendChild(list);
+
+      const status = document.createElement('div');
+      const received = !!volunteer.tagReceived;
+      status.className = 'status-badge ' + (received ? 'status-received' : 'status-pending');
+      status.textContent = received ? '✅ Tag Already Received' : '☐ Tag Received';
+      card.appendChild(status);
+
+      const checkboxWrap = document.createElement('div');
+      checkboxWrap.className = 'checkbox-wrap';
+
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = received;
+      checkbox.disabled = received;
+      checkbox.dataset.recordId = volunteer.recordId;
+      checkbox.addEventListener('change', function () {
+        if (this.checked) {
+          markVolunteerAsReceived(this.dataset.recordId, card);
+        }
+      });
+
+      const text = document.createElement('span');
+      text.textContent = received ? '✅ Tag Already Received' : '☐ Tag Received';
+
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      checkboxWrap.appendChild(label);
+      card.appendChild(checkboxWrap);
+
+      container.appendChild(card);
+    });
+  }
+
+  function markVolunteerAsReceived(recordId, card) {
+    google.script.run.withSuccessHandler(function (result) {
+      if (result && result.ok) {
+        showToast('✅ Tag recorded successfully');
+        runSearch();
+      } else {
+        const message = (result && result.message) ? result.message : '❌ Unable to update';
+        showToast(message);
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+      }
+    }).markTagReceived(recordId);
+  }
+
+  function loadStatistics() {
+    google.script.run.withSuccessHandler(function (result) {
+      if (!result || !result.ok) {
+        return;
+      }
+
+      const stats = document.getElementById('statsCards');
+      stats.innerHTML = [
+        '<div class="stat-box"><span class="stat-label">Total Volunteers</span><span class="stat-value">' + (result.totalVolunteers || 0) + '</span></div>',
+        '<div class="stat-box"><span class="stat-label">Tag Received</span><span class="stat-value">' + (result.tagReceived || 0) + '</span></div>',
+        '<div class="stat-box"><span class="stat-label">Tag Pending</span><span class="stat-value">' + (result.tagPending || 0) + '</span></div>',
+        '<div class="stat-box"><span class="stat-label">Multiple Activities</span><span class="stat-value">' + (result.multipleActivityVolunteers || 0) + '</span></div>'
+      ].join('');
+    }).getTagStatistics();
+  }
+
+  function loadDuplicateReport() {
+    google.script.run.withSuccessHandler(function (result) {
+      if (!result || !result.ok) {
+        return;
+      }
+
+      const list = document.getElementById('duplicateResults');
+      if (!result.people || !result.people.length) {
+        list.innerHTML = '<div class="empty-state">No multiple activity volunteers detected.</div>';
+        return;
+      }
+
+      const html = result.people.map(function (person) {
+        const activityHtml = (person.activities || []).map(function (activity) {
+          const spocText = (activity.primarySpoc || activity.secondarySpoc)
+            ? '<div>Primary SPOC: ' + escapeHtml(activity.primarySpoc || 'N/A') + '</div><div>Secondary SPOC: ' + escapeHtml(activity.secondarySpoc || 'N/A') + '</div>'
+            : '<div>SPOC: Not mapped</div>';
+          return '<div class="activity-item"><strong>' + escapeHtml(activity.activity) + '</strong><div>Date: ' + escapeHtml(activity.date) + '</div><div>Time: ' + escapeHtml(activity.time) + '</div>' + spocText + '</div>';
+        }).join('');
+
+        return '<div class="duplicate-card"><h3>⚠ Allocation Review Required</h3><div><strong>Volunteer:</strong> ' + escapeHtml(person.name) + '</div><div><strong>Phone:</strong> ' + escapeHtml(person.phone || 'N/A') + '</div><div><strong>Found in:</strong> ' + person.activities.length + ' activities</div><div class="duplicate-activities">' + activityHtml + '</div></div>';
+      }).join('');
+
+      list.innerHTML = '<div class="duplicate-list">' + html + '</div>';
+    }).searchDuplicateVolunteers('');
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    clearTimeout(showToast.timeoutId);
+    showToast.timeoutId = setTimeout(function () {
+      toast.classList.add('hidden');
+    }, 2200);
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>

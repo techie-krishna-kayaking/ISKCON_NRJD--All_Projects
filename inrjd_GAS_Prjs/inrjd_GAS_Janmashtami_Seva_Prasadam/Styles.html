@@ -1,0 +1,370 @@
+<style>
+  :root {
+    --bg: #f9f3e9;
+    --panel: #fffdf9;
+    --card: #ffffff;
+    --maroon: #6d1f2d;
+    --gold: #c99b2d;
+    --text: #2a1d1d;
+    --muted: #6c5c52;
+    --border: #e8dcc8;
+    --success: #1f7a47;
+    --success-bg: #ecf9f1;
+    --warning: #a65c14;
+    --warning-bg: #fff3df;
+    --danger: #a72d2d;
+    --danger-bg: #ffe7e7;
+    --shadow: rgba(84, 48, 29, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 980px;
+  }
+
+  .screen {
+    display: block;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .pin-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: 0 10px 24px var(--shadow);
+    padding: 28px 20px;
+    max-width: 420px;
+    margin: 40px auto;
+    text-align: center;
+  }
+
+  .brand, .brand-mini {
+    color: var(--maroon);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sub-brand, .title-mini {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 2vw, 2.3rem);
+    margin: 18px 0 12px;
+    color: var(--text);
+  }
+
+  label {
+    display: block;
+    font-size: 0.95rem;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: var(--maroon);
+    text-align: left;
+  }
+
+  input, select, button {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-size: 1rem;
+  }
+
+  input, select {
+    background: #fff;
+    padding: 14px 14px;
+    color: var(--text);
+  }
+
+  button {
+    background: var(--maroon);
+    color: white;
+    border: none;
+    padding: 14px 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  button:hover {
+    opacity: 0.96;
+  }
+
+  .error {
+    margin-top: 12px;
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid #f0b9b9;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 600;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 8px 18px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .tab-button {
+    flex: 1;
+    background: #f0e5d5;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .tab-button.active {
+    background: var(--maroon);
+    color: white;
+  }
+
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+
+  .toolbar {
+    margin-bottom: 12px;
+  }
+
+  .search-panel {
+    margin-bottom: 18px;
+  }
+
+  .results {
+    display: grid;
+    gap: 14px;
+  }
+
+  .volunteer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+
+  .volunteer-name {
+    margin: 0 0 10px;
+    font-size: 1.4rem;
+    color: var(--maroon);
+  }
+
+  .meta-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    color: var(--text);
+  }
+
+  .meta-list strong {
+    color: var(--maroon);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    width: 100%;
+  }
+
+  .status-pending {
+    background: #fff5e3;
+    color: var(--warning);
+    border: 1px solid #f1d69b;
+  }
+
+  .status-received {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #bde4ca;
+  }
+
+  .status-warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border: 1px solid #f0d29f;
+  }
+
+  .checkbox-wrap {
+    margin-top: 14px;
+  }
+
+  .checkbox-wrap label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    margin: 0;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #fff;
+  }
+
+  .checkbox-wrap input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    accent-color: var(--maroon);
+  }
+
+  .checkbox-wrap input[type="checkbox"][disabled] {
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 24px 14px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 4px 14px var(--shadow);
+  }
+
+  .stat-label {
+    color: var(--muted);
+    font-size: 0.82rem;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--maroon);
+  }
+
+  .duplicate-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .duplicate-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+
+  .duplicate-card h3 {
+    margin: 0 0 8px;
+    color: var(--maroon);
+  }
+
+  .duplicate-activities {
+    display: grid;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .activity-item {
+    background: #fffaf1;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: var(--text);
+  }
+
+  .activity-item strong {
+    color: var(--maroon);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: rgba(29, 29, 29, 0.92);
+    color: white;
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    body {
+      padding: 12px;
+    }
+
+    .pin-panel {
+      margin-top: 18px;
+      padding: 22px 16px;
+    }
+
+    .volunteer-name {
+      font-size: 1.2rem;
+    }
+  }
+</style>
