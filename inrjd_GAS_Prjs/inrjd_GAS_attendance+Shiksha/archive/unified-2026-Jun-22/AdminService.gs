@@ -32,6 +32,9 @@ var AdminService = (function () {
         zone: p.zone || '',
         subArea: p.sub_area || '',
         city: p.city || '',
+        day: p.day || '',
+        programType: p.type_of_program || p.program_type || '',
+        updatedOn: p.updated_on || p.updated_at || p.updatedOn || '',
         devoteeName: m.devotee_name || '',
         shikshaCode: code,
         gender: m.gender || '',
@@ -49,11 +52,17 @@ var AdminService = (function () {
     var membersByGender = {};
     var membersByShikshaStatus = {};
     var membersByLocation = {};
+    var membersByOwner = {};
+    var membersByDay = {};
+    var membersByProgramType = {};
 
     filtered.forEach(function (r) {
       Utils.incrCounter(membersByGender, r.gender || 'Unknown');
       Utils.incrCounter(membersByShikshaStatus, r.shikshaStatus || 'Unknown');
       Utils.incrCounter(membersByLocation, [r.zone || 'NA', r.subArea || 'NA', r.city || 'NA'].join(' > '));
+      Utils.incrCounter(membersByOwner, r.owner || 'Unknown');
+      Utils.incrCounter(membersByDay, r.day || 'Unknown');
+      Utils.incrCounter(membersByProgramType, r.programType || 'Unknown');
     });
 
     var distinctOwners = {};
@@ -66,14 +75,24 @@ var AdminService = (function () {
       distinctPrograms[r.programKey || 'Unknown'] = true;
     });
 
+    var latestUpdated = '';
+    filtered.forEach(function (r) {
+      if (r.updatedOn && (!latestUpdated || String(r.updatedOn) > String(latestUpdated))) {
+        latestUpdated = r.updatedOn;
+      }
+    });
+
     return {
       cards: {
         totalPrograms: Object.keys(distinctPrograms).length,
+        totalPeople: filtered.length,
         totalOwners: Object.keys(distinctOwners).length,
-        totalMembers: filtered.length,
-        activeMembers: filtered.filter(function (r) { return Utils.normBoolY(r.activeFlg); }).length
+        lastUpdated: latestUpdated || 'N/A'
       },
       groups: {
+        membersByOwner: toKeyValueArray_(membersByOwner),
+        membersByDay: toKeyValueArray_(membersByDay),
+        membersByProgramType: toKeyValueArray_(membersByProgramType),
         membersByGender: toKeyValueArray_(membersByGender),
         membersByShikshaStatus: toKeyValueArray_(membersByShikshaStatus),
         membersByLocation: toKeyValueArray_(membersByLocation)
@@ -84,6 +103,8 @@ var AdminService = (function () {
         zones: uniqueSorted_(joinedRows, 'zone'),
         subAreas: uniqueSorted_(joinedRows, 'subArea'),
         cities: uniqueSorted_(joinedRows, 'city'),
+        days: uniqueSorted_(joinedRows, 'day'),
+        programTypes: uniqueSorted_(joinedRows, 'programType'),
         genders: uniqueSorted_(joinedRows, 'gender'),
         shikshaStatuses: uniqueSorted_(joinedRows, 'shikshaStatus')
       },
@@ -91,7 +112,10 @@ var AdminService = (function () {
       chartData: {
         byGender: toChartArray_('Gender', membersByGender),
         byStatus: toChartArray_('Shiksha Status', membersByShikshaStatus),
-        byLocation: toChartArray_('Location', membersByLocation)
+        byLocation: toChartArray_('Location', membersByLocation),
+        byOwner: toChartArray_('Owner', membersByOwner),
+        byDay: toChartArray_('Day', membersByDay),
+        byProgramType: toChartArray_('Program Type', membersByProgramType)
       }
     };
   }
@@ -103,6 +127,8 @@ var AdminService = (function () {
       zone: Utils.sanitizeString(filters.zone),
       subArea: Utils.sanitizeString(filters.subArea),
       city: Utils.sanitizeString(filters.city),
+      day: Utils.sanitizeString(filters.day),
+      programType: Utils.sanitizeString(filters.programType),
       gender: Utils.sanitizeString(filters.gender),
       shikshaStatus: Utils.sanitizeString(filters.shikshaStatus)
     };
@@ -114,6 +140,8 @@ var AdminService = (function () {
       (!filter.zone || row.zone === filter.zone) &&
       (!filter.subArea || row.subArea === filter.subArea) &&
       (!filter.city || row.city === filter.city) &&
+      (!filter.day || row.day === filter.day) &&
+      (!filter.programType || row.programType === filter.programType) &&
       (!filter.gender || row.gender === filter.gender) &&
       (!filter.shikshaStatus || row.shikshaStatus === filter.shikshaStatus);
   }

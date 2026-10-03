@@ -10,18 +10,33 @@ function doGet() {
 // Function to check user credentials
 function checkCredentials(id, pass) {
   var sheet = SpreadsheetApp.openById(SS_ID).getSheetByName('cred');
-  var data = sheet.getRange('A2:B' + sheet.getLastRow()).getValues();
-  
-  for (var i = 0; i < data.length; i++) {
-    if (data[i][0] === id) {
-      if (data[i][1] === pass) {
-        return 'success';
+  var data = sheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row || !row[0]) continue;
+
+    if (String(row[0]).trim() === String(id).trim()) {
+      if (String(row[1]).trim() === String(pass).trim()) {
+        var role = (row[2] && String(row[2]).trim()) ? String(row[2]).trim().toLowerCase() : 'owner';
+        return {
+          status: 'success',
+          role: role,
+          userId: String(id).trim()
+        };
       } else {
-        return 'Incorrect password';
+        return {
+          status: 'Incorrect password',
+          role: 'owner'
+        };
       }
     }
   }
-  return 'User not found';
+
+  return {
+    status: 'User not found',
+    role: 'owner'
+  };
 }
 
 // Function to fetch programs related to the logged-in user
@@ -76,6 +91,100 @@ function getAttendees(programKey) {
   }
   Logger.log(attendees);
   return attendees;
+}
+
+function getAdminDashboardData(filters) {
+  var ss = SpreadsheetApp.openById(SS_ID);
+  var tab1 = ss.getSheetByName('tab1');
+  var tab2 = ss.getSheetByName('tab2');
+  var tab1Data = tab1.getDataRange().getValues();
+  var tab2Data = tab2.getDataRange().getValues();
+
+  filters = filters || {};
+  var ownerFilter = String(filters.owner || '').trim();
+  var areaFilter = String(filters.area || '').trim();
+  var dayFilter = String(filters.day || '').trim();
+  var typeFilter = String(filters.type || '').trim();
+
+  var programRows = [];
+  if (tab1Data.length > 1) {
+    for (var i = 1; i < tab1Data.length; i++) {
+      var row = tab1Data[i];
+      if (!row || !row[0]) continue;
+
+      var programKey = String(row[0]).trim();
+      var owner = String(row[6] || '').trim();
+      var area = String(row[1] || '').trim();
+      var day = String(row[9] || '').trim();
+      var typeOfProgram = String(row[4] || '').trim();
+
+      var matchesOwner = !ownerFilter || owner === ownerFilter;
+      var matchesArea = !areaFilter || area === areaFilter;
+      var matchesDay = !dayFilter || day === dayFilter;
+      var matchesType = !typeFilter || typeOfProgram === typeFilter;
+
+      if (matchesOwner && matchesArea && matchesDay && matchesType) {
+        programRows.push({
+          programKey: programKey,
+          owner: owner,
+          area: area,
+          day: day,
+          typeOfProgram: typeOfProgram,
+          programStartDate: row[8] || ''
+        });
+      }
+    }
+  }
+
+  var totalPrograms = programRows.length;
+  var totalPeople = 0;
+  var owners = {};
+  var dayCounts = {};
+  var typeCounts = {};
+
+  if (tab2Data.length > 1 && tab2Data[0] && programRows.length > 0) {
+    var programHeaders = tab2Data[0];
+
+    programRows.forEach(function(program) {
+      var idx = programHeaders.indexOf(program.programKey);
+      if (idx === -1) return;
+
+      for (var r = 1; r < tab2Data.length; r++) {
+        var cellValue = tab2Data[r][idx];
+        if (cellValue && String(cellValue).trim() !== '') {
+          totalPeople += 1;
+          owners[program.owner] = (owners[program.owner] || 0) + 1;
+          dayCounts[program.day || 'Unknown'] = (dayCounts[program.day || 'Unknown'] || 0) + 1;
+          typeCounts[program.typeOfProgram || 'Unknown'] = (typeCounts[program.typeOfProgram || 'Unknown'] || 0) + 1;
+        }
+      }
+    });
+  }
+
+  var ownerList = Object.keys(owners).sort();
+  var dayList = Object.keys(dayCounts).sort();
+  var typeList = Object.keys(typeCounts).sort();
+
+  return {
+    cards: {
+      totalPrograms: totalPrograms,
+      totalPeople: totalPeople,
+      totalOwners: ownerList.length,
+      lastUpdated: new Date().toISOString().slice(0, 10)
+    },
+    filters: {
+      owners: ownerList,
+      areas: Array.from(new Set(programRows.map(function(p) { return p.area; }).filter(Boolean))).sort(),
+      days: dayList,
+      types: typeList
+    },
+    summary: {
+      byOwner: ownerList.map(function(name) { return { key: name, value: owners[name] }; }),
+      byDay: dayList.map(function(dayName) { return { key: dayName, value: dayCounts[dayName] }; }),
+      byType: typeList.map(function(typeName) { return { key: typeName, value: typeCounts[typeName] }; })
+    },
+    programs: programRows
+  };
 }
 
 function updateTab4Summary(programKey) {
