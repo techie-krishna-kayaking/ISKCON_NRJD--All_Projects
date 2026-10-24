@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <meta name="theme-color" content="#571b12" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/boxicons@2.0.9/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --maroon: #571b12;
+        --maroon-deep: #35100d;
+        --saffron: #e58a25;
+        --gold: #f6c967;
+        --cream: #fff8e9;
+        --ink: #3c2821;
+        --muted: #806b60;
+        --line: #ead9bd;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        color: var(--ink);
+        background: var(--cream);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        background:
+          radial-gradient(ellipse at 50% 10%, rgba(255, 224, 157, 0.52), transparent 40%),
+          linear-gradient(180deg, #fff9ed 0%, #fff4dd 58%, #fff8ec 100%);
+      }
+
+      .site-header {
+        position: relative;
+        overflow: hidden;
+        padding: 22px 16px 24px;
+        border-bottom: 4px solid var(--gold);
+        background:
+          radial-gradient(circle at 50% 100%, rgba(255, 197, 89, 0.24), transparent 44%),
+          linear-gradient(125deg, var(--maroon-deep), var(--maroon) 58%, #70291a);
+        box-shadow: 0 5px 18px rgba(73, 29, 18, 0.18);
+        color: #fff7e4;
+        text-align: center;
+      }
+
+      .header-inner {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 1180px;
+        min-height: 80px;
+        margin: auto;
+      }
+
+      .brand-logo {
+        position: absolute;
+        top: 50%;
+        width: 68px;
+        height: 68px;
+        object-fit: contain;
+        transform: translateY(-50%);
+      }
+
+      .brand-logo.left {
+        left: 0;
+      }
+
+      .brand-logo.right {
+        right: 0;
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .brand-copy {
+        padding: 0 78px;
+      }
+
+      .brand-copy h1 {
+        margin: 0;
+        color: #fff4cf;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.1rem, 3vw, 1.65rem);
+      }
+
+      .brand-copy p {
+        margin: 7px 0 0;
+        color: #ffe4a2;
+        font-size: clamp(0.76rem, 2.3vw, 0.95rem);
+      }
+
+      .festive-line {
+        margin: 13px auto 0;
+        color: #ffdf94;
+        font-size: 0.76rem;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      main {
+        width: min(100% - 32px, 1180px);
+        margin: 28px auto 38px;
+      }
+
+      .page-heading {
+        margin: 0 0 18px;
+        text-align: center;
+      }
+
+      .page-heading .eyebrow {
+        margin: 0 0 6px;
+        color: #a85a23;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .page-heading h2 {
+        margin: 0;
+        color: var(--maroon);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.6rem, 5vw, 2.2rem);
+      }
+
+      .page-heading p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .login-card,
+      .filter-card,
+      .chart-card,
+      .metric-card {
+        border: 1px solid rgba(214, 170, 102, 0.45);
+        background: rgba(255, 253, 247, 0.96);
+        box-shadow: 0 9px 26px rgba(82, 43, 22, 0.09);
+      }
+
+      .login-card {
+        width: min(100%, 430px);
+        margin: 25px auto;
+        padding: 27px;
+        border-radius: 20px;
+        text-align: center;
+      }
+
+      .login-card h3 {
+        margin: 0 0 7px;
+        color: var(--maroon);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.3rem;
+      }
+
+      .login-card p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-height: 48px;
+        padding: 11px 13px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        outline: none;
+        background: #fffdf9;
+        color: var(--ink);
+        font: inherit;
+        font-size: 16px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--saffron);
+        box-shadow: 0 0 0 3px rgba(229, 138, 37, 0.17);
+      }
+
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 11px 18px;
+        border: 0;
+        border-radius: 10px;
+        background: linear-gradient(100deg, #b85420, #dd8124 60%, #e99b31);
+        box-shadow: 0 5px 13px rgba(174, 82, 25, 0.2);
+        color: #fffdf8;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+      }
+
+      .primary-button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .login-card .primary-button {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .status {
+        display: none;
+        margin-top: 14px;
+        padding: 11px 13px;
+        border-radius: 9px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .status.visible {
+        display: block;
+      }
+
+      .status.error {
+        border: 1px solid #e9b9ae;
+        background: #fff1ed;
+        color: #8a2e20;
+      }
+
+      .status.info {
+        border: 1px solid #ecd39b;
+        background: #fff9e8;
+        color: #775319;
+      }
+
+      .dashboard {
+        display: none;
+      }
+
+      .dashboard.visible {
+        display: block;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 13px;
+      }
+
+      .toolbar p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .text-link {
+        color: #984d1e;
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .text-link:hover {
+        text-decoration: underline;
+      }
+
+      .filter-card {
+        padding: 18px;
+        border-radius: 16px;
+      }
+
+      .filters {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 13px;
+      }
+
+      .filter label {
+        display: block;
+        margin: 0 0 6px;
+        color: #523a30;
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
+      .filter select {
+        min-height: 44px;
+        padding: 9px 10px;
+        font-size: 0.9rem;
+      }
+
+      .metric-select {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 13px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .metric-select label {
+        flex: 0 0 auto;
+        color: #523a30;
+        font-weight: 800;
+      }
+
+      .metric-select select {
+        width: auto;
+        min-width: 170px;
+        min-height: 42px;
+        padding: 8px 10px;
+        font-size: 0.88rem;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+        margin: 17px 0;
+      }
+
+      .metric-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 118px;
+        padding: 19px;
+        border-radius: 16px;
+      }
+
+      .metric-card::after {
+        position: absolute;
+        right: -15px;
+        bottom: -35px;
+        width: 105px;
+        height: 105px;
+        border: 1px solid rgba(225, 166, 70, 0.17);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .metric-card .metric-label {
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+      }
+
+      .metric-card .metric-value {
+        display: block;
+        margin-top: 7px;
+        color: var(--maroon);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.8rem, 4vw, 2.25rem);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .chart-card {
+        min-width: 0;
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      .chart-card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .chart-card h3 {
+        margin: 1px 0 2px;
+        color: var(--maroon);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.08rem;
+      }
+
+      .chart-card .chart-subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+
+      .chart {
+        width: 100%;
+        height: 320px;
+      }
+
+      .chart-card.wide .chart {
+        height: 370px;
+      }
+
+      .empty-state {
+        display: none;
+        padding: 18px 6px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 0.9rem;
+      }
+
+      .empty-state.visible {
+        display: block;
+      }
+
+      .site-footer {
+        color: #fff4df;
+        text-align: center;
+        background: linear-gradient(115deg, #38120f, #571b12 60%, #431610);
+      }
+
+      .footer-inner {
+        max-width: 1180px;
+        margin: auto;
+        padding: 22px 16px 15px;
+      }
+
+      .footer-note {
+        margin: 0 0 12px;
+        color: #f4d795;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 0.98rem;
+      }
+
+      .footer-social {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .footer-social a {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border: 1px solid rgba(255, 230, 182, 0.3);
+        border-radius: 50%;
+        color: #ffe8b3;
+        font-size: 1.35rem;
+        text-decoration: none;
+      }
+
+      .footer-bottom {
+        padding: 11px 16px;
+        border-top: 1px solid rgba(255, 232, 179, 0.15);
+        color: #e5c9a8;
+        font-size: 0.76rem;
+      }
+
+      @media (max-width: 760px) {
+        .filters {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .chart {
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .site-header {
+          padding: 16px 12px 18px;
+        }
+
+        .header-inner {
+          min-height: 58px;
+        }
+
+        .brand-logo {
+          width: 46px;
+          height: 46px;
+        }
+
+        .brand-copy {
+          padding: 0 50px;
+        }
+
+        .brand-copy p {
+          margin-top: 4px;
+        }
+
+        .festive-line {
+          margin-top: 10px;
+          font-size: 0.64rem;
+          letter-spacing: 0.08em;
+        }
+
+        main {
+          width: min(100% - 22px, 460px);
+          margin-top: 22px;
+        }
+
+        .summary-grid {
+          gap: 9px;
+        }
+
+        .metric-card {
+          min-height: 102px;
+          padding: 14px 11px;
+        }
+
+        .metric-card .metric-label {
+          font-size: 0.75rem;
+        }
+
+        .metric-card .metric-value {
+          font-size: 1.65rem;
+        }
+
+        .chart-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .chart-card.wide {
+          grid-column: auto;
+        }
+
+        .chart,
+        .chart-card.wide .chart {
+          height: 300px;
+        }
+
+        .toolbar {
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .filters {
+          grid-template-columns: 1fr;
+        }
+
+        .metric-select {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .metric-select select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <img
+          src="https://static.wixstatic.com/media/12520c_ae3718c47560446f86e35e0f69137e81~mv2.png"
+          class="brand-logo left"
+          alt="ISKCON logo"
+        />
+        <div class="brand-copy">
+          <h1>ISKCON Magadi Main Road</h1>
+          <p>New Rajapur Jagannatha Dham, Bangalore</p>
+        </div>
+        <img
+          src="https://iskcondelhiofferings.com/assets/images/parbhu01.png"
+          class="brand-logo right"
+          alt="Sri Krishna"
+        />
+      </div>
+      <p class="festive-line">🪔 &nbsp; Damodar Month • Daily Program Dashboard &nbsp; 🪔</p>
+    </header>
+
+    <main>
+      <section class="page-heading">
+        <p class="eyebrow">Service in numbers</p>
+        <h2>Damodar Dashboard</h2>
+        <p>View program, devotee and lamp offerings across the filtered reports.</p>
+      </section>
+
+      <section class="login-card" id="login-card">
+        <h3>Admin access</h3>
+        <p>Enter the admin code to view the dashboard and its report filters.</p>
+        <form id="login-form">
+          <input
+            id="admin-code"
+            type="password"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="current-password"
+            placeholder="Admin code"
+            aria-label="Admin code"
+            required
+          />
+          <button class="primary-button" id="login-button" type="submit">Open dashboard</button>
+        </form>
+        <div id="login-status" class="status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="dashboard" id="dashboard">
+        <div class="toolbar">
+          <p id="report-count">Loading reports…</p>
+          <a class="text-link" href="<?= webAppUrl ?>">← Back to daily form</a>
+        </div>
+
+        <section class="filter-card" aria-label="Dashboard filters">
+          <div class="filters">
+            <div class="filter">
+              <label for="area-filter">Area</label>
+              <select id="area-filter"><option value="">All areas</option></select>
+            </div>
+            <div class="filter">
+              <label for="sub-area-filter">Sub-area</label>
+              <select id="sub-area-filter"><option value="">All sub-areas</option></select>
+            </div>
+            <div class="filter">
+              <label for="type-filter">Type of program</label>
+              <select id="type-filter"><option value="">All program types</option></select>
+            </div>
+            <div class="filter">
+              <label for="conducted-filter">Conducted by</label>
+              <select id="conducted-filter"><option value="">All devotees</option></select>
+            </div>
+          </div>
+          <div class="metric-select">
+            <label for="daily-metric">Daily trend metric</label>
+            <select id="daily-metric">
+              <option value="programs">Programs</option>
+              <option value="lamps">Lamp count</option>
+              <option value="people">People count</option>
+            </select>
+            <span>Bar = per day · Line = cumulative</span>
+          </div>
+        </section>
+
+        <div class="summary-grid" aria-live="polite">
+          <article class="metric-card">
+            <span class="metric-label">Total lamp count</span>
+            <strong class="metric-value" id="total-lamps">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total people count</span>
+            <strong class="metric-value" id="total-people">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total programs</span>
+            <strong class="metric-value" id="total-programs">0</strong>
+          </article>
+        </div>
+
+        <div class="status" id="dashboard-status" role="status" aria-live="polite"></div>
+        <div class="chart-grid">
+          <article class="chart-card">
+            <h3>Lamp count by area</h3>
+            <p class="chart-subtitle">Filtered lamp totals; slices show count and share.</p>
+            <div class="chart" id="area-lamps-chart"></div>
+          </article>
+          <article class="chart-card">
+            <h3>People count by area</h3>
+            <p class="chart-subtitle">Filtered devotee totals; slices show count and share.</p>
+            <div class="chart" id="area-people-chart"></div>
+          </article>
+          <article class="chart-card">
+            <h3>Programs by type</h3>
+            <p class="chart-subtitle">Filtered program totals; slices show count and share.</p>
+            <div class="chart" id="program-types-chart"></div>
+          </article>
+          <article class="chart-card wide">
+            <h3 id="daily-chart-title">Programs per day</h3>
+            <p class="chart-subtitle">Daily count as bars, with the cumulative total as a line.</p>
+            <div class="chart" id="daily-chart"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-note">Hare Krishna • May every offering bring light and devotion</p>
+        <nav class="footer-social" aria-label="ISKCON NRJD social links">
+          <a href="https://www.iskconnrjd.com/" target="_blank" rel="noopener noreferrer" aria-label="Website"><i class="bx bx-globe" aria-hidden="true"></i></a>
+          <a href="https://www.facebook.com/share/xa96MaApUA89yzKK/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="bx bxl-facebook" aria-hidden="true"></i></a>
+          <a href="https://whatsapp.com/channel/0029Vak56Qk2phHVpvBv3O2K" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="bx bxl-whatsapp" aria-hidden="true"></i></a>
+          <a href="https://youtube.com/@iskconnrjd1008?si=8-CVssKQLUC67JHM" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="bx bxl-youtube" aria-hidden="true"></i></a>
+          <a href="https://www.instagram.com/iskconbangalorenrjd/profilecard/?igsh=c3RkMHR3NnhtbWYy" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bx bxl-instagram" aria-hidden="true"></i></a>
+        </nav>
+      </div>
+      <div class="footer-bottom">&copy; 2026 ISKCON NRJD. All rights reserved.</div>
+    </footer>
+
+    <script>
+      const loginForm = document.getElementById("login-form");
+      const loginButton = document.getElementById("login-button");
+      const loginStatus = document.getElementById("login-status");
+      const dashboard = document.getElementById("dashboard");
+      const loginCard = document.getElementById("login-card");
+      const dashboardStatus = document.getElementById("dashboard-status");
+      const filterIds = {
+        area: "area-filter",
+        subArea: "sub-area-filter",
+        type: "type-filter",
+        conductedBy: "conducted-filter",
+        metric: "daily-metric"
+      };
+      const filterDefaults = {
+        area: "All areas",
+        subArea: "All sub-areas",
+        type: "All program types",
+        conductedBy: "All devotees"
+      };
+      const colors = ["#bd5a2b", "#e89b32", "#e9c45e", "#6b8f71", "#8d5a78", "#657fa3", "#bd8060", "#74a9a1", "#c57b9a", "#9c8a56"];
+      let adminCode = "";
+      let chartsReady = false;
+      let latestData = null;
+      let isRefreshing = false;
+      let refreshPending = false;
+
+      google.charts.load("current", { packages: ["corechart"] });
+      google.charts.setOnLoadCallback(function () {
+        chartsReady = true;
+        if (latestData) drawCharts(latestData);
+      });
+
+      function showStatus(element, message, type) {
+        element.textContent = message;
+        element.className = "status visible " + type;
+      }
+
+      function clearStatus(element) {
+        element.textContent = "";
+        element.className = "status";
+      }
+
+      function getFilters() {
+        return {
+          area: document.getElementById(filterIds.area).value,
+          subArea: document.getElementById(filterIds.subArea).value,
+          type: document.getElementById(filterIds.type).value,
+          conductedBy: document.getElementById(filterIds.conductedBy).value,
+          metric: document.getElementById(filterIds.metric).value
+        };
+      }
+
+      function populateSelect(id, values, placeholder) {
+        const select = document.getElementById(id);
+        const selected = select.value;
+        select.replaceChildren(new Option(placeholder, ""));
+        values.forEach(function (value) {
+          select.add(new Option(value, value));
+        });
+        if (values.indexOf(selected) >= 0) select.value = selected;
+      }
+
+      function populateFilters(options) {
+        populateSelect(filterIds.area, options.areas, filterDefaults.area);
+        populateSelect(filterIds.subArea, options.subAreas, filterDefaults.subArea);
+        populateSelect(filterIds.type, options.types, filterDefaults.type);
+        populateSelect(filterIds.conductedBy, options.conductedBy, filterDefaults.conductedBy);
+      }
+
+      function formatNumber(value) {
+        return Number(value || 0).toLocaleString();
+      }
+
+      function refreshDashboard() {
+        if (!adminCode) return;
+        if (isRefreshing) {
+          refreshPending = true;
+          return;
+        }
+        isRefreshing = true;
+        clearStatus(dashboardStatus);
+        google.script.run
+          .withSuccessHandler(function (data) {
+            latestData = data;
+            populateFilters(data.options);
+            document.getElementById("total-lamps").textContent = formatNumber(data.totals.lamps);
+            document.getElementById("total-people").textContent = formatNumber(data.totals.people);
+            document.getElementById("total-programs").textContent = formatNumber(data.totals.programs);
+            document.getElementById("report-count").textContent =
+              formatNumber(data.totals.programs) + " matching program" +
+              (data.totals.programs === 1 ? "" : "s");
+            if (chartsReady) drawCharts(data);
+            finishRefresh();
+          })
+          .withFailureHandler(function (error) {
+            showStatus(
+              dashboardStatus,
+              error && error.message ? error.message : "Unable to load dashboard data. Please try again.",
+              "error"
+            );
+            finishRefresh();
+          })
+          .getDashboardData(adminCode, getFilters());
+      }
+
+      function finishRefresh() {
+        isRefreshing = false;
+        if (refreshPending) {
+          refreshPending = false;
+          refreshDashboard();
+        }
+      }
+
+      function drawPieChart(elementId, title, rows) {
+        const element = document.getElementById(elementId);
+        if (!rows.length) {
+          element.innerHTML = '<div class="empty-state visible">No matching data for this chart.</div>';
+          return;
+        }
+        const data = new google.visualization.DataTable();
+        data.addColumn("string", title);
+        data.addColumn("number", "Count");
+        rows.forEach(function (row) {
+          data.addRow([row.label, row.value]);
+        });
+        const chart = new google.visualization.PieChart(element);
+        chart.draw(data, {
+          backgroundColor: "transparent",
+          chartArea: { left: 8, top: 12, width: "95%", height: "86%" },
+          colors: colors,
+          fontName: "Trebuchet MS",
+          fontSize: 12,
+          legend: { position: "right", textStyle: { color: "#5d493e", fontSize: 11 } },
+          pieSliceText: "value-and-percentage",
+          pieSliceTextStyle: { color: "#fffdf7", fontSize: 11 },
+          sliceVisibilityThreshold: 0,
+          tooltip: { text: "both" }
+        });
+      }
+
+      function drawDailyChart(data) {
+        const element = document.getElementById("daily-chart");
+        const titles = {
+          programs: "Programs",
+          lamps: "Lamp count",
+          people: "People count"
+        };
+        const label = titles[data.dailyMetric] || titles.programs;
+        document.getElementById("daily-chart-title").textContent = label + " per day";
+        if (!data.daily.length) {
+          element.innerHTML = '<div class="empty-state visible">No matching daily data to display.</div>';
+          return;
+        }
+        const table = new google.visualization.DataTable();
+        table.addColumn("string", "Date");
+        table.addColumn("number", "Per day");
+        table.addColumn("number", "Cumulative");
+        data.daily.forEach(function (point) {
+          table.addRow([point.date, point.daily, point.cumulative]);
+        });
+        const chart = new google.visualization.ComboChart(element);
+        chart.draw(table, {
+          backgroundColor: "transparent",
+          chartArea: { left: 58, top: 24, width: "82%", height: "70%" },
+          fontName: "Trebuchet MS",
+          fontSize: 11,
+          colors: ["#dd8124", "#571b12"],
+          seriesType: "bars",
+          series: {
+            0: { type: "bars", targetAxisIndex: 0 },
+            1: { type: "line", targetAxisIndex: 1, lineWidth: 3, pointSize: 5 }
+          },
+          vAxes: {
+            0: { title: "Per day", minValue: 0, textStyle: { color: "#806b60" }, titleTextStyle: { color: "#806b60" } },
+            1: { title: "Cumulative", minValue: 0, textStyle: { color: "#806b60" }, titleTextStyle: { color: "#806b60" } }
+          },
+          hAxis: {
+            slantedText: true,
+            slantedTextAngle: 40,
+            textStyle: { color: "#806b60", fontSize: 10 }
+          },
+          legend: { position: "top", alignment: "end", textStyle: { color: "#5d493e", fontSize: 11 } },
+          tooltip: { textStyle: { fontName: "Trebuchet MS" } }
+        });
+      }
+
+      function drawCharts(data) {
+        drawPieChart("area-lamps-chart", "Area", data.areaLamps);
+        drawPieChart("area-people-chart", "Area", data.areaPeople);
+        drawPieChart("program-types-chart", "Program type", data.programTypes);
+        drawDailyChart(data);
+      }
+
+      loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (!loginForm.reportValidity()) return;
+        adminCode = document.getElementById("admin-code").value;
+        loginButton.disabled = true;
+        loginButton.textContent = "Checking code…";
+        clearStatus(loginStatus);
+        google.script.run
+          .withSuccessHandler(function (data) {
+            latestData = data;
+            loginCard.hidden = true;
+            dashboard.classList.add("visible");
+            loginButton.disabled = false;
+            loginButton.textContent = "Open dashboard";
+            populateFilters(data.options);
+            document.getElementById("total-lamps").textContent = formatNumber(data.totals.lamps);
+            document.getElementById("total-people").textContent = formatNumber(data.totals.people);
+            document.getElementById("total-programs").textContent = formatNumber(data.totals.programs);
+            document.getElementById("report-count").textContent =
+              formatNumber(data.totals.programs) + " matching program" +
+              (data.totals.programs === 1 ? "" : "s");
+            if (chartsReady) drawCharts(data);
+          })
+          .withFailureHandler(function (error) {
+            adminCode = "";
+            document.getElementById("admin-code").value = "";
+            loginButton.disabled = false;
+            loginButton.textContent = "Open dashboard";
+            showStatus(
+              loginStatus,
+              error && error.message ? error.message : "Unable to verify the admin code.",
+              "error"
+            );
+          })
+          .getDashboardData(adminCode, getFilters());
+      });
+
+      Object.keys(filterIds).forEach(function (filterName) {
+        document.getElementById(filterIds[filterName]).addEventListener("change", refreshDashboard);
+      });
+
+      window.addEventListener("resize", function () {
+        if (chartsReady && latestData && dashboard.classList.contains("visible")) {
+          drawCharts(latestData);
+        }
+      });
+    </script>
+  </body>
+</html>
