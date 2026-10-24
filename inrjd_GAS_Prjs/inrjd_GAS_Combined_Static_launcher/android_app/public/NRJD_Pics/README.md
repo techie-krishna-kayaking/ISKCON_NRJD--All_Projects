@@ -1,19 +1,5 @@
-# NRJD Pics
+# NRJD Slideshow Images
 
-## Path
+Place the Jagannath/NRJD slideshow images for the Japa session and counter pages in this folder. Supported formats are `.jpg`, `.jpeg`, `.png`, and `.webp`.
 
-`inrjd_japa_session_tool_web-apk/public/NRJD_Pics`
-
-## Purpose
-
-Image collection used by the Japa session web APK.
-
-## Contents Summary
-
-- Direct files: 16
-- Child directories: 0
-
-## Notes
-
-- This README was added to provide workspace-wide folder-level documentation.
-- Update this file with folder-specific setup, ownership, and conventions as the folder evolves.
+After adding or removing images, run `npm run gen` from `android_app`. The generator updates `public/image-list.json`; run `npx cap sync android` before rebuilding the Android app. Keep file sizes reasonable for faster mobile loading.

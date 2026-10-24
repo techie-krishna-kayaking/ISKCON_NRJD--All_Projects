@@ -1,19 +1,20 @@
-# inrjd GAS nandotsavPlanning
+# Nandotsav Planning
 
-## Path
+An Apps Script web app for coordinating school outreach and Nandotsav program follow-up. Teams can review school contacts, record visits and prelims dates, and maintain class follow-up plans.
 
-`inrjd_GAS_Prjs/inrjd_GAS_nandotsavPlanning`
+## What’s inside
 
-## Purpose
+- `Code.gs` — web app entry point and Google Sheets read/write operations
+- `index.html`, `styles.html`, `scripts.html` — responsive planning interface
+- `rules.html` — planning guidance displayed in the app
 
-Google Apps Script project for Nandotsav planning workflows.
+The script uses the `School` tab in its configured spreadsheet and creates or uses a `ClassFollowup` tab for class-planning records. Column positions are defined in `Code.gs`; keep the sheet layout in sync with that mapping.
 
-## Contents Summary
+## Run and deploy
 
-- Direct files: 6
-- Child directories: 0
+1. Open the Apps Script project and confirm `SHEET_ID`, `SHEET_NAME`, and access permissions in `Code.gs`.
+2. Ensure the spreadsheet contains the expected school columns and the account running the app can edit it.
+3. Save, authorize the required Sheets access, and deploy as a **Web app**.
+4. Test reading a school record and saving a visit/follow-up update before sharing the URL.
 
-## Notes
-
-- This README was added to provide workspace-wide folder-level documentation.
-- Update this file with folder-specific setup, ownership, and conventions as the folder evolves.
+Updates capture browser/device metadata and may also capture an IP address. Share the app and its data only with the intended team.

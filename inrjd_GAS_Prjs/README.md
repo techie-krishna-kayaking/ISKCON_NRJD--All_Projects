@@ -1,72 +1,34 @@
-# inrjd_GAS_Prjs
+# ISKCON NRJD Apps
 
-## Overview
+Community tools for event operations, preaching, volunteer service, prayer, and devotee education. Each folder is a separate project; check its guide before editing or deploying.
 
-This folder is the central workspace for multiple Google Apps Script projects used for NRJD workflows.
-It contains independent apps plus one modular attendance and shiksha system.
+## Active projects
 
-## Maintainer
+| Project | What it does |
+| --- | --- |
+| [Nandotsava 2026](./inrjd_GAS_2026_Nandotsava/README.md) | Participant check-in, attendance, and event dashboards |
+| [Nandotsav Planning](./inrjd_GAS_nandotsavPlanning/README.md) | School outreach and program/class follow-up |
+| [Prayer app launcher](./inrjd_GAS_Combined_Static_launcher/README.md) | Prayer, arati, shlokas, and Purushotam Month Apps Script pages |
+| [Damodar Mas](./inrjd_GAS_DamodarMas/README.md) | Daily Damodar program reports and filtered dashboard |
+| [Preaching dashboard](./inrjd_GAS_Database_chart_dashboard/README.md) | Preaching totals and stage-wise charts from a Google Sheet |
+| [Janmashtami seva](./inrjd_GAS_Janmashtami_Seva_Prasadam/README.md) | Volunteer search, tag status, and allocation review |
+| [JBSS Dress Search](./inrjd_GAS_jbss_dress/README.md) | Dress calendar, festival planning, and image browsing |
+| [Japa Session Tool for Android](./inrjd_GAS_Combined_Static_launcher/android_app/README.md) | Offline-capable timer, stopwatch, and mantra counters |
+| [Attendance + Shiksha archive](./inrjd_GAS_attendance+Shiksha/README.md) | Notes on the historical implementation snapshots |
 
-- Name: Krishna Kayaking
+## Archived projects
 
-## Projects In This Folder
+Older versions are retained for reference; they are not necessarily the active deployment source.
 
-1. inrjd_GAS_MorningAnnouncement
-- Purpose: Morning announcement web app and script automation.
-- Key files: Code.gs, index.html, data.html, scripts.html, styles.html.
+- [Archive index](./archive/README.md)
+- [Morning Announcement (legacy)](./archive/inrjd_GAS_MorningAnnouncement/README.md)
+- [Purushotam Month (legacy)](./archive/inrjd_GAS_purushotam_month/README.md)
+- [Picnic registration (legacy)](./archive/inrjd_GAS_Forms/Picnic/README.md)
 
-2. inrjd_GAS_attendance+Shiksha
-- Purpose: Attendance and Shiksha workflows with both split modules and unified implementation.
-- Includes module 1new_program for new program entry flow.
-- Includes module 2attendance for attendance flow.
-- Includes module 3shiksha for shiksha flow.
-- Includes module unified as the combined production-ready modular GAS app.
-- Key support files: attendance-db.xlsx, build_attendance_sheet.py, req.txt.
+## Working safely
 
-3. inrjd_GAS_nandotsavPlanning
-- Purpose: Nandotsav planning app and rules interface.
-- Key files: Code.gs, index.html, rules.html, scripts.html, styles.html.
-
-4. inrjd_GAS_purushotam_month
-- Purpose: Purushotam month multilingual content and publishing.
-- Key files: Code.gs, index.html, data_en.html, data_hi.html, data_kn.html, data_tl.html, scripts.html, styles.html.
-
-## Folder Structure
-
-```text
-inrjd_GAS_Prjs/
-	inrjd_GAS_MorningAnnouncement/
-	inrjd_GAS_attendance+Shiksha/
-		1new_program/
-		2attendance/
-		3shiksha/
-		unified/
-	inrjd_GAS_nandotsavPlanning/
-	inrjd_GAS_purushotam_month/
-```
-
-## Common Tech Stack
-
-- Google Apps Script (.gs)
-- HTML/CSS/JavaScript for GAS web UI
-- Python utility scripts (attendance sheet preparation)
-- Spreadsheet-driven data workflows (Excel/Sheets)
-
-## Recommended Workflow
-
-1. Build and test feature changes inside the project-specific folder.
-2. Keep UI changes in HTML files and business logic in .gs files.
-3. For attendance+shiksha, finalize shared logic in the unified module after validating split modules.
-4. Keep supporting data files updated and versioned with related script changes.
-
-## Quick Navigation
-
-- [Morning Announcement](inrjd_GAS_MorningAnnouncement/README.md)
-- [Attendance + Shiksha](inrjd_GAS_attendance+Shiksha/README.md)
-- [Nandotsav Planning](inrjd_GAS_nandotsavPlanning/README.md)
-- [Purushotam Month](inrjd_GAS_purushotam_month/README.md)
-
-## Notes
-
-- This README is intended to act as the index for all GAS projects under this folder.
-- Keep each subproject README updated with deployment steps, owners, and config details.
+1. Make changes in the project folder that owns the feature.
+2. Check its data source, sheet names, and deployment settings before testing.
+3. Keep credentials and private participant data out of source control and documentation.
+4. Save and test the Apps Script project, then deploy a **new version** to publish changes.
+5. Treat archived folders and spreadsheet exports as references unless confirmed otherwise.

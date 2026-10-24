@@ -1,19 +1,5 @@
-# inrjd GAS purushotam month
+# Purushotam Month — Archive
 
-## Path
+An earlier multilingual Apps Script devotional-content app. It includes English, Hindi, Kannada, and Telugu content files, plus the page, styles, and client scripts.
 
-`inrjd_GAS_Prjs/inrjd_GAS_purushotam_month`
-
-## Purpose
-
-Google Apps Script project for Purushotam month data and publishing.
-
-## Contents Summary
-
-- Direct files: 9
-- Child directories: 2
-
-## Notes
-
-- This README was added to provide workspace-wide folder-level documentation.
-- Update this file with folder-specific setup, ownership, and conventions as the folder evolves.
+The combined prayer launcher now keeps the corresponding pages and language content in [`../../inrjd_GAS_Combined_Static_launcher`](../../inrjd_GAS_Combined_Static_launcher/README.md). This archived copy may not contain the latest content or deployment configuration.

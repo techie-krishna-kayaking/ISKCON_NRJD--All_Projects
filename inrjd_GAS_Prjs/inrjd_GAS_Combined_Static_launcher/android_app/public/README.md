@@ -1,19 +1,12 @@
-# public
+# Japa Tool — Web Assets
 
-## Path
+This is the static web root used by the Node server and Capacitor Android build.
 
-`inrjd_japa_session_tool_web-apk/public`
+- `index.html` — group chanting session
+- `stopwatch.html` — round/lap stopwatch
+- `counter.html` — mantra counters
+- `manifest.json`, `sw.js` — installable/offline PWA support
+- `image-list.json`, `narashima-image-list.json` — generated slideshow indexes
+- `NRJD_Pics/`, `NarashimaDev_pics/` — optional slideshow image folders
 
-## Purpose
-
-Public static files served directly to clients.
-
-## Contents Summary
-
-- Direct files: 7
-- Child directories: 1
-
-## Notes
-
-- This README was added to provide workspace-wide folder-level documentation.
-- Update this file with folder-specific setup, ownership, and conventions as the folder evolves.
+Edit the relevant page or source assets here. After changing image files, run `npm run gen` from `android_app` so the image lists stay in sync; use `npx cap sync android` before building the APK.

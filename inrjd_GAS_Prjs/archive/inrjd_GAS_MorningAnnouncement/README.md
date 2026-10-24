@@ -1,19 +1,5 @@
-# inrjd GAS MorningAnnouncement
+# Morning Announcement — Archive
 
-## Path
+An earlier Apps Script announcement page. `Code.gs` serves the interface; `index.html`, `styles.html`, `scripts.html`, and `data.html` contain the page layout, styling, behavior, and announcement content.
 
-`inrjd_GAS_Prjs/inrjd_GAS_MorningAnnouncement`
-
-## Purpose
-
-Google Apps Script project for morning announcement workflows.
-
-## Contents Summary
-
-- Direct files: 6
-- Child directories: 0
-
-## Notes
-
-- This README was added to provide workspace-wide folder-level documentation.
-- Update this file with folder-specific setup, ownership, and conventions as the folder evolves.
+The active combined prayer launcher is [`../../inrjd_GAS_Combined_Static_launcher`](../../inrjd_GAS_Combined_Static_launcher/README.md). Use this folder only as a historical reference unless its deployment and content source are confirmed current.
