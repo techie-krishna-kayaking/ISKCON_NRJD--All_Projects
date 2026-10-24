@@ -32,6 +32,12 @@ var AdminService = (function () {
         zone: p.zone || '',
         subArea: p.sub_area || '',
         city: p.city || '',
+<<<<<<< HEAD
+=======
+        day: p.day || '',
+        programType: p.type_of_program || p.program_type || '',
+        updatedOn: p.updated_on || p.updated_at || p.updatedOn || '',
+>>>>>>> origin/main
         devoteeName: m.devotee_name || '',
         shikshaCode: code,
         gender: m.gender || '',
@@ -49,11 +55,23 @@ var AdminService = (function () {
     var membersByGender = {};
     var membersByShikshaStatus = {};
     var membersByLocation = {};
+<<<<<<< HEAD
+=======
+    var membersByOwner = {};
+    var membersByDay = {};
+    var membersByProgramType = {};
+>>>>>>> origin/main
 
     filtered.forEach(function (r) {
       Utils.incrCounter(membersByGender, r.gender || 'Unknown');
       Utils.incrCounter(membersByShikshaStatus, r.shikshaStatus || 'Unknown');
       Utils.incrCounter(membersByLocation, [r.zone || 'NA', r.subArea || 'NA', r.city || 'NA'].join(' > '));
+<<<<<<< HEAD
+=======
+      Utils.incrCounter(membersByOwner, r.owner || 'Unknown');
+      Utils.incrCounter(membersByDay, r.day || 'Unknown');
+      Utils.incrCounter(membersByProgramType, r.programType || 'Unknown');
+>>>>>>> origin/main
     });
 
     var distinctOwners = {};
@@ -66,6 +84,7 @@ var AdminService = (function () {
       distinctPrograms[r.programKey || 'Unknown'] = true;
     });
 
+<<<<<<< HEAD
     return {
       cards: {
         totalPrograms: Object.keys(distinctPrograms).length,
@@ -74,6 +93,26 @@ var AdminService = (function () {
         activeMembers: filtered.filter(function (r) { return Utils.normBoolY(r.activeFlg); }).length
       },
       groups: {
+=======
+    var latestUpdated = '';
+    filtered.forEach(function (r) {
+      if (r.updatedOn && (!latestUpdated || String(r.updatedOn) > String(latestUpdated))) {
+        latestUpdated = r.updatedOn;
+      }
+    });
+
+    return {
+      cards: {
+        totalPrograms: Object.keys(distinctPrograms).length,
+        totalPeople: filtered.length,
+        totalOwners: Object.keys(distinctOwners).length,
+        lastUpdated: latestUpdated || 'N/A'
+      },
+      groups: {
+        membersByOwner: toKeyValueArray_(membersByOwner),
+        membersByDay: toKeyValueArray_(membersByDay),
+        membersByProgramType: toKeyValueArray_(membersByProgramType),
+>>>>>>> origin/main
         membersByGender: toKeyValueArray_(membersByGender),
         membersByShikshaStatus: toKeyValueArray_(membersByShikshaStatus),
         membersByLocation: toKeyValueArray_(membersByLocation)
@@ -84,6 +123,11 @@ var AdminService = (function () {
         zones: uniqueSorted_(joinedRows, 'zone'),
         subAreas: uniqueSorted_(joinedRows, 'subArea'),
         cities: uniqueSorted_(joinedRows, 'city'),
+<<<<<<< HEAD
+=======
+        days: uniqueSorted_(joinedRows, 'day'),
+        programTypes: uniqueSorted_(joinedRows, 'programType'),
+>>>>>>> origin/main
         genders: uniqueSorted_(joinedRows, 'gender'),
         shikshaStatuses: uniqueSorted_(joinedRows, 'shikshaStatus')
       },
@@ -91,7 +135,14 @@ var AdminService = (function () {
       chartData: {
         byGender: toChartArray_('Gender', membersByGender),
         byStatus: toChartArray_('Shiksha Status', membersByShikshaStatus),
+<<<<<<< HEAD
         byLocation: toChartArray_('Location', membersByLocation)
+=======
+        byLocation: toChartArray_('Location', membersByLocation),
+        byOwner: toChartArray_('Owner', membersByOwner),
+        byDay: toChartArray_('Day', membersByDay),
+        byProgramType: toChartArray_('Program Type', membersByProgramType)
+>>>>>>> origin/main
       }
     };
   }
@@ -103,6 +154,11 @@ var AdminService = (function () {
       zone: Utils.sanitizeString(filters.zone),
       subArea: Utils.sanitizeString(filters.subArea),
       city: Utils.sanitizeString(filters.city),
+<<<<<<< HEAD
+=======
+      day: Utils.sanitizeString(filters.day),
+      programType: Utils.sanitizeString(filters.programType),
+>>>>>>> origin/main
       gender: Utils.sanitizeString(filters.gender),
       shikshaStatus: Utils.sanitizeString(filters.shikshaStatus)
     };
@@ -114,6 +170,11 @@ var AdminService = (function () {
       (!filter.zone || row.zone === filter.zone) &&
       (!filter.subArea || row.subArea === filter.subArea) &&
       (!filter.city || row.city === filter.city) &&
+<<<<<<< HEAD
+=======
+      (!filter.day || row.day === filter.day) &&
+      (!filter.programType || row.programType === filter.programType) &&
+>>>>>>> origin/main
       (!filter.gender || row.gender === filter.gender) &&
       (!filter.shikshaStatus || row.shikshaStatus === filter.shikshaStatus);
   }

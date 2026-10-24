@@ -115,10 +115,51 @@
 
       .metric {
         padding: 16px;
+<<<<<<< HEAD
+=======
+        border-left: 5px solid transparent;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .metric::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(12, 74, 110, 0.04));
+        pointer-events: none;
+      }
+
+      .metric > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .metric--teal {
+        border-left-color: #14b8a6;
+        background: linear-gradient(135deg, #f0fdfa, #ffffff);
+      }
+
+      .metric--blue {
+        border-left-color: #3b82f6;
+        background: linear-gradient(135deg, #eff6ff, #ffffff);
+      }
+
+      .metric--amber {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb, #ffffff);
+      }
+
+      .metric--violet {
+        border-left-color: #8b5cf6;
+        background: linear-gradient(135deg, #f5f3ff, #ffffff);
+>>>>>>> origin/main
       }
 
       .metric h3 {
         margin: 0;
+<<<<<<< HEAD
         font-size: 14px;
         color: var(--muted);
       }
@@ -127,6 +168,19 @@
         margin-top: 6px;
         font-size: 28px;
         font-weight: 800;
+=======
+        font-size: 13px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .metric .val {
+        margin-top: 10px;
+        font-size: clamp(24px, 3vw, 32px);
+        font-weight: 800;
+        line-height: 1.1;
+>>>>>>> origin/main
       }
 
       .panel {
@@ -646,6 +700,11 @@
               <select id="fZone"></select>
               <select id="fSubArea"></select>
               <select id="fCity"></select>
+<<<<<<< HEAD
+=======
+              <select id="fDay"></select>
+              <select id="fType"></select>
+>>>>>>> origin/main
               <select id="fGender"></select>
               <select id="fStatus"></select>
               <button class="btn btn-primary" id="applyFiltersBtn">Apply Filters</button>
@@ -1062,8 +1121,15 @@
 
       function renderCards(containerId, cards) {
         var container = el(containerId);
+<<<<<<< HEAD
         var html = Object.keys(cards).map(function (k) {
           return '<div class="card metric"><h3>' + prettyKey(k) + '</h3><div class="val">' + cards[k] + '</div></div>';
+=======
+        var palette = ['teal', 'blue', 'amber', 'violet'];
+        var html = Object.keys(cards).map(function (k, idx) {
+          var tone = palette[idx % palette.length];
+          return '<div class="card metric metric--' + tone + '"><h3>' + prettyKey(k) + '</h3><div class="val">' + safe(cards[k]) + '</div></div>';
+>>>>>>> origin/main
         }).join('');
         container.innerHTML = html;
       }
@@ -1712,6 +1778,11 @@
         setSelect('fZone', 'All Zones', filterData.zones || [], selected.zone);
         setSelect('fSubArea', 'All Sub Areas', filterData.subAreas || [], selected.subArea);
         setSelect('fCity', 'All Cities', filterData.cities || [], selected.city);
+<<<<<<< HEAD
+=======
+        setSelect('fDay', 'All Days', filterData.days || [], selected.day);
+        setSelect('fType', 'All Program Types', filterData.programTypes || [], selected.programType);
+>>>>>>> origin/main
         setSelect('fGender', 'All Genders', filterData.genders || [], selected.gender);
         setSelect('fStatus', 'All Shiksha Statuses', filterData.shikshaStatuses || [], selected.shikshaStatus);
       }
@@ -1737,6 +1808,12 @@
       function renderAdminGroups(groups) {
         var container = el('adminGroups');
         container.innerHTML = [
+<<<<<<< HEAD
+=======
+          groupCard('People by Program Owner', groups.membersByOwner || []),
+          groupCard('Day-wise Program Count', groups.membersByDay || []),
+          groupCard('Program Type Split', groups.membersByProgramType || []),
+>>>>>>> origin/main
           groupCard('Members by Gender', groups.membersByGender || []),
           groupCard('Members by Shiksha Status', groups.membersByShikshaStatus || []),
           groupCard('Members by Location', groups.membersByLocation || [])
@@ -1780,6 +1857,11 @@
           zone: el('fZone').value,
           subArea: el('fSubArea').value,
           city: el('fCity').value,
+<<<<<<< HEAD
+=======
+          day: el('fDay').value,
+          programType: el('fType').value,
+>>>>>>> origin/main
           gender: el('fGender').value,
           shikshaStatus: el('fStatus').value
         };

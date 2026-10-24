@@ -1590,6 +1590,95 @@
       return field;
     }
 
+<<<<<<< HEAD
+=======
+    var currentUserRole = 'owner';
+
+    function parseLoginResult(result) {
+      if (result && typeof result === 'object') {
+        return result;
+      }
+      return { status: String(result || 'success'), role: 'owner' };
+    }
+
+    function renderAdminDashboard(data) {
+      var dashboard = document.getElementById('programDetails');
+      dashboard.innerHTML = '';
+
+      var section = document.createElement('div');
+      section.className = 'admin-dashboard';
+
+      /* ── Header ── */
+      var header = document.createElement('div');
+      header.innerHTML =
+        '<p class="section-eyebrow">Admin Dashboard</p>' +
+        '<h2 class="section-title">Organization Overview</h2>' +
+        '<p style="color:#6b8299;font-size:13px;margin-top:4px;">Last updated: ' + (data.cards.lastUpdated || '—') + '</p>';
+      section.appendChild(header);
+
+      /* ── Stat cards ── */
+      var stats = [
+        { label: 'Total Programs',  value: data.cards.totalPrograms, icon: '📋', tone: 'teal'   },
+        { label: 'Total People',    value: data.cards.totalPeople,   icon: '👥', tone: 'blue'   },
+        { label: 'Program Owners',  value: data.cards.totalOwners,   icon: '🙏', tone: 'amber'  }
+      ];
+
+      var statWrap = document.createElement('div');
+      statWrap.className = 'admin-stats';
+      stats.forEach(function(item) {
+        var card = document.createElement('div');
+        card.className = 'admin-stat-card ' + item.tone;
+        card.innerHTML =
+          '<div class="admin-stat-icon">' + item.icon + '</div>' +
+          '<div class="admin-stat-label">' + item.label + '</div>' +
+          '<div class="admin-stat-value">' + item.value + '</div>';
+        statWrap.appendChild(card);
+      });
+      section.appendChild(statWrap);
+
+      /* ── Insight breakdown boxes ── */
+      var insights = [
+        { title: 'People per Program Owner', data: data.summary.byOwner,  icon: '👤' },
+        { title: 'Day-wise Distribution',     data: data.summary.byDay,   icon: '📅' },
+        { title: 'By Program Type',           data: data.summary.byType,  icon: '🏷️' }
+      ];
+
+      var insightGrid = document.createElement('div');
+      insightGrid.className = 'admin-summary-grid';
+
+      insights.forEach(function(block) {
+        var box = document.createElement('div');
+        box.className = 'admin-summary-box';
+        var rows = (block.data || []);
+        var total = rows.reduce(function(s, r) { return s + r.value; }, 0);
+        var listHtml = rows.length === 0
+          ? '<li><span style="color:#97a8ba">No data</span></li>'
+          : rows.map(function(r) {
+              var pct = total > 0 ? Math.round(r.value / total * 100) : 0;
+              return '<li>' +
+                '<span>' + r.key + '</span>' +
+                '<span class="admin-bar-wrap">' +
+                  '<span class="admin-bar" style="width:' + pct + '%"></span>' +
+                '</span>' +
+                '<strong>' + r.value + '</strong>' +
+              '</li>';
+            }).join('');
+        box.innerHTML = '<h4>' + block.icon + ' ' + block.title + '</h4><ul>' + listHtml + '</ul>';
+        insightGrid.appendChild(box);
+      });
+      section.appendChild(insightGrid);
+
+      dashboard.appendChild(section);
+      document.getElementById('programDetailsSection').style.display = 'block';
+    }
+
+    function loadAdminDashboard() {
+      google.script.run.withSuccessHandler(function(data) {
+        renderAdminDashboard(data);
+      }).getAdminDashboardData({});
+    }
+
+>>>>>>> origin/main
     /* ─── LOGIN ─── */
     function login() {
       var loginBtn = document.getElementById('loginBtn');
@@ -1609,11 +1698,25 @@
           loginBtn.disabled     = false;
           btnText.textContent   = "Login →";
 
+<<<<<<< HEAD
           if (result === 'success') {
             document.getElementById('loginSection').style.display = 'none';
             loadPrograms();
           } else {
             alert(result);
+=======
+          var loginResult = parseLoginResult(result);
+          if (loginResult.status === 'success') {
+            currentUserRole = (loginResult.role || 'owner').toLowerCase();
+            document.getElementById('loginSection').style.display = 'none';
+            if (currentUserRole === 'admin') {
+              loadAdminDashboard();
+            } else {
+              loadPrograms();
+            }
+          } else {
+            alert(loginResult.status || result);
+>>>>>>> origin/main
           }
         })
         .withFailureHandler(function() {
